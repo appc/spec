@@ -1,7 +1,7 @@
 package schema
 
 import (
-	"github.com/coreos/rocket/app-container/schema/types"
+	"github.com/appc/spec/schema/types"
 )
 
 var (
