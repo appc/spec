@@ -26,7 +26,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/coreos/rocket/app-container/schema"
+	"github.com/appc/spec/schema"
 )
 
 var (

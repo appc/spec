@@ -44,8 +44,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/coreos/rocket/app-container/schema"
-	"github.com/coreos/rocket/app-container/schema/types"
+	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
 )
 
 const (

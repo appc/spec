@@ -6,7 +6,7 @@ import (
 	"runtime"
 	"strings"
 
-	"github.com/coreos/rocket/app-container/schema/types"
+	"github.com/appc/spec/schema/types"
 )
 
 const (

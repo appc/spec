@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/coreos/rocket/app-container/discovery"
+	"github.com/appc/spec/discovery"
 )
 
 var (
