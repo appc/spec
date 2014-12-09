@@ -4,8 +4,8 @@ import (
 	"io"
 	"strings"
 
-	"golang.org/x/net/html"
-	"golang.org/x/net/html/atom"
+	"github.com/appc/spec/Godeps/_workspace/src/golang.org/x/net/html"
+	"github.com/appc/spec/Godeps/_workspace/src/golang.org/x/net/html/atom"
 )
 
 type acMeta struct {

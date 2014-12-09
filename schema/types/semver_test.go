@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/coreos/go-semver/semver"
+	"github.com/appc/spec/Godeps/_workspace/src/github.com/coreos/go-semver/semver"
 )
 
 func TestMarshalSemver(t *testing.T) {
