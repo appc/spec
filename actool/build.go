@@ -8,8 +8,8 @@ import (
 	"path/filepath"
 
 	"github.com/appc/spec/aci"
+	"github.com/appc/spec/pkg/tarheader"
 	"github.com/appc/spec/schema"
-	"github.com/coreos/rocket/pkg/tarheader"
 )
 
 var (
