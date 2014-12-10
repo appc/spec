@@ -22,7 +22,7 @@ var (
 contain an Image Layout. The Image Layout will be validated
 before the ACI is created. The produced ACI will be
 gzip-compressed by default.`,
-		Summary: "Build an ACI from an Image Layout",
+		Summary: "Build an ACI from an Image Layout (experimental)",
 		Usage:   `[--overwrite] [--no-compression] DIRECTORY OUTPUT_FILE`,
 		Run:     runBuild,
 	}
@@ -56,6 +56,8 @@ func buildWalker(root string, aw aci.ArchiveWriter) filepath.WalkFunc {
 		link := ""
 		var r io.Reader
 		switch info.Mode() & os.ModeType {
+		case os.ModeCharDevice:
+		case os.ModeDevice:
 		case os.ModeDir:
 		case os.ModeSymlink:
 			target, err := os.Readlink(path)
