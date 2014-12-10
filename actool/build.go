@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"compress/gzip"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -13,27 +14,26 @@ import (
 )
 
 var (
-	buildImageManifest string
-	buildRootfs        bool
-	buildOverwrite     bool
-	cmdBuild           = &Command{
-		Name:        "build",
-		Description: "Build an ACI from the target directory",
-		Summary:     "Build an ACI from the target directory",
-		Usage:       "[--overwrite] --name=NAME DIRECTORY OUTPUT_FILE",
-		Run:         runBuild,
+	buildNocompress bool
+	buildOverwrite  bool
+	cmdBuild        = &Command{
+		Name: "build",
+		Description: `Build an ACI from a given directory. The directory should
+contain an Image Layout. The Image Layout will be validated
+before the ACI is created. The produced ACI will be
+gzip-compressed by default.`,
+		Summary: "Build an ACI from an Image Layout",
+		Usage:   `[--overwrite] [--no-compression] DIRECTORY OUTPUT_FILE`,
+		Run:     runBuild,
 	}
 )
 
 func init() {
-	cmdBuild.Flags.StringVar(&buildImageManifest, "app-manifest", "",
-		"Build an App Image with this App Manifest")
-	cmdBuild.Flags.BoolVar(&buildRootfs, "rootfs", true,
-		"Whether the supplied directory is a rootfs. If false, it will be assume the supplied directory already contains a rootfs/ subdirectory.")
 	cmdBuild.Flags.BoolVar(&buildOverwrite, "overwrite", false, "Overwrite target file if it already exists")
+	cmdBuild.Flags.BoolVar(&buildNocompress, "no-compression", false, "Do not gzip-compress the produced ACI")
 }
 
-func buildWalker(root string, aw aci.ArchiveWriter, rootfs bool) filepath.WalkFunc {
+func buildWalker(root string, aw aci.ArchiveWriter) filepath.WalkFunc {
 	// cache of inode -> filepath, used to leverage hard links in the archive
 	inos := map[uint64]string{}
 	return func(path string, info os.FileInfo, err error) error {
@@ -44,31 +44,32 @@ func buildWalker(root string, aw aci.ArchiveWriter, rootfs bool) filepath.WalkFu
 		if err != nil {
 			return err
 		}
-		if rootfs {
-			if relpath == "." {
-				relpath = ""
-			}
-			relpath = "rootfs/" + relpath
-		}
 		if relpath == "." {
+			return nil
+		}
+		if relpath == aci.ManifestFile {
+			// ignore; this will be written by the archive writer
+			// TODO(jonboulle): does this make sense? maybe just remove from archivewriter?
 			return nil
 		}
 
 		link := ""
-		var file *os.File
+		var r io.Reader
 		switch info.Mode() & os.ModeType {
-		default:
-			file, err = os.Open(path)
-			if err != nil {
-				return err
-			}
-			defer file.Close()
+		case os.ModeDir:
 		case os.ModeSymlink:
 			target, err := os.Readlink(path)
 			if err != nil {
 				return err
 			}
 			link = target
+		default:
+			file, err := os.Open(path)
+			if err != nil {
+				return err
+			}
+			defer file.Close()
+			r = file
 		}
 
 		hdr, err := tar.FileInfoHeader(info, link)
@@ -81,12 +82,15 @@ func buildWalker(root string, aw aci.ArchiveWriter, rootfs bool) filepath.WalkFu
 		// full path name of the file.
 		hdr.Name = relpath
 		tarheader.Populate(hdr, info, inos)
-		// If the file is a hard link we don't need the contents
+		// If the file is a hard link to a file we've already seen, we
+		// don't need the contents
 		if hdr.Typeflag == tar.TypeLink {
 			hdr.Size = 0
-			file = nil
+			r = nil
 		}
-		aw.AddFile(relpath, hdr, file)
+		if err := aw.AddFile(relpath, hdr, r); err != nil {
+			return err
+		}
 
 		return nil
 	}
@@ -95,10 +99,6 @@ func buildWalker(root string, aw aci.ArchiveWriter, rootfs bool) filepath.WalkFu
 func runBuild(args []string) (exit int) {
 	if len(args) != 2 {
 		stderr("build: Must provide directory and output file")
-		return 1
-	}
-	if buildImageManifest == "" {
-		stderr("build: must specify --app-manifest")
 		return 1
 	}
 
@@ -124,39 +124,52 @@ func runBuild(args []string) (exit int) {
 		return 1
 	}
 
-	gw := gzip.NewWriter(fh)
-	tr := tar.NewWriter(gw)
+	var gw *gzip.Writer
+	var r io.WriteCloser = fh
+	if !buildNocompress {
+		gw = gzip.NewWriter(fh)
+		r = gw
+	}
+	tr := tar.NewWriter(r)
 
 	defer func() {
 		tr.Close()
-		gw.Close()
+		if !buildNocompress {
+			gw.Close()
+		}
 		fh.Close()
 		if exit != 0 && !buildOverwrite {
 			os.Remove(tgt)
 		}
 	}()
 
-	b, err := ioutil.ReadFile(buildImageManifest)
+	// TODO(jonboulle): stream the validation so we don't have to walk the rootfs twice
+	if err := aci.ValidateLayout(root); err != nil {
+		stderr("build: Layout failed validation: %v", err)
+		return 1
+	}
+	mpath := filepath.Join(root, aci.ManifestFile)
+	b, err := ioutil.ReadFile(mpath)
 	if err != nil {
-		stderr("build: Unable to read App Manifest: %v", err)
+		stderr("build: Unable to read Image Manifest: %v", err)
 		return 1
 	}
-	var am schema.ImageManifest
-	if err := am.UnmarshalJSON(b); err != nil {
-		stderr("build: Unable to load App Manifest: %v", err)
+	var im schema.ImageManifest
+	if err := im.UnmarshalJSON(b); err != nil {
+		stderr("build: Unable to load Image Manifest: %v", err)
 		return 1
 	}
-	aw := aci.NewAppWriter(am, tr)
+	iw := aci.NewImageWriter(im, tr)
 
-	err = filepath.Walk(root, buildWalker(root, aw, buildRootfs))
+	err = filepath.Walk(root, buildWalker(root, iw))
 	if err != nil {
 		stderr("build: Error walking rootfs: %v", err)
 		return 1
 	}
 
-	err = aw.Close()
+	err = iw.Close()
 	if err != nil {
-		stderr("build: Unable to close Fileset image %s: %v", tgt, err)
+		stderr("build: Unable to close image %s: %v", tgt, err)
 		return 1
 	}
 

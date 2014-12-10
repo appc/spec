@@ -6,7 +6,7 @@ Image Layout
 
 The on-disk layout of an app container is straightforward.
 It includes a rootfs with all of the files that will exist in the root of the app and a manifest describing the image.
-The layout must contain an app image manifest.
+The layout MUST contain an image manifest.
 
 /manifest
 /rootfs/
@@ -17,7 +17,6 @@ The layout must contain an app image manifest.
 import (
 	"archive/tar"
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -29,9 +28,16 @@ import (
 	"github.com/appc/spec/schema"
 )
 
+const (
+	// Path to manifest file inside the layout
+	ManifestFile = "manifest"
+	// Path to rootfs directory inside the layout
+	RootfsDir = "rootfs"
+)
+
 var (
 	ErrNoRootFS   = errors.New("no rootfs found in layout")
-	ErrNoManifest = errors.New("no app image manifest found in layout")
+	ErrNoManifest = errors.New("no image manifest found in layout")
 )
 
 // ValidateLayout takes a directory and validates that the layout of the directory
@@ -57,13 +63,13 @@ func ValidateLayout(dir string) error {
 		name := filepath.Base(rpath)
 		switch name {
 		case ".":
-		case "app":
+		case ManifestFile:
 			im, err = os.Open(fpath)
 			if err != nil {
 				return err
 			}
 			imOK = true
-		case "rootfs":
+		case RootfsDir:
 			if !fi.IsDir() {
 				return errors.New("rootfs is not a directory")
 			}
@@ -100,13 +106,13 @@ Tar:
 		name := filepath.Clean(hdr.Name)
 		switch name {
 		case ".":
-		case "app":
+		case ManifestFile:
 			_, err := io.Copy(&im, tr)
 			if err != nil {
 				return err
 			}
 			imOK = true
-		case "rootfs":
+		case RootfsDir:
 			if !hdr.FileInfo().IsDir() {
 				return fmt.Errorf("rootfs is not a directory")
 			}
@@ -119,6 +125,11 @@ Tar:
 }
 
 func validate(imOK bool, im io.Reader, rfsOK bool, files []string) error {
+	defer func() {
+		if rc, ok := im.(io.Closer); ok {
+			rc.Close()
+		}
+	}()
 	if !imOK {
 		return ErrNoManifest
 	}
@@ -127,30 +138,16 @@ func validate(imOK bool, im io.Reader, rfsOK bool, files []string) error {
 	}
 	b, err := ioutil.ReadAll(im)
 	if err != nil {
-		return fmt.Errorf("error reading app manifest: %v", err)
+		return fmt.Errorf("error reading image manifest: %v", err)
 	}
 	var a schema.ImageManifest
 	if err := a.UnmarshalJSON(b); err != nil {
-		return fmt.Errorf("app manifest validation failed: %v", err)
+		return fmt.Errorf("image manifest validation failed: %v", err)
 	}
 	for _, f := range files {
 		if !strings.HasPrefix(f, "rootfs") {
 			return fmt.Errorf("unrecognized file path in layout: %q", f)
 		}
-	}
-	return nil
-}
-
-// validateImageManifest ensures that the given io.Reader represents a valid
-// ImageManifest.
-func validateImageManifest(r io.Reader) error {
-	b, err := ioutil.ReadAll(r)
-	if err != nil {
-		return fmt.Errorf("error reading app manifest: %v", err)
-	}
-	var im schema.ImageManifest
-	if err = json.Unmarshal(b, &im); err != nil {
-		return fmt.Errorf("error unmarshaling app manifest: %v", err)
 	}
 	return nil
 }

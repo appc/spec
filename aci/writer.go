@@ -18,23 +18,23 @@ type ArchiveWriter interface {
 	Close() error
 }
 
-type appArchiveWriter struct {
+type imageArchiveWriter struct {
 	*tar.Writer
 	am *schema.ImageManifest
 }
 
-// NewAppWriter creates a new ArchiveWriter which will generate an App
+// NewImageWriter creates a new ArchiveWriter which will generate an App
 // Container Image based on the given manifest and write it to the given
 // tar.Writer
-func NewAppWriter(am schema.ImageManifest, w *tar.Writer) ArchiveWriter {
-	aw := &appArchiveWriter{
+func NewImageWriter(am schema.ImageManifest, w *tar.Writer) ArchiveWriter {
+	aw := &imageArchiveWriter{
 		w,
 		&am,
 	}
 	return aw
 }
 
-func (aw *appArchiveWriter) AddFile(path string, hdr *tar.Header, r io.Reader) error {
+func (aw *imageArchiveWriter) AddFile(path string, hdr *tar.Header, r io.Reader) error {
 	err := aw.Writer.WriteHeader(hdr)
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func (aw *appArchiveWriter) AddFile(path string, hdr *tar.Header, r io.Reader) e
 	return nil
 }
 
-func (aw *appArchiveWriter) addFileNow(path string, contents []byte) error {
+func (aw *imageArchiveWriter) addFileNow(path string, contents []byte) error {
 	buf := bytes.NewBuffer(contents)
 	now := time.Now()
 	hdr := tar.Header{
@@ -68,7 +68,7 @@ func (aw *appArchiveWriter) addFileNow(path string, contents []byte) error {
 	return aw.AddFile(path, &hdr, buf)
 }
 
-func (aw *appArchiveWriter) addManifest(name string, m json.Marshaler) error {
+func (aw *imageArchiveWriter) addManifest(name string, m json.Marshaler) error {
 	out, err := m.MarshalJSON()
 	if err != nil {
 		return err
@@ -76,8 +76,8 @@ func (aw *appArchiveWriter) addManifest(name string, m json.Marshaler) error {
 	return aw.addFileNow(name, out)
 }
 
-func (aw *appArchiveWriter) Close() error {
-	if err := aw.addManifest("app", aw.am); err != nil {
+func (aw *imageArchiveWriter) Close() error {
+	if err := aw.addManifest(ManifestFile, aw.am); err != nil {
 		return err
 	}
 	return aw.Writer.Close()
