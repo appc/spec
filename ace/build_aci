@@ -28,7 +28,7 @@ for typ in main sidekick; do
 		done
 		../actool build --overwrite ./ ../ace-validator-${typ}.aci
 		# TODO(jonboulle): create uncompressed instead, then gzip?
-		HASH=sha256-$(gzip -d -f ../ace-validator-${typ}.aci -c | sha256sum - | awk '{print $1}')
+		HASH=sha512-$(gzip -d -f ../ace-validator-${typ}.aci -c | sha512sum - | awk '{print $1}')
 		gpg --cipher-algo AES256 --output ace-validator-${typ}.sig --detach-sig ../ace-validator-${typ}.aci
 		mv ace-validator-${typ}.sig ../
 	popd >/dev/null
