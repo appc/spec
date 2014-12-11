@@ -10,6 +10,10 @@ if ! [[ $0 =~ "${PREFIX}/build_aci" ]]; then
 	exit 255
 fi
 
+if ! [[ -f "bin/ace-validator" ]]; then 
+	./build
+fi
+
 for typ in main sidekick; do 
 	layoutdir="bin/ace-${typ}-layout"
 	mkdir -p ${layoutdir}/rootfs
@@ -22,7 +26,7 @@ for typ in main sidekick; do
 		for path in rootfs rootfs/ace-validator; do
 			touch -a -m -d 1415660606 ${path}
 		done
-		../actool build --overwrite --app-manifest manifest rootfs/ ../ace-validator-${typ}.aci
+		../actool build --overwrite ./ ../ace-validator-${typ}.aci
 		# TODO(jonboulle): create uncompressed instead, then gzip?
 		HASH=sha256-$(gzip -d -f ../ace-validator-${typ}.aci -c | sha256sum - | awk '{print $1}')
 		gpg --cipher-algo AES256 --output ace-validator-${typ}.sig --detach-sig ../ace-validator-${typ}.aci
