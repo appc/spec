@@ -50,7 +50,7 @@ This file layout must be followed for the app to be executed by an Executor.
 ### Image Layout
 
 The on-disk layout of an app container is straightforward.
-It includes a *rootfs* with all of the files that will exist in the root of the app and an *app image manifest* describing the contents of the image and how to execute the app.
+It includes a *rootfs* with all of the files that will exist in the root of the app and an *image manifest* describing the contents of the image and how to execute the app.
 
 ```
 /manifest
@@ -94,9 +94,9 @@ Implementations of the app container spec will need to provide a mechanism for u
 
 Example application container image builder: **TODO** link to actool
 
-### App Image Manifest
+### Image Manifest
 
-The [app image manifest](#app-image-manifest-schema) is a JSON file that includes details about the contents of the app image, and optionally information about how to execute a process inside the app image's rootfs.
+The [image manifest](#image-manifest-schema) is a JSON file that includes details about the contents of the app image, and optionally information about how to execute a process inside the app image's rootfs.
 If included, execution details include mount points that should exist, the user, the command args, default cgroup settings and more.
 The manifest may also define binaries to execute in response to lifecycle events of the main process such as *pre-start* and *post-stop*.
 
@@ -355,9 +355,9 @@ The schema validator will ensure that the keys conform to these constraints.
 
 ## Manifest Schemas
 
-### App Image Manifest Schema
+### Image Manifest Schema
 
-JSON Schema for the App Image Manifest
+JSON Schema for the Image Manifest
 
 ```
 {
@@ -485,10 +485,10 @@ JSON Schema for the App Image Manifest
     * **mountPoints** are the locations where a container is expecting external data to mounted. The name indicates an executor-defined label to look up a mount point, and the path stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. "readOnly" should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
     * **ports** are the protocols and port numbers that the container will be listening on once started. The key is restricted to the AC Name formatting. This information is primarily informational to help the user find ports that are not well known. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **socketActivated** if this is set to true then the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
-    * **isolators** is a list of well-known and optional isolation steps that should be applied to the app. **name** is restricted to the [AC Name](#ac-name-type) formatting and **val** can be a freeform string. Any isolators specified in the App Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
+    * **isolators** is a list of well-known and optional isolation steps that should be applied to the app. **name** is restricted to the [AC Name](#ac-name-type) formatting and **val** can be a freeform string. Any isolators specified in the Image Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
 * **dependencies** list of dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
     * **name** name of the dependent app image (required).
-    * **hash** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an AppImage that has dependencies.
+    * **hash** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels* are optional, and should be a list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (optional, list of strings). This is the complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** key/value store that can be used by systems outside of the ACE (ACE can override). The key is restricted to the [AC Name](#ac-name-type) formatting. If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
