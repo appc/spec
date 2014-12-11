@@ -1,4 +1,4 @@
-# App Container Specification
+# App Container Specification v0.1.1
 
 The "App Container" defines an image format, image discovery mechanism and execution environment that can exist in several independent implementations. The core goals include:
 
@@ -362,7 +362,7 @@ JSON Schema for the Image Manifest
 ```
 {
     "acKind": "ImageManifest",
-    "acVersion": "0.1.0",
+    "acVersion": "0.1.1",
     "name": "example.com/reduce-worker",
     "labels": [
         {
@@ -520,7 +520,7 @@ JSON Schema for the Container Runtime Manifest
 ```
 {
 
-    "acVersion": "0.1.0",
+    "acVersion": "0.1.1",
     "acKind": "ContainerRuntimeManifest",
     "uuid": "6733C088-A507-4694-AABF-EDBE4FC5266F",
     "apps": [
