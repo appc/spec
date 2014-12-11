@@ -14,67 +14,78 @@ _Thank you to Tobi Knaup and Ben Hindman from Mesosphere, and the Pivotal Engine
 
 ## Building ACIs 
 
-`actool` can be used to build an Application Container Image from an application root filesystem (rootfs). It currently supports two modes: building an ACI from an existing [app manifest](SPEC.md#app-manifest), or building a [fileset image](SPEC.md#fileset-images) from a rootfs alone.
+`actool` can be used to build an Application Container Image from an [Image Layout](SPEC.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs). 
 
-For example, to build a fileset containing certificate authorities, one could do the following:
+For example, to build a simple ACI (in this case consisting of a single binary), one could do the following:
 ```
-$ actool build --fileset-name ca-certs /tmp/ca-certs/ ca-certs.aci
-$ echo $?
-0
+$ find /tmp/my-app/
+/tmp/my-app/
+/tmp/my-app/manifest
+/tmp/my-app/rootfs
+/tmp/my-app/rootfs/bin
+/tmp/my-app/rootfs/bin/my-app
+$ cat /tmp/my-app/manifest
+{
+    "acKind": "ImageManifest",
+    "acVersion": "1.0.0",
+    "name": "my-app",
+    "labels": [
+        {"name": "os", "val": "linux"},
+        {"name": "arch", "val": "amd64"}
+    ],
+    "app": {
+        "exec": [
+            "/bin/my-app"
+        ],
+        "user": "0",
+        "group": "0"
+    }
+}
+$ actool build /tmp/my-app/ /tmp/my-app.aci
 ```
 
 Since an ACI is simply an (optionally compressed) tar file, we can inspect the created file with simple tools:
 
 ```
-$ tar tvf ca-certs.aci
-drwxrwxr-x 1000/1000         0 2014-01-02 03:04 rootfs/
-drwxrwxr-x 1000/1000         0 2014-01-02 03:04 rootfs/certs/
--rw-rw-r-- 1000/1000      3140 2014-01-02 03:04 rootfs/certs/ca-bundle.crt
--rw-rw-r-- 1000/1000      1581 2014-01-02 03:04 rootfs/certs/example.com.crt
--rw-r-xr-x root/root       174 2014-01-02 03:04 fileset
-$ tar xf ca-certs.aci fileset -O | python -m json.tool
+$ tar tvf /tmp/my-app.aci
+drwxrwxr-x 1000/1000         0 2014-12-10 10:33 rootfs
+drwxrwxr-x 1000/1000         0 2014-12-10 10:36 rootfs/bin
+-rwxrwxr-x 1000/1000   5988728 2014-12-10 10:34 rootfs/bin/my-app
+-rw-r--r-- root/root       332 2014-12-10 20:40 manifest
+```
+
+and verify that the manifest was embedded appropriately
+```
+tar xf /tmp/my-app.aci manifest -O | python -m json.tool
 {
-    "acKind": "FilesetManifest",
-    "acVersion": "0.1.0",
-    "arch": "amd64",
-    "dependencies": null,
-    "files": [
-        "/certs/",
-        "/ca-bundle.crt",
-        "/example.com.crt",
-    ],
-    "name": "ca-certs",
-    "os": "linux"
-}
-```
-
-To build an ACI image containing an application, supply a valid app manifest and the rootfs:
-
-```
-$ actool build --app-manifest my-app.json my_app/rootfs my-app.aci
-```
-
-Again, examining the ACI is simple, as is verifying that the app manifest was embedded appropriately:
-```
-$ tar tvf ca-certs.aci
-drwxrwxr-x 1000/1000         0 2014-01-02 03:04 rootfs/
--rw-rw-r-- 1000/1000      1581 2014-01-02 03:04 rootfs/my_app
--rw-r-xr-x root/root       174 2014-01-02 03:04 app
-```
-
-```
-$ tar xf my-app.aci app -O | python -m json.tool
-{
-    "acKind": "AppManifest",
+    "acKind": "ImageManifest",
     "acVersion": "1.0.0",
-    "arch": "amd64",
-    "exec": [
-        "/my_app",
+    "annotations": null,
+    "app": {
+        "environment": {},
+        "eventHandlers": null,
+        "exec": [
+            "/bin/my-app"
+        ],
+        "group": "0",
+        "isolators": null,
+        "mountPoints": null,
+        "ports": null,
+        "user": "0"
+    },
+    "dependencies": null,
+    "labels": [
+        {
+            "name": "os",
+            "val": "linux"
+        },
+        {
+            "name": "arch",
+            "val": "amd64"
+        }
     ],
-    "group": "0",
-    "name": "my_app",
-    "os": "linux",
-    "user": "0"
+    "name": "my-app",
+    "pathWhitelist": null
 }
 ```
 
@@ -84,11 +95,11 @@ $ tar xf my-app.aci app -O | python -m json.tool
 
 ### Validating App Manifests, Fileset Manifests and Container Runtime Manifests
 
-To validate one of the three manifest types in the specification, simply run `actool validate` against the file.
+To validate one of the two manifest types in the specification, simply run `actool validate` against the file.
 
 ```
-$ actool validate ./app.json
-./app.json: valid AppManifest
+$ actool validate ./image.json
+./image.json: valid ImageManifest
 $ echo $?
 0
 ```
@@ -96,18 +107,18 @@ $ echo $?
 Multiple arguments are supported, and the output can be silenced with `-quiet`:
 
 ```
-$ actool validate app1.json app2.json
-app1.json: valid AppManifest
-app2.json: valid AppManifest
-$ actool -quiet validate app2.json
+$ actool validate image1.json image2.json
+image1.json: valid AppManifest
+image2.json: valid AppManifest
+$ actool -quiet validate image2.json
 $ echo $?
 0
 ```
 
 `actool` will automatically determine which type of manifest it is checking (by using the `acKind` field common to all manifests), so there is no need to specify which type of manifest is being validated:
 ```
-$ actool validate /tmp/my_fileset
-/tmp/my_fileset: valid FilesetManifest
+$ actool validate /tmp/my_container
+/tmp/my_container: valid ContainerRuntimeManifest
 ```
 
 If a manifest fails validation the first error encountered is returned along with a non-zero exit status:
