@@ -32,7 +32,7 @@ So, it will make an HTTPS request to example.com and using the `<meta>` tags the
 	https://storage-mirror.example.com/reduce-worker.aci
 
 The executor downloads these two images and puts them into its local on-disk cache.
-Then the executor extracts two fresh copies of the images to create instances of the "on-disk app format" and reads the two app manifests to figure out what binaries will need to be executed.
+Then the executor extracts two fresh copies of the images to create instances of the "on-disk app format" and reads the two image manifests to figure out what binaries will need to be executed.
 
 Based on user input the executor now sets up the necessary cgroups, network interfaces, etc and forks the `register` and `reduce-worker` processes in their shared namespaces inside the container.
 
@@ -100,7 +100,7 @@ The [app image manifest](#app-image-manifest-schema) is a JSON file that include
 If included, execution details include mount points that should exist, the user, the command args, default cgroup settings and more.
 The manifest may also define binaries to execute in response to lifecycle events of the main process such as *pre-start* and *post-stop*.
 
-App manifests MAY specify dependencies, which describe how to assemble the final rootfs from a collection of other images. 
+Image manifests MAY specify dependencies, which describe how to assemble the final rootfs from a collection of other images. 
 As an example, you might have an app that needs special certificates layered into its filesystem.
 In this case, you can reference the name "example.com/trusted-certificate-authority" as a dependency in the app image manifest.
 The dependencies are applied in order and each app image dependency can overwrite files from the previous dependency.
@@ -186,7 +186,7 @@ Note that logging mechanisms other than stdout and stderr are not required by th
 * **USER, LOGNAME** username of the user executing this app
 * **HOME** home directory of the user
 * **SHELL** login shell of the user
-* **AC_APP_NAME** name of the application (as defined in the app manifest)
+* **AC_APP_NAME** name of the application (as defined in the image manifest)
 * **AC_METADATA_URL** URL that the metadata service for this container can be found
 
 ### Isolators
@@ -276,7 +276,7 @@ keys: https://example.com/pubkeys.gpg
 ```
 
 This mechanism is only used for discovery of contents URLs.
-Anything implementing this spec should enforce any signing rules set in place by the operator and ensure the app manifest provided by the fetched app image are all prefixed from the same domain.
+Anything implementing this spec should enforce any signing rules set in place by the operator and ensure the image manifest provided by the fetched app image are all prefixed from the same domain.
 
 Discovery URLs that require interpolation are [RFC6570](https://tools.ietf.org/html/rfc6570) URI templates.
 
