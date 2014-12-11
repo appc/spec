@@ -40,8 +40,8 @@ TEST=${split[@]/#/${REPO_PATH}/}
 echo "Running tests..."
 go test -timeout 60s ${COVER} $@ ${TEST} --race
 
-echo "Validating app manifest..."
-bin/actool validate examples/app.json
+echo "Validating image manifest..."
+bin/actool validate examples/image.json
 
 echo "Validating container runtime manifest..."
 bin/actool validate examples/container.json

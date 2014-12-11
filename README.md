@@ -7,7 +7,7 @@ See [SPEC.md](SPEC.md) for details of the specification itself.
 
 _Thank you to Tobi Knaup and Ben Hindman from Mesosphere, and the Pivotal Engineering team for providing initial feedback on the spec._
 
-- `schema` contains JSON definitions of the different constituent formats of the spec (the _App Manifest_, the _Container Runtime Manifest_, and the `Fileset Manifest`). These JSON schemas also handle validation of the manifests through their Marshal/Unmarshal implementations.
+- `schema` contains JSON definitions of the different constituent formats of the spec (the _Image Manifest_ and the _Container Runtime Manifest_). These JSON schemas also handle validation of the manifests through their Marshal/Unmarshal implementations.
   - `schema/types` contains various types used by the Manifest types to enforce validation
 - `ace` contains a tool intended to be run within an _Application Container Executor_ to validate that the ACE has set up the container environment correctly. This tool can be built into an ACI image ready for running on an executor by using the `build_aci` script.
 - `actool` contains a tool for building and validating images and manifests that meet the App Container specifications.
@@ -93,7 +93,7 @@ tar xf /tmp/my-app.aci manifest -O | python -m json.tool
 
 `actool validate` can be used by implementations of the App Container Specification to check that files they produce conform to the expectations.
 
-### Validating App Manifests, Fileset Manifests and Container Runtime Manifests
+### Validating Image Manifests and Container Runtime Manifests
 
 To validate one of the two manifest types in the specification, simply run `actool validate` against the file.
 
@@ -108,8 +108,8 @@ Multiple arguments are supported, and the output can be silenced with `-quiet`:
 
 ```
 $ actool validate image1.json image2.json
-image1.json: valid AppManifest
-image2.json: valid AppManifest
+image1.json: valid ImageManifest
+image2.json: valid ImageManifest
 $ actool -quiet validate image2.json
 $ echo $?
 0
@@ -124,7 +124,7 @@ $ actool validate /tmp/my_container
 If a manifest fails validation the first error encountered is returned along with a non-zero exit status:
 ```
 $ actool validate nover.json
-nover.json: invalid AppManifest: acVersion must be set
+nover.json: invalid ImageManifest: acVersion must be set
 $ echo $?
 1
 ```
