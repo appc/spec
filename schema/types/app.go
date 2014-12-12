@@ -52,5 +52,11 @@ func (a *App) assertValid() error {
 	if !filepath.IsAbs(a.Exec[0]) {
 		return errors.New(`Exec[0] must be absolute path`)
 	}
+	if a.User == "" {
+		return errors.New(`User is required`)
+	}
+	if a.Group == "" {
+		return errors.New(`Group is required`)
+	}
 	return nil
 }

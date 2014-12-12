@@ -16,7 +16,7 @@ type ImageManifest struct {
 	ACVersion     types.SemVer       `json:"acVersion"`
 	Name          types.ACName       `json:"name"`
 	Labels        types.Labels       `json:"labels"`
-	App           types.App          `json:"app"`
+	App           *types.App         `json:"app,omitempty"`
 	Annotations   types.Annotations  `json:"annotations"`
 	Dependencies  types.Dependencies `json:"dependencies"`
 	PathWhitelist []string           `json:"pathWhitelist"`
