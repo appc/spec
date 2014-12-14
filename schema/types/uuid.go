@@ -25,6 +25,14 @@ func (u UUID) String() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:16])
 }
 
+func (u *UUID) Set(s string) error {
+	nu, err := NewUUID(s)
+	if err == nil {
+		*u = *nu
+	}
+	return err
+}
+
 // NewUUID generates a new UUID from the given string. If the string does not
 // represent a valid UUID, nil and an error are returned.
 func NewUUID(s string) (*UUID, error) {

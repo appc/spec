@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -35,6 +36,18 @@ func NewHash(s string) (*Hash, error) {
 
 func (h Hash) String() string {
 	return fmt.Sprintf("%s-%s", h.typ, h.Val)
+}
+
+func (h *Hash) Set(s string) error {
+	nh, err := NewHash(s)
+	if err == nil {
+		*h = *nh
+	}
+	return err
+}
+
+func (h Hash) Empty() bool {
+	return reflect.DeepEqual(h, Hash{})
 }
 
 func (h Hash) assertValid() error {
