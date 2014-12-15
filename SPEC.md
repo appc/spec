@@ -64,7 +64,7 @@ It includes a *rootfs* with all of the files that will exist in the root of the 
 The ACI archive format aims for flexibility and relies on very boring technologies: HTTP, gpg, tar and gzip.
 This set of formats makes it easy to build, host and secure a container using technologies that are battle tested.
 
-Images archives MUST be a tar formatted file.
+Image archives MUST be a tar formatted file.
 The image may be optionally compressed with gzip, bzip2 or xz.
 After compression images may also be encrypted with AES symmetric encryption.
 
