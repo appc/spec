@@ -38,12 +38,12 @@ func TestLabels(t *testing.T) {
 			if tt.errPrefix == "" {
 				t.Errorf("#%d: got err=%v, expected no error", i, err)
 			} else if !strings.HasPrefix(err.Error(), tt.errPrefix) {
-				t.Errorf("%#d: got err=%v, expected prefix %#v", i, err, tt.errPrefix)
+				t.Errorf("#%d: got err=%v, expected prefix %#v", i, err, tt.errPrefix)
 			}
 		} else {
 			t.Log(l)
 			if tt.errPrefix != "" {
-				t.Errorf("%#d: got no err, expected prefix %#v", i, tt.errPrefix)
+				t.Errorf("#%d: got no err, expected prefix %#v", i, tt.errPrefix)
 			}
 		}
 	}
