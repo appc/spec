@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"path/filepath"
 )
 
 type App struct {
@@ -47,6 +48,9 @@ func (a App) MarshalJSON() ([]byte, error) {
 func (a *App) assertValid() error {
 	if len(a.Exec) < 1 {
 		return errors.New(`Exec cannot be empty`)
+	}
+	if !filepath.IsAbs(a.Exec[0]) {
+		return errors.New(`Exec[0] must be absolute path`)
 	}
 	return nil
 }

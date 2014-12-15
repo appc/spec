@@ -476,7 +476,7 @@ JSON Schema for the Image Manifest
     * **os** (currently, the only supported value is "linux"). Together with "arch", this can be considered to describe the syscall ABI this image requires.
     * **arch** (currently, the only supported value is "amd64"). Together with "os", this can be considered to describe the syscall ABI this image requires.
 * **app** is optional. If present, this defines the default parameters that can be used to execute this image as an application.
-    * **exec** the executable to launch and any flags (array of strings, must be non-empty; ACE can append or override)
+    * **exec** the executable to launch and any flags (array of strings, must be non-empty; executor must be an absolute path within the app rootfs; ACE can append or override)
     * **user**, **group** are required, and indicate either the UID/GID or the username/group name the app should run as inside the container (freeform string). If the user or group field begins with a "/", the owner and group of the file found at that absolute path inside the rootfs is used as the UID/GID of the process.
     * **eventHandlers** are optional, and should be a list of eventHandler objects. eventHandlers allow the app to have several hooks based on lifecycle events. For example, you may want to execute a script before the main process starts up to download a dataset or backup onto the filesystem. An eventHandler is a simple object with two fields - an **exec** (array of strings, ACE can append or override), and a **name**, which should be one of:
         * **pre-start** - will be executed and must exit before the long running main **exec** binary is launched
