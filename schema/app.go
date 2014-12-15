@@ -64,3 +64,7 @@ func (am *ImageManifest) assertValid() error {
 	}
 	return nil
 }
+
+func (am *ImageManifest) GetLabel(name string) (val string, ok bool) {
+	return am.Labels.Get(name)
+}

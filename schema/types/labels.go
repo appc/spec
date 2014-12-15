@@ -19,10 +19,10 @@ type Label struct {
 }
 
 func (l Labels) assertValid() error {
-	if os, ok := l.get("os"); ok && os != "linux" {
+	if os, ok := l.Get("os"); ok && os != "linux" {
 		return errors.New(`bad os (must be "linux")`)
 	}
-	if arch, ok := l.get("arch"); ok && arch != "amd64" {
+	if arch, ok := l.Get("arch"); ok && arch != "amd64" {
 		return errors.New(`bad arch (must be "amd64")`)
 	}
 
@@ -49,7 +49,7 @@ func (l *Labels) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (l Labels) get(name string) (val string, ok bool) {
+func (l Labels) Get(name string) (val string, ok bool) {
 	for _, lbl := range l {
 		if lbl.Name.String() == name {
 			return lbl.Value, true
