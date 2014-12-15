@@ -83,10 +83,10 @@ gpg --output reduce-worker.aci --digest-algo sha256 --cipher-algo AES256 --symme
 All files in the image must maintain all of their original properties including: timestamps, Unix modes and extended attributes (xattrs).
 
 An image is addressed and verified against the hash of its uncompressed tar file, the _image ID_.
-The default digest format is sha256, but all hash IDs in this format are prefixed by the algorithm used (e.g. sha256-a83...).
+The default digest format is sha512, but all hash IDs in this format are prefixed by the algorithm used (e.g. sha512-a83...).
 
 ```
-echo sha256-$(sha256sum reduce-worker.tar |awk '{print $1}')
+echo sha512-$(sha512sum reduce-worker.tar |awk '{print $1}')
 ```
 
 **Note**: the key distribution mechanism is not defined here.
@@ -155,9 +155,9 @@ This example container will use a set of three apps:
 
 | Name                               | Version | Image hash                                      |
 |------------------------------------|---------|-------------------------------------------------|
-| example.com/reduce-worker          | 1.0.0   | sha256-277205b3ae3eb3a8e042a62ae46934b470e431ac |
-| example.com/worker-backup          | 1.0.0   | sha256-3e86b59982e49066c5d813af1c2e2579cbf573de |
-| example.com/reduce-worker-register | 1.0.0   | sha256-86298e1fdb95ec9a45b5935504e26ec29b8feffa |
+| example.com/reduce-worker          | 1.0.0   | sha512-277205b3ae3eb3a8e042a62ae46934b470e43... |
+| example.com/worker-backup          | 1.0.0   | sha512-3e86b59982e49066c5d813af1c2e2579cbf57... |
+| example.com/reduce-worker-register | 1.0.0   | sha512-86298e1fdb95ec9a45b5935504e26ec29b8fe... |
 
 #### Volume Setup
 
@@ -437,7 +437,7 @@ JSON Schema for the Image Manifest
     },
     "dependencies": [
         {
-            "hash": "sha256-...",
+            "hash": "sha512-...",
             "labels": [
                 {
                     "name": "os",
@@ -525,12 +525,12 @@ JSON Schema for the Container Runtime Manifest
     "uuid": "6733C088-A507-4694-AABF-EDBE4FC5266F",
     "apps": [
         {
-            "app": "example.com/reduce-worker",
-            "imageID": "sha256-277205b3ae3eb3a8e042a62ae46934b470e431ac"
+            "app": "example.com/reduce-worker-1.0.0",
+            "imageID": "sha512-..."
         },
         {
-            "app": "example.com/worker-backup",
-            "imageID": "sha256-3e86b59982e49066c5d813af1c2e2579cbf573de",
+            "app": "example.com/worker-backup-1.0.0",
+            "imageID": "sha512-...",
             "isolators": [
                 {"name": "memory/limit" "val": "1G"}
             ],
@@ -539,8 +539,8 @@ JSON Schema for the Container Runtime Manifest
             }
         },
         {
-            "app": "example.com/reduce-worker-register",
-            "imageID": "sha256-86298e1fdb95ec9a45b5935504e26ec29b8feffa"
+            "app": "example.com/reduce-worker-register-1.0.0",
+            "imageID": "sha512-..."
         }
     ],
     "volumes": [
@@ -578,7 +578,7 @@ JSON Schema for the Container Runtime Manifest
 * **uuid** an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt) that represents this instance of the container (string, must be in [RFC4122](http://www.ietf.org/rfc/rfc4122.txt) format)
 * **apps** the list of apps that will execute inside of this container
     * **app** the name of the app (string, restricted to AC Name formatting)
-    * **imageID** the content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha256" and value is the hex encoded string of the hash)
+    * **imageID** the content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
     * **isolators** the list of isolators that should be applied to this app (key is restricted to the AC Name formatting and the value can be a freeform string)
     * **annotations** arbitrary metadata appended to the app (key is restricted to the AC Name formatting and the value can be a freeform string)
 * **volumes** the list of volumes which should be mounted into each application's filesystem

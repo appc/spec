@@ -13,16 +13,16 @@ func TestMarshalHash(t *testing.T) {
 		wout string
 	}{
 		{
-			"sha256",
+			"sha512",
 			"abcdefghi",
 
-			`"sha256-abcdefghi"`,
+			`"sha512-abcdefghi"`,
 		},
 		{
-			"sha256",
+			"sha512",
 			"06c733b1838136838e6d2d3e8fa5aea4c7905e92",
 
-			`"sha256-06c733b1838136838e6d2d3e8fa5aea4c7905e92"`,
+			`"sha512-06c733b1838136838e6d2d3e8fa5aea4c7905e92"`,
 		},
 	}
 	for i, tt := range tests {
@@ -47,7 +47,7 @@ func TestMarshalHashBad(t *testing.T) {
 	}{
 		{
 			// empty value
-			"sha256",
+			"sha512",
 			"",
 		},
 		{

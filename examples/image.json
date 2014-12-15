@@ -75,7 +75,7 @@
     },
     "dependencies": [
         {
-            "hash": "sha256-...",
+            "hash": "sha512-...",
             "labels": [
                 {
                     "name": "os",

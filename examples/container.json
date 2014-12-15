@@ -5,11 +5,11 @@
     "apps": [
         {
             "app": "example.com/reduce-worker",
-            "imageID": "sha256-908540d22dae9d8e6e3c6b13e21ddd12817406fd5c948eae4a744a6ccf94f96d"
+            "imageID": "sha512-..."
         },
         {
             "app": "example.com/worker-backup",
-            "imageID": "sha256-893e424371071a51a45ebf490e852dfb1354b633f0817075d3bae80a6bdbafb1",
+            "imageID": "sha512-...",
             "isolators": [
                 {
                     "name": "memory/limit",
@@ -22,7 +22,7 @@
         },
         {
             "app": "example.com/reduce-worker-register",
-            "imageID": "sha256-f11cc60e67aeec90031cd17582327ee7e918d1c18d6b82eba8997df7410ead8d"
+            "imageID": "sha512-..."
         }
     ],
     "volumes": [
