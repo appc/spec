@@ -99,25 +99,21 @@ To validate one of the two manifest types in the specification, simply run `acto
 
 ```
 $ actool validate ./image.json
-./image.json: valid ImageManifest
 $ echo $?
 0
 ```
 
-Multiple arguments are supported, and the output can be silenced with `-quiet`:
+Multiple arguments are supported, and more output can be enabled with `-debug`:
 
 ```
-$ actool validate image1.json image2.json
+$ actool -debug validate image1.json image2.json
 image1.json: valid ImageManifest
 image2.json: valid ImageManifest
-$ actool -quiet validate image2.json
-$ echo $?
-0
 ```
 
 `actool` will automatically determine which type of manifest it is checking (by using the `acKind` field common to all manifests), so there is no need to specify which type of manifest is being validated:
 ```
-$ actool validate /tmp/my_container
+$ actool -debug validate /tmp/my_container
 /tmp/my_container: valid ContainerRuntimeManifest
 ```
 
@@ -134,18 +130,21 @@ $ echo $?
 Validating ACIs or layouts is very similar to validating manifests: simply run the `actool validate` subcommmand directly against an image or directory, and it will determine the type automatically:
 ```
 $ actool validate app.aci
+$ echo $?
+0
+$ actool -debug validate app.aci
 app.aci: valid app container image
 ```
 
 ```
-$ actool validate app_layout/
+$ actool -debug validate app_layout/
 app_layout/: valid image layout
 ```
 
 To override the type detection and force `actool validate` to validate as a particular type (image, layout or manifest), use the `--type` flag:
 
 ```
-actool validate -type appimage hello.aci
+actool -debug validate -type appimage hello.aci
 hello.aci: valid app container image
 ```
 
