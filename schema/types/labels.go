@@ -2,8 +2,15 @@ package types
 
 import (
 	"encoding/json"
-	"errors"
+	"fmt"
+	"sort"
 )
+
+var ValidOSArch = map[string][]string{
+	"linux":   []string{"amd64", "i386"},
+	"freebsd": []string{"amd64", "i386", "arm"},
+	"darwin":  []string{"x86_64", "i386"},
+}
 
 // TODO(jonboulle): this is awkward since it's inconsistent with the way we do
 // things elsewhere (i.e. using strict types instead of string types), but it's
@@ -19,13 +26,32 @@ type Label struct {
 }
 
 func (l Labels) assertValid() error {
-	if os, ok := l.Get("os"); ok && os != "linux" {
-		return errors.New(`bad os (must be "linux")`)
+	if os, ok := l.Get("os"); ok {
+		if validArchs, ok := ValidOSArch[os]; !ok {
+			// Not a whitelisted OS. TODO: how to warn rather than fail?
+			validOses := make([]string, 0, len(ValidOSArch))
+			for validOs := range ValidOSArch {
+				validOses = append(validOses, validOs)
+			}
+			sort.Strings(validOses)
+			return fmt.Errorf(`bad os %#v (must be one of: %v)`, os, validOses)
+		} else {
+			// Whitelisted OS. We check arch here, as arch makes sense only
+			// when os is defined.
+			if arch, ok := l.Get("arch"); ok {
+				found := false
+				for _, validArch := range validArchs {
+					if arch == validArch {
+						found = true
+						break
+					}
+				}
+				if !found {
+					return fmt.Errorf(`bad arch %#v for %v (must be one of: %v)`, arch, os, validArchs)
+				}
+			}
+		}
 	}
-	if arch, ok := l.Get("arch"); ok && arch != "amd64" {
-		return errors.New(`bad arch (must be "amd64")`)
-	}
-
 	return nil
 }
 
@@ -42,7 +68,7 @@ func (l *Labels) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	nl := Labels(jl)
-	if err := l.assertValid(); err != nil {
+	if err := nl.assertValid(); err != nil {
 		return err
 	}
 	*l = nl
