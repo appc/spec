@@ -22,29 +22,29 @@ type ImageManifest struct {
 	PathWhitelist []string           `json:"pathWhitelist"`
 }
 
-// appManifest is a model to facilitate extra validation during the
+// imageManifest is a model to facilitate extra validation during the
 // unmarshalling of the ImageManifest
-type appManifest ImageManifest
+type imageManifest ImageManifest
 
-func (am *ImageManifest) UnmarshalJSON(data []byte) error {
-	a := appManifest{}
+func (im *ImageManifest) UnmarshalJSON(data []byte) error {
+	a := imageManifest{}
 	err := json.Unmarshal(data, &a)
 	if err != nil {
 		return err
 	}
-	nam := ImageManifest(a)
-	if err := nam.assertValid(); err != nil {
+	nim := ImageManifest(a)
+	if err := nim.assertValid(); err != nil {
 		return err
 	}
-	*am = nam
+	*im = nim
 	return nil
 }
 
-func (am ImageManifest) MarshalJSON() ([]byte, error) {
-	if err := am.assertValid(); err != nil {
+func (im ImageManifest) MarshalJSON() ([]byte, error) {
+	if err := im.assertValid(); err != nil {
 		return nil, err
 	}
-	return json.Marshal(appManifest(am))
+	return json.Marshal(imageManifest(im))
 }
 
 // assertValid performs extra assertions on an ImageManifest to ensure that
@@ -52,19 +52,19 @@ func (am ImageManifest) MarshalJSON() ([]byte, error) {
 // and unmarshalling an ImageManifest. Most field-specific validation is
 // performed through the individual types being marshalled; assertValid()
 // should only deal with higher-level validation.
-func (am *ImageManifest) assertValid() error {
-	if am.ACKind != "ImageManifest" {
+func (im *ImageManifest) assertValid() error {
+	if im.ACKind != "ImageManifest" {
 		return types.ACKindError(`missing or bad ACKind (must be "ImageManifest")`)
 	}
-	if am.ACVersion.Empty() {
+	if im.ACVersion.Empty() {
 		return errors.New(`acVersion must be set`)
 	}
-	if am.Name.Empty() {
+	if im.Name.Empty() {
 		return errors.New(`name must be set`)
 	}
 	return nil
 }
 
-func (am *ImageManifest) GetLabel(name string) (val string, ok bool) {
-	return am.Labels.Get(name)
+func (im *ImageManifest) GetLabel(name string) (val string, ok bool) {
+	return im.Labels.Get(name)
 }
