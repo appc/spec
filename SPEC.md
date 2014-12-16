@@ -262,7 +262,7 @@ Some examples for different schemes and URLs:
 The algorithm first ensures that the prefix of the AC Name matches the prefix-match and then if there is a match it will request the equivalent of:
 
 ```
-curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/ -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
+curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
 where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `sig` for retrieving an app image or signature respectively.
