@@ -5,10 +5,22 @@ import (
 )
 
 var (
+	// VERSION represents the canonical version of the appc spec and tooling.
+	// Must be set during build with:
+	//   -ldflags "-X github.com/appc/spec/schema.VERSION $VERSION"
+	VERSION string
+
+	// AppContainerVersion is the SemVer representation of VERSION
 	AppContainerVersion types.SemVer
 )
 
 func init() {
-	v, _ := types.NewSemVer("0.1.0")
+	if VERSION == "" {
+		panic("VERSION must be set with ldflags")
+	}
+	v, err := types.NewSemVer(VERSION)
+	if err != nil {
+		panic(err)
+	}
 	AppContainerVersion = *v
 }
