@@ -1,4 +1,6 @@
-# App Container Specification v0.1.1
+# App Container Specification
+
+_For version information, see [VERSION](VERSION)_
 
 The "App Container" defines an image format, image discovery mechanism and execution environment that can exist in several independent implementations. The core goals include:
 

@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	"github.com/appc/spec/schema"
 )
 
 var (
@@ -106,7 +108,7 @@ func printGlobalUsage() {
 		commands,
 		getAllFlags(),
 		cliDescription,
-		"0.1.0",
+		schema.AppContainerVersion.String(),
 	})
 	out.Flush()
 }
