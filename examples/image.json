@@ -75,7 +75,8 @@
     },
     "dependencies": [
         {
-            "hash": "sha512-...",
+            "app": "example.com/reduce-worker-base",
+            "imageID": "sha512-...",
             "labels": [
                 {
                     "name": "os",
@@ -86,7 +87,6 @@
                     "val": "canary"
                 }
             ],
-            "name": "example.com/reduce-worker-base",
             "root": "/"
         }
     ],
