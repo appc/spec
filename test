@@ -37,6 +37,14 @@ fi
 split=(${TEST// / })
 TEST=${split[@]/#/${REPO_PATH}/}
 
+echo "Checking version..."
+sver=$(bin/actool version|awk '{print $NF}')
+read rver < VERSION
+if [ "${sver}" != "${rver}" ]; then
+	echo "schema/version.go and VERSION differ (${sver} != ${rver})"
+	exit 255
+fi
+
 echo "Running tests..."
 go test -timeout 60s ${COVER} $@ ${TEST} --race
 
