@@ -17,7 +17,7 @@ type dependency Dependency
 
 func (d Dependency) assertValid() error {
 	if len(d.App) < 1 {
-		return errors.New(`Name cannot be empty`)
+		return errors.New(`App cannot be empty`)
 	}
 	return nil
 }
