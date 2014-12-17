@@ -439,7 +439,8 @@ JSON Schema for the Image Manifest
     },
     "dependencies": [
         {
-            "hash": "sha512-...",
+            "app": "example.com/reduce-worker-base",
+            "imageID": "sha512-...",
             "labels": [
                 {
                     "name": "os",
@@ -450,7 +451,6 @@ JSON Schema for the Image Manifest
                     "val": "canary"
                 }
             ],
-            "name": "example.com/reduce-worker-base",
             "root": "/"
         }
     ],
@@ -488,8 +488,8 @@ JSON Schema for the Image Manifest
         * **socketActivated** if this is set to true then the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
     * **isolators** is a list of well-known and optional isolation steps that should be applied to the app. **name** is restricted to the [AC Name](#ac-name-type) formatting and **val** can be a freeform string. Any isolators specified in the Image Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
 * **dependencies** list of dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
-    * **name** name of the dependent app image (required).
-    * **hash** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
+    * **app** name of the dependent app image (required).
+    * **imageID** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels* are optional, and should be a list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (optional, list of strings). This is the complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** key/value store that can be used by systems outside of the ACE (ACE can override). The key is restricted to the [AC Name](#ac-name-type) formatting. If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
@@ -500,19 +500,19 @@ JSON Schema for the Image Manifest
 
 #### Dependency Matching
 
-Dependency matching is based on a combination of the three different fields of the dependency - **name**, **hash**, and **labels**.
+Dependency matching is based on a combination of the three different fields of the dependency - **app**, **imageID**, and **labels**.
 First, the image discovery mechanism is used to locate a dependency.
 If any labels are specified in the dependency, they are passed to the image discovery mechanism, and should be used when locating the image.
 
 If the image discovery process successfully returns an image, it will be compared as follows
-If the dependency specification has a hash, it will be compared against the image returned, and must match.
+If the dependency specification has an image ID, it will be compared against the hash of image returned, and must match.
 Otherwise, the labels in the dependency specification are compared against the labels in the retrieved app image (i.e. in its ImageManifest), and must match.
 A label is considered to match if it meets one of three criteria:
 - It is present in the dependency specification and present in the dependency's ImageManifest with the same value.
 - It is absent from the dependency specification and present in the dependency's ImageManifest, with any value.
 This facilitates "wildcard" matching and a variety of common usage patterns, like "noarch" or "latest" dependencies.
 For example, an AppImage containing a set of bash scripts might omit both "os" and "arch", and hence could be used as a dependency by a variety of different AppImages.
-Alternatively, an AppImage might specify a dependency with no hash and no "version" label, and the image discovery mechanism could always retrieve the latest version of an AppImage
+Alternatively, an AppImage might specify a dependency with no image ID and no "version" label, and the image discovery mechanism could always retrieve the latest version of an AppImage
 
 ### Container Runtime Manifest Schema
 
