@@ -38,7 +38,7 @@ split=(${TEST// / })
 TEST=${split[@]/#/${REPO_PATH}/}
 
 echo "Checking version..."
-sver=$(grep -oP '(?<=version string = ")(.*)(?=")' schema/version.go)
+sver=$(bin/actool version|awk '{print $NF}')
 read rver < VERSION
 if [ "${sver}" != "${rver}" ]; then
 	echo "schema/version.go and VERSION differ (${sver} != ${rver})"
