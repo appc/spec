@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -78,6 +79,15 @@ func renderTemplate(tpl string, kvs ...string) string {
 	return tpl
 }
 
+func createTemplateVars(app App) []string {
+	tplVars := []string{}
+	for _, lbl := range app.Labels {
+		tplVars = append(tplVars, fmt.Sprintf("{%s}", lbl.Name.String()), lbl.Value)
+	}
+	tplVars = append(tplVars, "{name}", app.Name.String())
+	return tplVars
+}
+
 func DiscoverEndpoints(app App, insecure bool) (*Endpoints, error) {
 	_, body, err := httpsOrHTTP(app.Name.String(), insecure)
 	if err != nil {
@@ -87,8 +97,7 @@ func DiscoverEndpoints(app App, insecure bool) (*Endpoints, error) {
 
 	meta := extractACMeta(body)
 
-	tplVars := []string{"{os}", app.Labels["os"], "{arch}", app.Labels["arch"],
-		"{name}", app.Name.String(), "{version}", app.Labels["version"]}
+	tplVars := createTemplateVars(app)
 
 	de := &Endpoints{}
 
