@@ -25,6 +25,14 @@ type Label struct {
 	Value string `json:"val"`
 }
 
+func NewLabel(name string, value string) (*Label, error) {
+	acname, err := NewACName(name)
+	if err != nil {
+		return nil, err
+	}
+	return &Label{Name: *acname, Value: value}, nil
+}
+
 func (l Labels) assertValid() error {
 	if os, ok := l.Get("os"); ok {
 		if validArchs, ok := ValidOSArch[os]; !ok {
