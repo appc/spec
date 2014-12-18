@@ -65,12 +65,6 @@ func NewAppFromString(app string) (*App, error) {
 	if labels["version"] == "" {
 		labels["version"] = defaultVersion
 	}
-	if labels["os"] == "" {
-		labels["os"] = defaultOS
-	}
-	if labels["arch"] == "" {
-		labels["arch"] = defaultArch
-	}
 
 	a, err := NewApp(name, labels)
 	if err != nil {
