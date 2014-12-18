@@ -16,7 +16,7 @@ var ValidOSArch = map[string][]string{
 // things elsewhere (i.e. using strict types instead of string types), but it's
 // tricky because Labels needs to be able to catch arbitrary key-values.
 // Clean this up somehow?
-type Labels []Label
+type Labels []*Label
 
 type labels Labels
 
@@ -94,4 +94,21 @@ func (l Labels) Get(name string) (val string, ok bool) {
 		}
 	}
 	return "", false
+}
+
+// update or create a new label.
+func (l *Labels) Set(name string, val string) error {
+	for _, lbl := range *l {
+		if lbl.Name.String() == name {
+			lbl.Value = val
+			return nil
+		}
+	}
+	// Label not found
+	lbl, err := NewLabel(name, val)
+	if err != nil {
+		return err
+	}
+	*l = append(*l, lbl)
+	return nil
 }
