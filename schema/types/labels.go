@@ -33,6 +33,10 @@ func NewLabel(name string, value string) (*Label, error) {
 	return &Label{Name: *acname, Value: value}, nil
 }
 
+func (l Labels) Len() int           { return len(l) }
+func (l Labels) Less(i, j int) bool { return l[i].Name < l[j].Name }
+func (l Labels) Swap(i, j int)      { l[i], l[j] = l[j], l[i] }
+
 func (l Labels) assertValid() error {
 	if os, ok := l.Get("os"); ok {
 		if validArchs, ok := ValidOSArch[os]; !ok {
