@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -25,12 +26,17 @@ func httpsOrHTTP(name string, insecure bool) (urlStr string, body io.ReadCloser,
 		}
 	}
 	urlStr, res, err := fetch("https")
-	if err != nil || res.StatusCode != 200 {
+	if err != nil || res.StatusCode != http.StatusOK {
 		closeBody(res)
 		if insecure {
 			urlStr, res, err = fetch("http")
 		}
 	}
+
+	if res.StatusCode != http.StatusOK {
+		err = fmt.Errorf("expected a 200 OK got %d", res.StatusCode)
+	}
+
 	if err != nil {
 		closeBody(res)
 		return "", nil, err

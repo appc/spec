@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
@@ -78,8 +79,8 @@ func renderTemplate(tpl string, kvs ...string) string {
 	return tpl
 }
 
-func DiscoverEndpoints(app App, insecure bool) (*Endpoints, error) {
-	_, body, err := httpsOrHTTP(app.Name.String(), insecure)
+func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
+	_, body, err := httpsOrHTTP(pre, insecure)
 	if err != nil {
 		return nil, err
 	}
@@ -108,5 +109,26 @@ func DiscoverEndpoints(app App, insecure bool) (*Endpoints, error) {
 		}
 	}
 
+	if len(de.ACI) == 0 {
+		return nil, fmt.Errorf("found no ACI meta tags")
+	}
+
 	return de, nil
+}
+
+// DiscoverEndpoints will make HTTPS requests to find the ac-discovery meta
+// tags and optionally will use HTTP if insecure is set. Based on the app
+// passed the discovery templates will be filled out and returned in eps.
+func DiscoverEndpoints(app App, insecure bool) (eps *Endpoints, err error) {
+	parts := strings.Split(string(app.Name), "/")
+	for i := range parts {
+		end := len(parts) - i
+		pre := strings.Join(parts[:end], "/")
+		eps, err = doDiscover(app, pre, insecure)
+		if err == nil {
+			break
+		}
+	}
+
+	return
 }
