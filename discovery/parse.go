@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"runtime"
+	"sort"
 	"strings"
 
 	"github.com/appc/spec/schema/types"
@@ -18,6 +19,27 @@ const (
 type App struct {
 	Name   types.ACName
 	Labels types.Labels
+}
+
+func NewStringFromApp(app *App) string {
+	// Take a copy and sort the labels names
+	labels := app.Labels
+	sort.Sort(labels)
+
+	s := app.Name.String()
+
+	for _, n := range []string{"version", "os", "arch"} {
+		if val, ok := labels.Get(n); ok {
+			s = s + "," + n + "=" + val
+		}
+	}
+	for _, l := range labels {
+		n := l.Name.String()
+		if n != "version" && n != "os" && n != "arch" {
+			s = s + "," + l.Name.String() + "=" + l.Value
+		}
+	}
+	return s
 }
 
 func NewApp(name string, labelsMap map[string]string) (*App, error) {
@@ -35,6 +57,7 @@ func NewApp(name string, labelsMap map[string]string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &App{
 		Name:   *acn,
 		Labels: labels,
