@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 )
 
 type App struct {
@@ -53,6 +54,14 @@ func (a *App) assertValid() error {
 	}
 	if a.Group == "" {
 		return errors.New(`Group is required`)
+	}
+	eh := make(map[string]bool)
+	for _, e := range a.EventHandlers {
+		name := e.Name
+		if eh[name] {
+			return fmt.Errorf("Only one eventHandler of name %q allowed", name)
+		}
+		eh[name] = true
 	}
 	return nil
 }
