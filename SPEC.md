@@ -278,6 +278,10 @@ keys: https://example.com/pubkeys.gpg
 ```
 
 This mechanism is only used for discovery of contents URLs.
+
+If the first attempt at fetching the discovery URL returns a status code other than `200 OK` or does not contain any `ac-discovery` meta tags then the next higher path in the name should be tried.
+For example if the user has `example.com/project/subproject` and we first try `example.com/project/subproject` but don't find a meta tag then try `example.com/project` then try `example.com`.
+
 Anything implementing this spec should enforce any signing rules set in place by the operator and ensure the image manifest provided by the fetched app image are all prefixed from the same domain.
 
 Discovery URLs that require interpolation are [RFC6570](https://tools.ietf.org/html/rfc6570) URI templates.
