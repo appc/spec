@@ -3,6 +3,7 @@ package discovery
 import (
 	"fmt"
 	"io"
+	"regexp"
 	"strings"
 
 	"github.com/appc/spec/Godeps/_workspace/src/golang.org/x/net/html"
@@ -20,6 +21,10 @@ type Endpoints struct {
 	ACI  []string
 	Keys []string
 }
+
+var (
+	templateExpression = regexp.MustCompile(`{.*?}`)
+)
 
 func appendMeta(meta []acMeta, attrs []html.Attribute) []acMeta {
 	m := acMeta{}
@@ -70,13 +75,23 @@ func extractACMeta(r io.Reader) []acMeta {
 	}
 }
 
-func renderTemplate(tpl string, kvs ...string) string {
+func renderTemplate(tpl string, kvs ...string) (string, bool) {
 	for i := 0; i < len(kvs); i += 2 {
 		k := kvs[i]
 		v := kvs[i+1]
 		tpl = strings.Replace(tpl, k, v, -1)
 	}
-	return tpl
+	return tpl, !templateExpression.MatchString(tpl)
+}
+
+func createTemplateVars(app App) []string {
+	tplVars := []string{"{name}", app.Name.String()}
+	// If a label is called "name", it will be ignored as it appears after
+	// in the slice
+	for n, v := range app.Labels {
+		tplVars = append(tplVars, fmt.Sprintf("{%s}", n), v)
+	}
+	return tplVars
 }
 
 func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
@@ -88,8 +103,7 @@ func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
 
 	meta := extractACMeta(body)
 
-	tplVars := []string{"{os}", app.Labels["os"], "{arch}", app.Labels["arch"],
-		"{name}", app.Name.String(), "{version}", app.Labels["version"]}
+	tplVars := createTemplateVars(app)
 
 	de := &Endpoints{}
 
@@ -100,9 +114,16 @@ func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
 
 		switch m.name {
 		case "ac-discovery":
-			m.uri = renderTemplate(m.uri, tplVars...)
-			de.Sig = append(de.Sig, renderTemplate(m.uri, "{ext}", "sig"))
-			de.ACI = append(de.ACI, renderTemplate(m.uri, "{ext}", "aci"))
+			// Ignore not handled variables as {ext} isn't already rendered.
+			uri, _ := renderTemplate(m.uri, tplVars...)
+			sig, ok := renderTemplate(uri, "{ext}", "sig")
+			if ok {
+				de.Sig = append(de.Sig, sig)
+			}
+			aci, ok := renderTemplate(uri, "{ext}", "aci")
+			if ok {
+				de.ACI = append(de.ACI, aci)
+			}
 
 		case "ac-discovery-pubkeys":
 			de.Keys = append(de.Keys, m.uri)
