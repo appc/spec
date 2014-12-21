@@ -9,7 +9,7 @@ type Dependencies []Dependency
 
 type Dependency struct {
 	App     ACName `json:"app"`
-	ImageID Hash   `json:"imageID,omitempty"`
+	ImageID *Hash  `json:"imageID,omitempty"`
 	Labels  Labels `json:"labels,omitempty"`
 }
 
