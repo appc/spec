@@ -15,11 +15,11 @@ type ImageManifest struct {
 	ACKind        types.ACKind       `json:"acKind"`
 	ACVersion     types.SemVer       `json:"acVersion"`
 	Name          types.ACName       `json:"name"`
-	Labels        types.Labels       `json:"labels"`
+	Labels        types.Labels       `json:"labels,omitempty"`
 	App           *types.App         `json:"app,omitempty"`
-	Annotations   types.Annotations  `json:"annotations"`
-	Dependencies  types.Dependencies `json:"dependencies"`
-	PathWhitelist []string           `json:"pathWhitelist"`
+	Annotations   types.Annotations  `json:"annotations,omitempty"`
+	Dependencies  types.Dependencies `json:"dependencies,omitempty"`
+	PathWhitelist []string           `json:"pathWhitelist,omitempty"`
 }
 
 // imageManifest is a model to facilitate extra validation during the

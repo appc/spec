@@ -8,13 +8,13 @@ import (
 
 type App struct {
 	Exec          []string          `json:"exec"`
-	EventHandlers []EventHandler    `json:"eventHandlers"`
+	EventHandlers []EventHandler    `json:"eventHandlers,omitempty"`
 	User          string            `json:"user"`
 	Group         string            `json:"group"`
-	Environment   map[string]string `json:"environment"`
-	MountPoints   []MountPoint      `json:"mountPoints"`
-	Ports         []Port            `json:"ports"`
-	Isolators     []Isolator        `json:"isolators"`
+	Environment   map[string]string `json:"environment,omitempty"`
+	MountPoints   []MountPoint      `json:"mountPoints,omitempty"`
+	Ports         []Port            `json:"ports,omitempty"`
+	Isolators     []Isolator        `json:"isolators,omitempty"`
 }
 
 // app is a model to facilitate extra validation during the
