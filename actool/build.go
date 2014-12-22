@@ -113,7 +113,9 @@ func runBuild(args []string) (exit int) {
 	}
 
 	mode := os.O_CREATE | os.O_WRONLY
-	if !buildOverwrite {
+	if buildOverwrite {
+		mode |= os.O_TRUNC
+	} else {
 		mode |= os.O_EXCL
 	}
 	fh, err := os.OpenFile(tgt, mode, 0644)
