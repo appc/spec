@@ -3,11 +3,10 @@ package types
 import (
 	"encoding/json"
 	"errors"
-	"path/filepath"
 )
 
 type App struct {
-	Exec          []string          `json:"exec"`
+	Exec          Exec              `json:"exec"`
 	EventHandlers []EventHandler    `json:"eventHandlers,omitempty"`
 	User          string            `json:"user"`
 	Group         string            `json:"group"`
@@ -46,11 +45,8 @@ func (a App) MarshalJSON() ([]byte, error) {
 }
 
 func (a *App) assertValid() error {
-	if len(a.Exec) < 1 {
-		return errors.New(`Exec cannot be empty`)
-	}
-	if !filepath.IsAbs(a.Exec[0]) {
-		return errors.New(`Exec[0] must be absolute path`)
+	if err := a.Exec.assertValid(); err != nil {
+		return err
 	}
 	if a.User == "" {
 		return errors.New(`User is required`)

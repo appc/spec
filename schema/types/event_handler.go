@@ -7,8 +7,8 @@ import (
 )
 
 type EventHandler struct {
-	Name string   `json:"name"`
-	Exec []string `json:"exec"`
+	Name string `json:"name"`
+	Exec Exec   `json:"exec"`
 }
 
 type eventHandler EventHandler
