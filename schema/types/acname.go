@@ -22,6 +22,14 @@ func (n ACName) String() string {
 	return string(n)
 }
 
+func (n *ACName) Set(s string) error {
+	nn, err := NewACName(s)
+	if err == nil {
+		*n = *nn
+	}
+	return err
+}
+
 // Equals checks whether a given ACName is equal to this one.
 func (n ACName) Equals(o ACName) bool {
 	return strings.ToLower(string(n)) == strings.ToLower(string(o))
