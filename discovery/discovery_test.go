@@ -2,7 +2,6 @@ package discovery
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -55,9 +54,12 @@ type httpgetter func(uri string) (*http.Response, error)
 
 func TestDiscoverEndpoints(t *testing.T) {
 	tests := []struct {
-		get httpgetter
+		get                    httpgetter
 		expectDiscoverySuccess bool
-		app App
+		app                    App
+		expectedSig            []string
+		expectedACI            []string
+		expectedKeys           []string
 	}{
 		{
 			fakeHTTPGet("myapp.html", 0),
@@ -70,6 +72,11 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			[]string{"https://storage.example.com/example.com/myapp-1.0.0.sig?torrent",
+				"hdfs://storage.example.com/example.com/myapp-1.0.0.sig"},
+			[]string{"https://storage.example.com/example.com/myapp-1.0.0.aci?torrent",
+				"hdfs://storage.example.com/example.com/myapp-1.0.0.aci"},
+			[]string{"https://example.com/pubkeys.gpg"},
 		},
 		{
 			fakeHTTPGet("myapp.html", 1),
@@ -82,6 +89,11 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			[]string{"https://storage.example.com/example.com/myapp/foobar-1.0.0.sig?torrent",
+				"hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.sig"},
+			[]string{"https://storage.example.com/example.com/myapp/foobar-1.0.0.aci?torrent",
+				"hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.aci"},
+			[]string{"https://example.com/pubkeys.gpg"},
 		},
 		{
 			fakeHTTPGet("myapp.html", 20),
@@ -94,6 +106,53 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			[]string{},
+			[]string{},
+			[]string{},
+		},
+		// Test missing label. Only one ac-discovery template should be
+		// returned as the other one cannot be completely rendered due to
+		// missing labels.
+		{
+			fakeHTTPGet("myapp2.html", 0),
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[string]string{
+					"version": "1.0.0",
+				},
+			},
+			[]string{"https://storage.example.com/example.com/myapp-1.0.0.sig"},
+			[]string{"https://storage.example.com/example.com/myapp-1.0.0.aci"},
+			[]string{"https://example.com/pubkeys.gpg"},
+		},
+		// Test missing labels. En error should be return as no
+		// ac-discovery templates can be completely rendered.
+		{
+			fakeHTTPGet("myapp2.html", 0),
+			false,
+			App{
+				Name:   "example.com/myapp",
+				Labels: map[string]string{},
+			},
+			[]string{},
+			[]string{},
+			[]string{},
+		},
+		// Test with a label called "name". It should be ignored.
+		{
+			fakeHTTPGet("myapp2.html", 0),
+			false,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[string]string{
+					"name":    "labelcalledname",
+					"version": "1.0.0",
+				},
+			},
+			[]string{"https://storage.example.com/example.com/myapp-1.0.0.sig"},
+			[]string{"https://storage.example.com/example.com/myapp-1.0.0.aci"},
+			[]string{"https://example.com/pubkeys.gpg"},
 		},
 	}
 
@@ -107,37 +166,33 @@ func TestDiscoverEndpoints(t *testing.T) {
 			t.Fatalf("#%d DiscoverEndpoints failed: %v", i, err)
 		}
 
-		if len(de.Sig) != 2 {
-			t.Errorf("Sig array is wrong length want %d got %d", 2, len(de.Sig))
+		if len(de.Sig) != len(tt.expectedSig) {
+			t.Errorf("Sig array is wrong length want %d got %d", len(tt.expectedSig), len(de.Sig))
 		} else {
-			tor := fmt.Sprintf("https://storage.example.com/%s-%s.sig?torrent", tt.app.Name, tt.app.Labels["version"])
-			if de.Sig[0] != tor {
-				t.Errorf("#%d sig[0] mismatch: want %v got %v", i, tor, de.Sig[0])
-			}
-			hdfs := fmt.Sprintf("hdfs://storage.example.com/%s-%s.sig", tt.app.Name, tt.app.Labels["version"])
-			if de.Sig[1] != hdfs {
-				t.Errorf("#%d sig[1] mismatch want %v got %v", i, hdfs, de.Sig[0])
+			for n, _ := range de.Sig {
+				if de.Sig[n] != tt.expectedSig[n] {
+					t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedSig[n], de.Sig[n])
+				}
 			}
 		}
 
-		if len(de.ACI) != 2 {
-			t.Errorf("ACI array is wrong length")
+		if len(de.ACI) != len(tt.expectedACI) {
+			t.Errorf("ACI array is wrong length want %d got %d", len(tt.expectedACI), len(de.ACI))
 		} else {
-			tor := fmt.Sprintf("https://storage.example.com/%s-%s.aci?torrent", tt.app.Name, tt.app.Labels["version"])
-			if de.ACI[0] != tor {
-				t.Errorf("#%d ACI[0] mismatch want %v got %v", i, tor, de.ACI[0])
-			}
-			hdfs := fmt.Sprintf("hdfs://storage.example.com/%s-%s.aci", tt.app.Name, tt.app.Labels["version"])
-			if de.ACI[1] != hdfs {
-				t.Errorf("#%d ACI[1] mismatch want %v got %v", i, hdfs, de.ACI[1])
+			for n, _ := range de.ACI {
+				if de.ACI[n] != tt.expectedACI[n] {
+					t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedACI[n], de.ACI[n])
+				}
 			}
 		}
 
-		if len(de.Keys) != 1 {
-			t.Errorf("Keys array is wrong length")
+		if len(de.Keys) != len(tt.expectedKeys) {
+			t.Errorf("Keys array is wrong length want %d got %d", len(tt.expectedKeys), len(de.Keys))
 		} else {
-			if de.Keys[0] != "https://example.com/pubkeys.gpg" {
-				t.Error("Keys[0] mismatch: ", de.Keys[0])
+			for n, _ := range de.Keys {
+				if de.Keys[n] != tt.expectedKeys[n] {
+					t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedKeys[n], de.Keys[n])
+				}
 			}
 		}
 	}
