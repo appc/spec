@@ -28,6 +28,14 @@ func TestLabels(t *testing.T) {
 			`bad arch "arm" for linux`,
 		},
 		{
+			`[{"name": "os", "val": "linux"}, {"name": "os", "val": "freebsd"}]`,
+			`duplicate labels of name "os"`,
+		},
+		{
+			`[{"name": "arch", "val": "amd64"}, {"name": "os", "val": "freebsd"}, {"name": "arch", "val": "x86_64"}]`,
+			`duplicate labels of name "arch"`,
+		},
+		{
 			`[]`,
 			"",
 		},
