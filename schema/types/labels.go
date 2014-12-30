@@ -12,10 +12,6 @@ var ValidOSArch = map[string][]string{
 	"darwin":  []string{"x86_64", "i386"},
 }
 
-// TODO(jonboulle): this is awkward since it's inconsistent with the way we do
-// things elsewhere (i.e. using strict types instead of string types), but it's
-// tricky because Labels needs to be able to catch arbitrary key-values.
-// Clean this up somehow?
 type Labels []Label
 
 type labels Labels
@@ -26,7 +22,15 @@ type Label struct {
 }
 
 func (l Labels) assertValid() error {
-	if os, ok := l.Get("os"); ok {
+	seen := map[ACName]string{}
+	for _, lbl := range l {
+		_, ok := seen[lbl.Name]
+		if ok {
+			return fmt.Errorf(`duplicate labels of name %q`, lbl.Name)
+		}
+		seen[lbl.Name] = lbl.Value
+	}
+	if os, ok := seen["os"]; ok {
 		if validArchs, ok := ValidOSArch[os]; !ok {
 			// Not a whitelisted OS. TODO: how to warn rather than fail?
 			validOses := make([]string, 0, len(ValidOSArch))
@@ -38,7 +42,7 @@ func (l Labels) assertValid() error {
 		} else {
 			// Whitelisted OS. We check arch here, as arch makes sense only
 			// when os is defined.
-			if arch, ok := l.Get("arch"); ok {
+			if arch, ok := seen["arch"]; ok {
 				found := false
 				for _, validArch := range validArchs {
 					if arch == validArch {
@@ -75,6 +79,7 @@ func (l *Labels) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// Get retrieves the value of the label by the given name from Labels, if it exists
 func (l Labels) Get(name string) (val string, ok bool) {
 	for _, lbl := range l {
 		if lbl.Name.String() == name {
