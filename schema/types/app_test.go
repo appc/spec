@@ -5,9 +5,10 @@ import "testing"
 func TestAppValid(t *testing.T) {
 	tests := []App{
 		App{
-			Exec:  []string{"/bin/httpd"},
-			User:  "0",
-			Group: "0",
+			Exec:             []string{"/bin/httpd"},
+			User:             "0",
+			Group:            "0",
+			WorkingDirectory: "/tmp",
 		},
 		App{
 			Exec:  []string{"/app"},
@@ -17,11 +18,13 @@ func TestAppValid(t *testing.T) {
 				{Name: "pre-start"},
 				{Name: "post-stop"},
 			},
+			WorkingDirectory: "/tmp",
 		},
 		App{
-			Exec:  []string{"/app", "arg1", "arg2"},
-			User:  "0",
-			Group: "0",
+			Exec:             []string{"/app", "arg1", "arg2"},
+			User:             "0",
+			Group:            "0",
+			WorkingDirectory: "/tmp",
 		},
 	}
 	for i, tt := range tests {
@@ -110,6 +113,19 @@ func TestUserGroupInvalid(t *testing.T) {
 		App{
 			Exec:  []string{"app"},
 			Group: "0",
+		},
+	}
+	for i, tt := range tests {
+		if err := tt.assertValid(); err == nil {
+			t.Errorf("#%d: err == nil, want non-nil", i)
+		}
+	}
+}
+
+func TestAppWorkingDirectoryInvalid(t *testing.T) {
+	tests := []App{
+		App{
+			WorkingDirectory: "stuff",
 		},
 	}
 	for i, tt := range tests {

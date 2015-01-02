@@ -27,6 +27,7 @@
         ],
         "user": "0",
         "group": "0",
+        "workingDirectory": "/opt/acvalidator",
         "environment": {
             "IN_ACE_VALIDATOR": "correct"
         },

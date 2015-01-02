@@ -10,7 +10,7 @@ This verifies the _apps perspective_ of the execution environment.
 Changes to the validator need to be reflected in app_manifest.json, and vice-versa
 
 The App Container Execution spec defines the following expectations within the execution environment:
- - Working directory always the root of the container
+ - Working Directory defaults to the root of the application image, overridden with "workingDirectory"
  - PATH /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
  - USER, LOGNAME username of the user executing this app
  - HOME home directory of the user
@@ -66,6 +66,7 @@ const (
 
 var (
 	// Expected values must be kept in sync with app_manifest.json
+	workingDirectory = "/opt/acvalidator"
 	// "Environment"
 	env = map[string]string{
 		"IN_ACE_VALIDATOR": "correct",
@@ -124,6 +125,7 @@ func validateMain() (errs results) {
 	errs = append(errs, assertNotExistsAndCreate(mainFile)...)
 	errs = append(errs, assertNotExists(poststopFile)...)
 	errs = append(errs, ValidatePath(standardPath)...)
+	errs = append(errs, ValidateWorkingDirectory(workingDirectory)...)
 	errs = append(errs, ValidateEnvironment(env)...)
 	errs = append(errs, ValidateMountpoints(mps)...)
 	errs = append(errs, ValidateAppNameEnv(an)...)
@@ -162,6 +164,20 @@ func ValidatePath(wp string) results {
 		r = append(r, fmt.Errorf("PATH not set appropriately (need %q)", wp))
 	}
 	return r
+}
+
+// ValidateWorkingDirectory ensures that the process working directory is set
+// to the desired path.
+func ValidateWorkingDirectory(wwd string) (r results) {
+	wd, err := os.Getwd()
+	if err != nil {
+		r = append(r, fmt.Errorf("error getting working directory: %x", err))
+		return
+	}
+	if wd != wwd {
+		r = append(r, fmt.Errorf("working directory %q not set (need %q)", wwd, wd))
+	}
+	return
 }
 
 // ValidateEnvironment ensures that the given environment exactly maps the
