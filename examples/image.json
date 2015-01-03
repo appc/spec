@@ -52,6 +52,10 @@
                 "name": "memory/limit",
                 "val": "1G"
             },
+	    {
+		"name": "cpu/mask",
+		"val": "0"
+            },
             {
                 "name": "capabilities/bounding-set",
                 "val": "CAP_NET_BIND_SERVICECAP_SYS_ADMIN"

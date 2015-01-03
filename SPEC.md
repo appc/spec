@@ -200,8 +200,9 @@ Additional isolators will be added to this specification over time.
 
 |Name|Type|Schema|Example|
 |-------------------------|------|------------------------------------|----------------|
-|cpu/shares/              |string|"&lt;uint&gt;"                      |"4096"          |
+|cpu/shares               |string|"&lt;uint&gt;"                      |"4096"          |
 |memory/limit             |string|"&lt;bytes&gt;"                     |"1G", "5T", "4K"|
+|cpu/mask                 |string|"&lt;cpu range&gt;"                 |"0", "0-3", "0,2,4-7"|
 |blockIO/readBandwidth    |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"       |
 |blockIO/writeBandwidth   |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"       |
 |networkIO/readBandwidth  |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"     |
@@ -419,6 +420,10 @@ JSON Schema for the Image Manifest
             {
                 "name": "memory/limit",
                 "val": "1G"
+            },
+            {
+                "name": "cpu/mask",
+                "val": "0-3"
             },
             {
                 "name": "capabilities/bounding-set",
