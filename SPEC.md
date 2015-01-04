@@ -459,8 +459,7 @@ JSON Schema for the Image Manifest
                     "name": "env",
                     "val": "canary"
                 }
-            ],
-            "root": "/"
+            ]
         }
     ],
     "pathWhitelist": [
