@@ -90,8 +90,7 @@
                     "name": "env",
                     "val": "canary"
                 }
-            ],
-            "root": "/"
+            ]
         }
     ],
     "pathWhitelist": [
