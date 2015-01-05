@@ -38,7 +38,7 @@ Then the executor extracts two fresh copies of the images to create instances of
 
 Based on user input the executor now sets up the necessary cgroups, network interfaces, etc and forks the `register` and `reduce-worker` processes in their shared namespaces inside the container.
 
-At some point, the container will get some notification that it needs to stop. 
+At some point, the container will get some notification that it needs to stop.
 The executor will send `SIGTERM` to the processes and after they have exited the `post-stop` event handlers for each app will run.
 
 Now, let's dive into the pieces that took us from two URLs to a running container on our system.
@@ -102,7 +102,7 @@ The [image manifest](#image-manifest-schema) is a JSON file that includes detail
 If included, execution details include mount points that should exist, the user, the command args, default cgroup settings and more.
 The manifest may also define binaries to execute in response to lifecycle events of the main process such as *pre-start* and *post-stop*.
 
-Image manifests MAY specify dependencies, which describe how to assemble the final rootfs from a collection of other images. 
+Image manifests MAY specify dependencies, which describe how to assemble the final rootfs from a collection of other images.
 As an example, you might have an app that needs special certificates layered into its filesystem.
 In this case, you can reference the name "example.com/trusted-certificate-authority" as a dependency in the app image manifest.
 The dependencies are applied in order and each app image dependency can overwrite files from the previous dependency.
@@ -134,7 +134,7 @@ The "*executor*" perspective consists of the steps that the container executor m
 
 #### Filesystem Setup
 
-Every execution of an app container should start from a clean copy of the app image. 
+Every execution of an app container should start from a clean copy of the app image.
 The simplest implementation will take an application container image and extract it into a new directory:
 
 ```
@@ -149,7 +149,7 @@ These details are orthogonal to the runtime environment.
 #### Container Runtime Manifest
 
 A container executes one or more apps with shared PID namespace, network namespace, mount namespace, IPC namespace and UTS namespace.
-Each app will start pivoted (i.e. chrooted) into its own unique read-write rootfs before execution. 
+Each app will start pivoted (i.e. chrooted) into its own unique read-write rootfs before execution.
 The definition of the container is a list of apps that should be launched together, along with isolators that should apply to the entire container.
 This is codified in a [Container Runtime Manifest](#container-runtime-manifest-schema).
 
@@ -251,7 +251,7 @@ Then inspect the HTML returned for meta tags that have the following format:
 <meta name="ac-discovery-pubkeys" content="prefix-match url">
 ```
 
-* `ac-discovery` should contain a URL template that can be rendered to retrieve the app image or signature 
+* `ac-discovery` should contain a URL template that can be rendered to retrieve the app image or signature
 * `ac-discovery-pubkeys` should contain a URL that provides a set of public keys that can be used to verify the signature of the app image
 
 Some examples for different schemes and URLs:
@@ -320,7 +320,7 @@ Retrievable at `http://$AC_METADATA_URL/acMetadata/v1/container`
 
 ### App Metadata
 
-Every running process will be able to introspect its App Name via the `AC_APP_NAME` environment variable. 
+Every running process will be able to introspect its App Name via the `AC_APP_NAME` environment variable.
 This is necessary to query for the correct endpoint metadata.
 
 Retrievable at `http://$AC_METADATA_URL/acMetadata/v1/apps/${ac_app_name}/`
@@ -486,20 +486,20 @@ JSON Schema for the Image Manifest
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
     * **os**, **arch** These two labels can be considered to describe the syscall ABI this image requires. **arch** is meaningful only if **os** is provided. If one or both values are not provided, the image is assumed to be OS- and/or architecture-independent. Currently supported combinations are listed in the [`types.ValidOSArch`](schema/types/labels.go) variable, which can be updated by an implementation that supports other combinations. The combinations whitelisted by default are (in format `os/arch`): `linux/amd64`, `linux/i386`, `freebsd/amd64`, `freebsd/i386`, `freebsd/arm`, `darwin/x86_64`, `darwin/i386`.
 * **app** is optional. If present, this defines the default parameters that can be used to execute this image as an application.
-    * **exec** the executable to launch and any flags (array of strings, must be non-empty; executor must be an absolute path within the app rootfs; ACE can append or override)
+    * **exec** the executable to launch and any flags (array of strings, must be non-empty; the executable must be an absolute path within the app rootfs; ACE can append or override)
     * **user**, **group** are required, and indicate either the UID/GID or the username/group name the app should run as inside the container (freeform string). If the user or group field begins with a "/", the owner and group of the file found at that absolute path inside the rootfs is used as the UID/GID of the process.
     * **eventHandlers** are optional, and should be a list of eventHandler objects. eventHandlers allow the app to have several hooks based on lifecycle events. For example, you may want to execute a script before the main process starts up to download a dataset or backup onto the filesystem. An eventHandler is a simple object with two fields - an **exec** (array of strings, ACE can append or override), and a **name** (there may be only one eventHandler of a given name), which must be one of:
         * **pre-start** - will be executed and must exit before the long running main **exec** binary is launched
         * **post-stop** - if the main **exec** process is killed then this is ran. This can be used to cleanup resources in the case of clean application shutdown, but cannot be relied upon in the face of machine failure.
     * **environment** the app's preferred environment variables (map of freeform strings) (ACE can append)
-    * **mountPoints** are the locations where a container is expecting external data to mounted. The name indicates an executor-defined label to look up a mount point, and the path stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. "readOnly" should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
+    * **mountPoints** are the locations where a container is expecting external data to be mounted. The name indicates an executor-defined label to look up a mount point, and the path stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. "readOnly" should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
     * **ports** are the protocols and port numbers that the container will be listening on once started. The key is restricted to the AC Name formatting. This information is primarily informational to help the user find ports that are not well known. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **socketActivated** if this is set to true then the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
     * **isolators** is a list of well-known and optional isolation steps that should be applied to the app. **name** is restricted to the [AC Name](#ac-name-type) formatting and **val** can be a freeform string. Any isolators specified in the Image Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
 * **dependencies** list of dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
     * **app** name of the dependent app image (required).
     * **imageID** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
-    * **labels* are optional, and should be a list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
+    * **labels** are optional, and should be a list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (optional, list of strings). This is the complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** key/value store that can be used by systems outside of the ACE (ACE can override). The key is restricted to the [AC Name](#ac-name-type) formatting. If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
     * **created** is the date on which this container was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
