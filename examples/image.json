@@ -58,7 +58,7 @@
             },
             {
                 "name": "capabilities/bounding-set",
-                "val": "CAP_NET_BIND_SERVICECAP_SYS_ADMIN"
+                "val": "CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"
             }
         ],
         "mountPoints": [
