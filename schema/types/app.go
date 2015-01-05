@@ -4,17 +4,19 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"path"
 )
 
 type App struct {
-	Exec          Exec              `json:"exec"`
-	EventHandlers []EventHandler    `json:"eventHandlers,omitempty"`
-	User          string            `json:"user"`
-	Group         string            `json:"group"`
-	Environment   map[string]string `json:"environment,omitempty"`
-	MountPoints   []MountPoint      `json:"mountPoints,omitempty"`
-	Ports         []Port            `json:"ports,omitempty"`
-	Isolators     []Isolator        `json:"isolators,omitempty"`
+	Exec             Exec              `json:"exec"`
+	EventHandlers    []EventHandler    `json:"eventHandlers,omitempty"`
+	User             string            `json:"user"`
+	Group            string            `json:"group"`
+	WorkingDirectory string            `json:"workingDirectory,omitempty"`
+	Environment      map[string]string `json:"environment,omitempty"`
+	MountPoints      []MountPoint      `json:"mountPoints,omitempty"`
+	Ports            []Port            `json:"ports,omitempty"`
+	Isolators        []Isolator        `json:"isolators,omitempty"`
 }
 
 // app is a model to facilitate extra validation during the
@@ -54,6 +56,9 @@ func (a *App) assertValid() error {
 	}
 	if a.Group == "" {
 		return errors.New(`Group is required`)
+	}
+	if !path.IsAbs(a.WorkingDirectory) && a.WorkingDirectory != "" {
+		return errors.New("WorkingDirectory must be an absolute path")
 	}
 	eh := make(map[string]bool)
 	for _, e := range a.EventHandlers {

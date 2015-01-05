@@ -183,7 +183,7 @@ Note that logging mechanisms other than stdout and stderr are not required by th
 
 #### Execution Environment
 
-* **Working directory** always the root of the application image
+* **Working directory** defaults to the root of the application image, overridden with "workingDirectory"
 * **PATH** `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
 * **USER, LOGNAME** username of the user executing this app
 * **HOME** home directory of the user
@@ -405,6 +405,7 @@ JSON Schema for the Image Manifest
                 "name": "post-stop"
             }
         ],
+        "workingDirectory": "/opt/work",
         "environment": {
             "REDUCE_WORKER_DEBUG": "true"
         },
