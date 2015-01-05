@@ -542,7 +542,10 @@ JSON Schema for the Container Runtime Manifest
             "app": "example.com/worker-backup-1.0.0",
             "imageID": "sha512-...",
             "isolators": [
-                {"name": "memory/limit" "val": "1G"}
+                {
+                    "name": "memory/limit",
+                    "val": "1G"
+                }
             ],
             "annotations": {
                 "foo": "baz"
@@ -569,14 +572,12 @@ JSON Schema for the Container Runtime Manifest
             ]
         }
     ],
-
-    "isolators": {
+    "isolators": [
         {
            "name": "memory/limit",
            "value": "4G"
         }
-    },
-
+    ],
     "annotations": {
         "ip-address": "10.1.2.3"
     }
