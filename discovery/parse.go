@@ -3,16 +3,9 @@ package discovery
 import (
 	"fmt"
 	"net/url"
-	"runtime"
 	"strings"
 
 	"github.com/appc/spec/schema/types"
-)
-
-const (
-	defaultVersion = "latest"
-	defaultOS      = runtime.GOOS
-	defaultArch    = runtime.GOARCH
 )
 
 type App struct {
@@ -62,10 +55,6 @@ func NewAppFromString(app string) (*App, error) {
 		}
 		labels[key] = val[0]
 	}
-	if labels["version"] == "" {
-		labels["version"] = defaultVersion
-	}
-
 	a, err := NewApp(name, labels)
 	if err != nil {
 		return nil, err

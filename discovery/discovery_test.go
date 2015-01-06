@@ -126,8 +126,8 @@ func TestDiscoverEndpoints(t *testing.T) {
 			[]string{"https://storage.example.com/example.com/myapp-1.0.0.aci"},
 			[]string{"https://example.com/pubkeys.gpg"},
 		},
-		// Test missing labels. En error should be return as no
-		// ac-discovery templates can be completely rendered.
+		// Test missing labels. version label should default to
+		// "latest" and the first template should be rendered
 		{
 			fakeHTTPGet("myapp2.html", 0),
 			false,
@@ -135,9 +135,9 @@ func TestDiscoverEndpoints(t *testing.T) {
 				Name:   "example.com/myapp",
 				Labels: map[string]string{},
 			},
-			[]string{},
-			[]string{},
-			[]string{},
+			[]string{"https://storage.example.com/example.com/myapp-latest.sig"},
+			[]string{"https://storage.example.com/example.com/myapp-latest.aci"},
+			[]string{"https://example.com/pubkeys.gpg"},
 		},
 		// Test with a label called "name". It should be ignored.
 		{
