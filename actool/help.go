@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"os"
 	"strings"
 	"text/template"
 
@@ -41,7 +40,7 @@ func init() {
 NAME:
 {{printf "\t%s - %s" .Executable .Description}}
 
-USAGE: 
+USAGE:
 {{printf "\t%s" .Executable}} [global options] <command> [command options] [arguments...]
 
 VERSION:
@@ -88,7 +87,7 @@ func runHelp(args []string) (exit int) {
 	}
 
 	if cmd == nil {
-		fmt.Fprintf(os.Stderr, "Unrecognized command: %s\n", args[0])
+		stderr("Unrecognized command: %s", args[0])
 		return 1
 	}
 

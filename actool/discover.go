@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/appc/spec/discovery"
@@ -25,7 +24,7 @@ func init() {
 
 func runDiscover(args []string) (exit int) {
 	if len(args) < 1 {
-		fmt.Fprintf(os.Stderr, "discover: at least one name required")
+		stderr("discover: at least one name required")
 	}
 
 	for _, name := range args {
