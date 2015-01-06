@@ -13,7 +13,7 @@ type ContainerRuntimeManifest struct {
 	Apps        AppList            `json:"apps"`
 	Volumes     []types.Volume     `json:"volumes"`
 	Isolators   []types.Isolator   `json:"isolators"`
-	Annotations []types.Annotation `json:"annotations"`
+	Annotations types.Annotations  `json:"annotations"`
 }
 
 // containerRuntimeManifest is a model to facilitate extra validation during the
@@ -73,5 +73,5 @@ type RuntimeApp struct {
 	Name        types.ACName       `json:"name"`
 	ImageID     types.Hash         `json:"imageID"`
 	Isolators   []types.Isolator   `json:"isolators"`
-	Annotations []types.Annotation `json:"annotations"`
+	Annotations types.Annotations  `json:"annotations"`
 }

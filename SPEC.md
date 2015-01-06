@@ -607,9 +607,9 @@ JSON Schema for the Container Runtime Manifest
     * **app** the name of the app (string, restricted to AC Name formatting)
     * **imageID** the content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
     * **isolators** the list of isolators that should be applied to this app (key is restricted to the AC Name formatting and the value can be a freeform string)
-    * **annotations** arbitrary metadata appended to the app (name is restricted to the AC Name formatting and the value can be a freeform string)
+    * **annotations** optional arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list.
 * **volumes** the list of volumes which should be mounted into each application's filesystem
     * **kind** string, currently either "empty" or "host" (bind mount)
     * **fulfills** the MountPoints of the containers that this volume can fulfill (string, restricted to AC Name formatting)
 * **isolators** the list of isolators that will apply to all apps in this container (name is restricted to the AC Name formatting and the value can be a freeform string)
-* **annotations** arbitrary metadata the executor should make available to applications via the metadata service (key is restricted to the AC Name formatting and the value can be a freeform string)
+* **annotations** optional arbitrary metadata the executor should make available to applications via the metadata service. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list.
