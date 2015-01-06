@@ -1,27 +1,43 @@
 package types
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"fmt"
+)
 
 // TODO(jonboulle): this is awkward since it's inconsistent with the way we do
 // things elsewhere (i.e. using strict types instead of string types), but it's
 // tricky because Annotations needs to be able to catch arbitrary key-values.
 // Clean this up somehow?
-type Annotations map[ACName]string
+type Annotations []Annotation
 
 type annotations Annotations
 
+type Annotation struct {
+	Name  ACName `json:"name"`
+	Value string `json:"val"`
+}
+
 func (a Annotations) assertValid() error {
-	if c, ok := a["created"]; ok {
+	seen := map[ACName]string{}
+	for _, anno := range a {
+		_, ok := seen[anno.Name]
+		if ok {
+			return fmt.Errorf(`duplicate annotations of name %q`, anno.Name)
+		}
+		seen[anno.Name] = anno.Value
+	}
+	if c, ok := seen["created"]; ok {
 		if _, err := NewDate(c); err != nil {
 			return err
 		}
 	}
-	if h, ok := a["homepage"]; ok {
+	if h, ok := seen["homepage"]; ok {
 		if _, err := NewURL(h); err != nil {
 			return err
 		}
 	}
-	if d, ok := a["documentation"]; ok {
+	if d, ok := seen["documentation"]; ok {
 		if _, err := NewURL(d); err != nil {
 			return err
 		}
@@ -48,4 +64,15 @@ func (a *Annotations) UnmarshalJSON(data []byte) error {
 	}
 	*a = na
 	return nil
+}
+
+// Retrieve the value of an annotation by the given name from Annotations, if
+// it exists.
+func (a Annotations) Get(name string) (val string, ok bool) {
+	for _, anno := range a {
+		if anno.Name.String() == name {
+			return anno.Value, true
+		}
+	}
+	return "", false
 }

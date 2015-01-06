@@ -7,13 +7,13 @@ import (
 )
 
 type ContainerRuntimeManifest struct {
-	ACVersion   types.SemVer            `json:"acVersion"`
-	ACKind      types.ACKind            `json:"acKind"`
-	UUID        types.UUID              `json:"uuid"`
-	Apps        AppList                 `json:"apps"`
-	Volumes     []types.Volume          `json:"volumes"`
-	Isolators   []types.Isolator        `json:"isolators"`
-	Annotations map[types.ACName]string `json:"annotations"`
+	ACVersion   types.SemVer       `json:"acVersion"`
+	ACKind      types.ACKind       `json:"acKind"`
+	UUID        types.UUID         `json:"uuid"`
+	Apps        AppList            `json:"apps"`
+	Volumes     []types.Volume     `json:"volumes"`
+	Isolators   []types.Isolator   `json:"isolators"`
+	Annotations []types.Annotation `json:"annotations"`
 }
 
 // containerRuntimeManifest is a model to facilitate extra validation during the
@@ -70,8 +70,8 @@ func (al AppList) Get(name types.ACName) *RuntimeApp {
 
 // RuntimeApp describes an application referenced in a ContainerRuntimeManifest
 type RuntimeApp struct {
-	Name        types.ACName            `json:"name"`
-	ImageID     types.Hash              `json:"imageID"`
-	Isolators   []types.Isolator        `json:"isolators"`
-	Annotations map[types.ACName]string `json:"annotations"`
+	Name        types.ACName       `json:"name"`
+	ImageID     types.Hash         `json:"imageID"`
+	Isolators   []types.Isolator   `json:"isolators"`
+	Annotations []types.Annotation `json:"annotations"`
 }

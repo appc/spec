@@ -68,3 +68,7 @@ func (im *ImageManifest) assertValid() error {
 func (im *ImageManifest) GetLabel(name string) (val string, ok bool) {
 	return im.Labels.Get(name)
 }
+
+func (im *ImageManifest) GetAnnotation(name string) (val string, ok bool) {
+	return im.Annotations.Get(name)
+}

@@ -100,10 +100,22 @@
         "/etc/reduce-worker.conf",
         "/etc/systemd/system/"
     ],
-    "annotations": {
-        "authors": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>",
-        "created": "2014-10-27T19:32:27.67021798Z",
-        "documentation": "https://example.com/docs",
-        "homepage": "https://example.com"
-    }
+    "annotations": [
+        {
+            "name": "authors",
+            "val": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>"
+        },
+        {
+            "name": "created",
+            "val": "2014-10-27T19:32:27.67021798Z"
+        },
+        {
+            "name": "documentation",
+            "val": "https://example.com/docs"
+        },
+        {
+            "name": "homepage",
+            "val": "https://example.com"
+        }
+    ]
 }
