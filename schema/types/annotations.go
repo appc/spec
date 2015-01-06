@@ -5,10 +5,6 @@ import (
 	"fmt"
 )
 
-// TODO(jonboulle): this is awkward since it's inconsistent with the way we do
-// things elsewhere (i.e. using strict types instead of string types), but it's
-// tricky because Annotations needs to be able to catch arbitrary key-values.
-// Clean this up somehow?
 type Annotations []Annotation
 
 type annotations Annotations
