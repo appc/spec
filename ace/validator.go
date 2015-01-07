@@ -547,3 +547,8 @@ func waitForFile(p string, to time.Duration) []error {
 		}
 	}
 }
+
+func stderr(format string, a ...interface{}) {
+	out := fmt.Sprintf(format, a...)
+	fmt.Fprintln(os.Stderr, strings.TrimSuffix(out, "\n"))
+}
