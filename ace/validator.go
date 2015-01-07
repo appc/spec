@@ -91,7 +91,7 @@ type results []error
 // main outputs diagnostic information to stderr and exits 1 if validation fails
 func main() {
 	if len(os.Args) != 2 {
-		fmt.Fprintf(os.Stderr, "usage: %s [main|sidekick|preStart|postStop]\n", os.Args[0])
+		stderr("usage: %s [main|sidekick|preStart|postStop]", os.Args[0])
 		os.Exit(64)
 	}
 	mode := os.Args[1]
@@ -106,7 +106,7 @@ func main() {
 	case "poststop":
 		res = validatePoststop()
 	default:
-		fmt.Fprintf(os.Stderr, "unrecognized mode: %s\b", mode)
+		stderr("unrecognized mode: %s", mode)
 		os.Exit(64)
 	}
 	if len(res) == 0 {
