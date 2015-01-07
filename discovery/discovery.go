@@ -22,6 +22,10 @@ type Endpoints struct {
 	Keys []string
 }
 
+const (
+	defaultVersion = "latest"
+)
+
 var (
 	templateExpression = regexp.MustCompile(`{.*?}`)
 )
@@ -95,6 +99,10 @@ func createTemplateVars(app App) []string {
 }
 
 func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
+	if app.Labels["version"] == "" {
+		app.Labels["version"] = defaultVersion
+	}
+
 	_, body, err := httpsOrHTTP(pre, insecure)
 	if err != nil {
 		return nil, err
