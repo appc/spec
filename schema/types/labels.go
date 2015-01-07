@@ -24,6 +24,9 @@ type Label struct {
 func (l Labels) assertValid() error {
 	seen := map[ACName]string{}
 	for _, lbl := range l {
+		if lbl.Name == "name" {
+			return fmt.Errorf(`invalid label name: "name"`)
+		}
 		_, ok := seen[lbl.Name]
 		if ok {
 			return fmt.Errorf(`duplicate labels of name %q`, lbl.Name)
