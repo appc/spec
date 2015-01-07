@@ -7,9 +7,9 @@ import (
 )
 
 var ValidOSArch = map[string][]string{
-	"linux":   []string{"amd64", "i386"},
-	"freebsd": []string{"amd64", "i386", "arm"},
-	"darwin":  []string{"x86_64", "i386"},
+	"linux":   {"amd64", "i386"},
+	"freebsd": {"amd64", "i386", "arm"},
+	"darwin":  {"x86_64", "i386"},
 }
 
 type Labels []Label
@@ -18,7 +18,7 @@ type labels Labels
 
 type Label struct {
 	Name  ACName `json:"name"`
-	Value string `json:"val"`
+	Value string `json:"value"`
 }
 
 func (l Labels) assertValid() error {

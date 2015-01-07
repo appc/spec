@@ -13,13 +13,13 @@
             "isolators": [
                 {
                     "name": "memory/limit",
-                    "val": "1G"
+                    "value": "1G"
                 }
             ],
             "annotations": [
                 {
                     "name": "foo",
-                    "val": "baz"
+                    "value": "baz"
                 }
             ]
         },
@@ -47,13 +47,13 @@
     "isolators": [
         {
             "name": "memory/limit",
-            "val": "4G"
+            "value": "4G"
         }
     ],
     "annotations": [
         {
             "name": "ip-address",
-            "val": "10.1.2.3"
+            "value": "10.1.2.3"
         }
     ]
 }

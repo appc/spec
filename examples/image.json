@@ -5,15 +5,15 @@
     "labels": [
         {
             "name": "version",
-            "val": "1.0.0"
+            "value": "1.0.0"
         },
         {
             "name": "arch",
-            "val": "amd64"
+            "value": "amd64"
         },
         {
             "name": "os",
-            "val": "linux"
+            "value": "linux"
         }
     ],
     "app": {
@@ -42,23 +42,23 @@
         "isolators": [
             {
                 "name": "private-network",
-                "val": "true"
+                "value": "true"
             },
             {
                 "name": "cpu/shares",
-                "val": "20"
+                "value": "20"
             },
             {
                 "name": "memory/limit",
-                "val": "1G"
+                "value": "1G"
             },
-	    {
-		"name": "cpu/mask",
-		"val": "0"
+            {
+                "name": "cpu/mask",
+                "value": "0"
             },
             {
                 "name": "capabilities/bounding-set",
-                "val": "CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"
+                "value": "CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"
             }
         ],
         "mountPoints": [
@@ -84,11 +84,11 @@
             "labels": [
                 {
                     "name": "os",
-                    "val": "linux"
+                    "value": "linux"
                 },
                 {
                     "name": "env",
-                    "val": "canary"
+                    "value": "canary"
                 }
             ]
         }
@@ -103,19 +103,19 @@
     "annotations": [
         {
             "name": "authors",
-            "val": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>"
+            "value": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>"
         },
         {
             "name": "created",
-            "val": "2014-10-27T19:32:27.67021798Z"
+            "value": "2014-10-27T19:32:27.67021798Z"
         },
         {
             "name": "documentation",
-            "val": "https://example.com/docs"
+            "value": "https://example.com/docs"
         },
         {
             "name": "homepage",
-            "val": "https://example.com"
+            "value": "https://example.com"
         }
     ]
 }
