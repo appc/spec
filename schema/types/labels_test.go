@@ -12,19 +12,19 @@ func TestLabels(t *testing.T) {
 		errPrefix string
 	}{
 		{
-			`[{"name": "os", "val": "linux"}, {"name": "arch", "val": "amd64"}]`,
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "amd64"}]`,
 			"",
 		},
 		{
-			`[{"name": "os", "val": "freebsd"}, {"name": "arch", "val": "amd64"}]`,
+			`[{"name": "os", "value": "freebsd"}, {"name": "arch", "value": "amd64"}]`,
 			"",
 		},
 		{
-			`[{"name": "os", "val": "OS/360"}, {"name": "arch", "val": "S/360"}]`,
+			`[{"name": "os", "value": "OS/360"}, {"name": "arch", "value": "S/360"}]`,
 			`bad os "OS/360"`,
 		},
 		{
-			`[{"name": "os", "val": "linux"}, {"name": "arch", "val": "arm"}]`,
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "arm"}]`,
 			`bad arch "arm" for linux`,
 		},
 		{
@@ -32,11 +32,11 @@ func TestLabels(t *testing.T) {
 			`invalid label name: "name"`,
 		},
 		{
-			`[{"name": "os", "val": "linux"}, {"name": "os", "val": "freebsd"}]`,
+			`[{"name": "os", "value": "linux"}, {"name": "os", "value": "freebsd"}]`,
 			`duplicate labels of name "os"`,
 		},
 		{
-			`[{"name": "arch", "val": "amd64"}, {"name": "os", "val": "freebsd"}, {"name": "arch", "val": "x86_64"}]`,
+			`[{"name": "arch", "value": "amd64"}, {"name": "os", "value": "freebsd"}, {"name": "arch", "value": "x86_64"}]`,
 			`duplicate labels of name "arch"`,
 		},
 		{

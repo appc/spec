@@ -11,7 +11,7 @@ type annotations Annotations
 
 type Annotation struct {
 	Name  ACName `json:"name"`
-	Value string `json:"val"`
+	Value string `json:"value"`
 }
 
 func (a Annotations) assertValid() error {
