@@ -314,7 +314,7 @@ Retrievable at `http://$AC_METADATA_URL/acMetadata/v1/container`
 
 | Entry       | Description |
 |-------------|-------------|
-|annotations/ | A directory of metadata values passed to the container.|
+|annotations/ | Top level annotations from container runtime manifest.|
 |manifest     | The container manifest JSON |
 |uid          | The unique execution container uid.|
 
@@ -327,7 +327,7 @@ Retrievable at `http://$AC_METADATA_URL/acMetadata/v1/apps/${ac_app_name}/`
 
 | Entry         | Description |
 |---------------|-------------|
-|annotations/   | A directory of metadata values on the entrypoint manifest.|
+|annotations/   | Annotations from image manifest merged with app annotations from container runtime manifest.|
 |image/manifest | The original manifest file of the app. |
 |image/id       | Cryptographic image ID this app is on.|
 
@@ -607,7 +607,7 @@ JSON Schema for the Container Runtime Manifest
     * **app** the name of the app (string, restricted to AC Name formatting)
     * **imageID** the content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
     * **isolators** the list of isolators that should be applied to this app (key is restricted to the AC Name formatting and the value can be a freeform string)
-    * **annotations** optional arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list.
+    * **annotations** optional arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** the list of volumes which should be mounted into each application's filesystem
     * **kind** string, currently either "empty" or "host" (bind mount)
     * **fulfills** the MountPoints of the containers that this volume can fulfill (string, restricted to AC Name formatting)
