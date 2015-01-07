@@ -329,18 +329,15 @@ func validateAppAnnotations(crm *schema.ContainerRuntimeManifest, app *schema.Im
 	// build a map of expected annotations by merging app.Annotations
 	// with ContainerRuntimeManifest overrides
 	expectedAnnots := app.Annotations
-	if expectedAnnots == nil {
-		expectedAnnots = make(types.Annotations)
-	}
 	a := crm.Apps.Get(app.Name)
 	if a == nil {
 		panic("could not find app in manifest!")
 	}
-	for k, v := range a.Annotations {
-		expectedAnnots[k] = v
+	for _, annot := range a.Annotations {
+		expectedAnnots.Set(annot.Name, annot.Value)
 	}
 
-	actualAnnots := make(types.Annotations)
+	actualAnnots := types.Annotations{}
 
 	annots, err := metadataGet("/apps/" + string(app.Name) + "/annotations/")
 	if err != nil {
@@ -363,7 +360,7 @@ func validateAppAnnotations(crm *schema.ContainerRuntimeManifest, app *schema.Im
 			continue
 		}
 
-		actualAnnots[*lbl] = string(val)
+		actualAnnots.Set(*lbl, string(val))
 	}
 
 	if !reflect.DeepEqual(actualAnnots, expectedAnnots) {
