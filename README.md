@@ -1,4 +1,6 @@
-# App Container 
+# App Container
+
+[![Build Status](https://travis-ci.org/appc/spec.png?branch=master)](https://travis-ci.org/appc/spec)
 
 ## Overview
 
