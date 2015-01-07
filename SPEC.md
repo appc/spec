@@ -470,12 +470,24 @@ JSON Schema for the Image Manifest
         "/etc/reduce-worker.conf",
         "/etc/systemd/system/"
     ],
-    "annotations": {
-        "authors": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>",
-        "created": "2014-10-27T19:32:27.67021798Z",
-        "documentation": "https://example.com/docs",
-        "homepage": "https://example.com"
-    }
+    "annotations": [
+        {
+            "name": "authors",
+            "val": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>"
+        },
+        {
+            "name": "created",
+            "val": "2014-10-27T19:32:27.67021798Z"
+        },
+        {
+            "name": "documentation",
+            "val": "https://example.com/docs"
+        },
+        {
+            "name": "homepage",
+            "val": "https://example.com"
+        }
+    ]
 }
 ```
 
@@ -501,7 +513,7 @@ JSON Schema for the Image Manifest
     * **imageID** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels** are optional, and should be a list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (optional, list of strings). This is the complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
-* **annotations** key/value store that can be used by systems outside of the ACE (ACE can override). The key is restricted to the [AC Name](#ac-name-type) formatting. If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
+* **annotations** are optional, and should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
     * **created** is the date on which this container was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
     * **authors** contact details of the people or organization responsible for the containers (freeform string)
     * **homepage** URL to find more information on the container (string, must be a URL with scheme HTTP or HTTPS)
@@ -547,9 +559,10 @@ JSON Schema for the Container Runtime Manifest
                     "val": "1G"
                 }
             ],
-            "annotations": {
-                "foo": "baz"
-            }
+            "annotations": [
+                "name": "foo",
+                "val": "baz"
+            ]
         },
         {
             "app": "example.com/reduce-worker-register-1.0.0",
@@ -575,12 +588,15 @@ JSON Schema for the Container Runtime Manifest
     "isolators": [
         {
            "name": "memory/limit",
-           "value": "4G"
+           "val": "4G"
         }
     ],
-    "annotations": {
-        "ip-address": "10.1.2.3"
-    }
+    "annotations": [
+        {
+           "name": "ip-address",
+           "val": "10.1.2.3"
+        }
+    ]
 }
 ```
 
@@ -591,9 +607,9 @@ JSON Schema for the Container Runtime Manifest
     * **app** the name of the app (string, restricted to AC Name formatting)
     * **imageID** the content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
     * **isolators** the list of isolators that should be applied to this app (key is restricted to the AC Name formatting and the value can be a freeform string)
-    * **annotations** arbitrary metadata appended to the app (key is restricted to the AC Name formatting and the value can be a freeform string)
+    * **annotations** optional arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list.
 * **volumes** the list of volumes which should be mounted into each application's filesystem
     * **kind** string, currently either "empty" or "host" (bind mount)
     * **fulfills** the MountPoints of the containers that this volume can fulfill (string, restricted to AC Name formatting)
 * **isolators** the list of isolators that will apply to all apps in this container (name is restricted to the AC Name formatting and the value can be a freeform string)
-* **annotations** arbitrary metadata the executor should make available to applications via the metadata service (key is restricted to the AC Name formatting and the value can be a freeform string)
+* **annotations** optional arbitrary metadata the executor should make available to applications via the metadata service. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list.

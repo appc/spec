@@ -16,9 +16,12 @@
                     "val": "1G"
                 }
             ],
-            "annotations": {
-                "foo": "baz"
-            }
+            "annotations": [
+                {
+                    "name": "foo",
+                    "val": "baz"
+                }
+            ]
         },
         {
             "app": "example.com/reduce-worker-register",
@@ -47,7 +50,10 @@
             "val": "4G"
         }
     ],
-    "annotations": {
-        "ipAddress": "10.1.2.3"
-    }
+    "annotations": [
+        {
+            "name": "ip-address",
+            "val": "10.1.2.3"
+        }
+    ]
 }
