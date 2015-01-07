@@ -2,11 +2,11 @@ package discovery
 
 import (
 	"bytes"
-	"strings"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"errors"
+	"strings"
 	"testing"
 )
 
@@ -57,11 +57,11 @@ func fakeHttpOrHttpsGet(filename string, httpSuccess bool, httpsSuccess bool, ht
 
 func TestHttpsOrHTTP(t *testing.T) {
 	tests := []struct {
-		name		string
-		insecure	bool
-		get		httpgetter
-		expectUrlStr	string
-		expectSuccess	bool
+		name          string
+		insecure      bool
+		get           httpgetter
+		expectUrlStr  string
+		expectSuccess bool
 	}{
 		{
 			"good-server",
@@ -119,7 +119,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 			}
 			if urlStr != tt.expectUrlStr {
 				t.Fatalf("#%d httpsOrHTTP urlStr mismatch: want %s got %s",
-				         i, tt.expectUrlStr, urlStr)
+					i, tt.expectUrlStr, urlStr)
 			}
 			if body == nil {
 				t.Fatalf("#%d httpsOrHTTP didn't return a body", i)
@@ -137,4 +137,3 @@ func TestHttpsOrHTTP(t *testing.T) {
 		}
 	}
 }
-
