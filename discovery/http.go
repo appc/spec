@@ -27,13 +27,13 @@ func httpsOrHTTP(name string, insecure bool) (urlStr string, body io.ReadCloser,
 	}
 	urlStr, res, err := fetch("https")
 	if err != nil || res.StatusCode != http.StatusOK {
-		closeBody(res)
 		if insecure {
+			closeBody(res)
 			urlStr, res, err = fetch("http")
 		}
 	}
 
-	if res.StatusCode != http.StatusOK {
+	if res != nil && res.StatusCode != http.StatusOK {
 		err = fmt.Errorf("expected a 200 OK got %d", res.StatusCode)
 	}
 
