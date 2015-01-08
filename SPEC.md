@@ -25,34 +25,35 @@ To achieve these goals this specification is split out into a number of smaller 
 
 To provide context to the specs outlined below we will walk through an example.
 
-A user wants to launch a container running two processes.
-The two processes the user wants to run are the apps named `example.com/reduce-worker-register` and `example.com/reduce-worker`.
+A user wants to launch a container running three processes.
+The three processes the user wants to run are the apps named `example.com/reduce-worker-register`, `example.com/reduce-worker`, and `example.com/reduce-backup`.
 First, the executor will check the cache and find that it doesn't have images available for these apps.
 So, it will make an HTTPS request to example.com and using the `<meta>` tags there finds that the containers can be found at:
 
-	https://storage-mirror.example.com/reduce-worker-register.aci
 	https://storage-mirror.example.com/reduce-worker.aci
+	https://storage-mirror.example.com/worker-backup.aci
+	https://storage-mirror.example.com/reduce-worker-register.aci
 
-The executor downloads these two images and puts them into its local on-disk cache.
-Then the executor extracts two fresh copies of the images to create instances of the "on-disk app format" and reads the two image manifests to figure out what binaries will need to be executed.
+The executor downloads these three images and puts them into its local on-disk cache.
+Then the executor extracts three fresh copies of the images to create instances of the "on-disk app format" and reads the three image manifests to figure out what binaries will need to be executed.
 
-Based on user input the executor now sets up the necessary cgroups, network interfaces, etc and forks the `register` and `reduce-worker` processes in their shared namespaces inside the container.
+Based on user input, the executor now sets up the necessary cgroups, network interfaces, etc. and runs the `pre-start` event handlers for each app.
+Next, it forks the `reduce-worker`, `worker-backup`, and `register` processes in their shared namespaces inside the container, chrooted into their respective root filesystems.
 
 At some point, the container will get some notification that it needs to stop.
 The executor will send `SIGTERM` to the processes and after they have exited the `post-stop` event handlers for each app will run.
 
-Now, let's dive into the pieces that took us from two URLs to a running container on our system.
+Now, let's dive into the pieces that took us from three URLs to a running container on our system.
 
 ## App Container Image
 
 An *App Container Image* (ACI) contains all files and metadata needed to execute a given app.
 In some ways you can think of an ACI as equivalent to a static binary.
-This file layout must be followed for the app to be executed by an Executor.
 
 ### Image Layout
 
 The on-disk layout of an app container is straightforward.
-It includes a *rootfs* with all of the files that will exist in the root of the app and an *image manifest* describing the contents of the image and how to execute the app.
+It includes a *rootfs* with all of the files that will exist in the root of the app, and an *app image manifest* describing the contents of the image and how to execute the app.
 
 ```
 /manifest
@@ -64,11 +65,11 @@ It includes a *rootfs* with all of the files that will exist in the root of the 
 ### Image Archives
 
 The ACI archive format aims for flexibility and relies on very boring technologies: HTTP, gpg, tar and gzip.
-This set of formats makes it easy to build, host and secure a container using technologies that are battle tested.
+This set of formats makes it easy to build, host and secure a container using technologies that are battle-tested.
 
 Image archives MUST be a tar formatted file.
-The image may be optionally compressed with gzip, bzip2 or xz.
-After compression images may also be encrypted with AES symmetric encryption.
+The image may be optionally compressed with gzip, bzip2, or xz.
+After compression, images may also be encrypted with AES symmetric encryption.
 
 ```
 tar cvf reduce-worker.tar app rootfs
@@ -82,31 +83,31 @@ Optional encryption:
 gpg --output reduce-worker.aci --digest-algo sha256 --cipher-algo AES256 --symmetric reduce-worker.aci
 ```
 
-All files in the image must maintain all of their original properties including: timestamps, Unix modes and extended attributes (xattrs).
+All files in the image must maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
 
 An image is addressed and verified against the hash of its uncompressed tar file, the _image ID_.
 The default digest format is sha512, but all hash IDs in this format are prefixed by the algorithm used (e.g. sha512-a83...).
 
 ```
-echo sha512-$(sha512sum reduce-worker.tar |awk '{print $1}')
+echo sha512-$(sha512sum reduce-worker.tar | awk '{print $1}')
 ```
 
 **Note**: the key distribution mechanism is not defined here.
 Implementations of the app container spec will need to provide a mechanism for users to configure the list of signing keys to trust or use the key discovery described in "App Container Image Discovery".
 
-Example application container image builder: **TODO** link to actool
+An example application container image builder is [actool](https://github.com/appc/spec/tree/master/actool).
 
 ### Image Manifest
 
-The [image manifest](#image-manifest-schema) is a JSON file that includes details about the contents of the app image, and optionally information about how to execute a process inside the app image's rootfs.
+The [image manifest](#image-manifest-schema) is a JSON file that includes details about the contents of the ACI, and optionally information about how to execute a process inside the ACI's rootfs.
 If included, execution details include mount points that should exist, the user, the command args, default cgroup settings and more.
 The manifest may also define binaries to execute in response to lifecycle events of the main process such as *pre-start* and *post-stop*.
 
 Image manifests MAY specify dependencies, which describe how to assemble the final rootfs from a collection of other images.
 As an example, you might have an app that needs special certificates layered into its filesystem.
-In this case, you can reference the name "example.com/trusted-certificate-authority" as a dependency in the app image manifest.
-The dependencies are applied in order and each app image dependency can overwrite files from the previous dependency.
-An optional path whitelist can be used to omit certain files from dependencies being included in the final assembled rootfs.
+In this case, you can reference the name "example.com/trusted-certificate-authority" as a dependency in the image manifest.
+The dependencies are applied in order and each image dependency can overwrite files from the previous dependency.
+An optional path whitelist can be provided, in which case all non-specified files from all dependencies will be omitted in the final, assembled rootfs.
 
 Image Format TODO
 
@@ -135,7 +136,7 @@ The "*executor*" perspective consists of the steps that the container executor m
 #### Filesystem Setup
 
 Every execution of an app container should start from a clean copy of the app image.
-The simplest implementation will take an application container image and extract it into a new directory:
+The simplest implementation will take an application container image (ACI) and extract it into a new directory:
 
 ```
 cd $(mktemp -d -t temp.XXXX)
@@ -149,7 +150,7 @@ These details are orthogonal to the runtime environment.
 #### Container Runtime Manifest
 
 A container executes one or more apps with shared PID namespace, network namespace, mount namespace, IPC namespace and UTS namespace.
-Each app will start pivoted (i.e. chrooted) into its own unique read-write rootfs before execution.
+Each app will start chrooted into its own unique read-write rootfs before execution.
 The definition of the container is a list of apps that should be launched together, along with isolators that should apply to the entire container.
 This is codified in a [Container Runtime Manifest](#container-runtime-manifest-schema).
 
@@ -169,7 +170,7 @@ In this case, the container executor will bind mount the host's `/opt/tenant1/da
 
 #### Network Setup
 
-An App Container must have a [layer 3](http://en.wikipedia.org/wiki/Network_layer) (commonly called the IP layer) network interface; this can be instantiated in any number of ways (e.g. veth, macvlan, ipvlan, device pass-through).
+An App Container must have a [layer 3](http://en.wikipedia.org/wiki/Network_layer) (commonly called the IP layer) network interface, which can be instantiated in any number of ways (e.g. veth, macvlan, ipvlan, device pass-through).
 The network interface should be configured with an IPv4/IPv6 address that is reachable from other containers.
 
 #### Logging
@@ -188,8 +189,8 @@ Note that logging mechanisms other than stdout and stderr are not required by th
 * **USER, LOGNAME** username of the user executing this app
 * **HOME** home directory of the user
 * **SHELL** login shell of the user
-* **AC_APP_NAME** name of the application (as defined in the image manifest)
-* **AC_METADATA_URL** URL that the metadata service for this container can be found
+* **AC_APP_NAME** name of the application, as defined in the image manifest
+* **AC_METADATA_URL** URL where the metadata service for this container can be found
 
 ### Isolators
 
@@ -199,15 +200,15 @@ Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
 |Name|Type|Schema|Example|
-|-------------------------|------|------------------------------------|----------------|
-|cpu/shares               |string|"&lt;uint&gt;"                      |"4096"          |
-|memory/limit             |string|"&lt;bytes&gt;"                     |"1G", "5T", "4K"|
-|cpu/mask                 |string|"&lt;cpu range&gt;"                 |"0", "0-3", "0,2,4-7"|
-|blockIO/readBandwidth    |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"       |
-|blockIO/writeBandwidth   |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"       |
-|networkIO/readBandwidth  |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"     |
-|networkIO/writeBandwidth |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"     |
-|privateNetwork           |string|"&lt;true&#124;false&gt;"           |"true"          |
+|-------------------------|------|------------------------------------|------------------------------------|
+|cpu/shares               |string|"&lt;uint&gt;"                      |"4096"                              |
+|memory/limit             |string|"&lt;bytes&gt;"                     |"1G", "5T", "4K"                    |
+|cpu/mask                 |string|"&lt;cpu range&gt;"                 |"0", "0-3", "0,2,4-7"               |
+|blockIO/readBandwidth    |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
+|blockIO/writeBandwidth   |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
+|networkIO/readBandwidth  |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
+|networkIO/writeBandwidth |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
+|privateNetwork           |string|"&lt;true&#124;false&gt;"           |"true"                              |
 |capabilities/boundingSet |string|"&lt;cap&gt; &lt;cap&gt; ..."       |"CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"|
 
 #### Types
@@ -251,8 +252,8 @@ Then inspect the HTML returned for meta tags that have the following format:
 <meta name="ac-discovery-pubkeys" content="prefix-match url">
 ```
 
-* `ac-discovery` should contain a URL template that can be rendered to retrieve the app image or signature
-* `ac-discovery-pubkeys` should contain a URL that provides a set of public keys that can be used to verify the signature of the app image
+* `ac-discovery` should contain a URL template that can be rendered to retrieve the ACI or signature
+* `ac-discovery-pubkeys` should contain a URL that provides a set of public keys that can be used to verify the signature of the ACI
 
 Some examples for different schemes and URLs:
 
@@ -268,7 +269,7 @@ The algorithm first ensures that the prefix of the AC Name matches the prefix-ma
 curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
-where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `sig` for retrieving an app image or signature respectively.
+where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `sig` for retrieving an app container image or signature respectively.
 
 In our example above this would be:
 
@@ -283,11 +284,11 @@ This mechanism is only used for discovery of contents URLs.
 If the first attempt at fetching the discovery URL returns a status code other than `200 OK` or does not contain any `ac-discovery` meta tags then the next higher path in the name should be tried.
 For example if the user has `example.com/project/subproject` and we first try `example.com/project/subproject` but don't find a meta tag then try `example.com/project` then try `example.com`.
 
-Anything implementing this spec should enforce any signing rules set in place by the operator and ensure the image manifest provided by the fetched app image are all prefixed from the same domain.
+Anything implementing this spec should enforce any signing rules set in place by the operator, and ensure the image manifest provided by the fetched ACI are all prefixed from the same domain.
 
 Discovery URLs that require interpolation are [RFC6570](https://tools.ietf.org/html/rfc6570) URI templates.
 
-Inspired by: https://golang.org/cmd/go/#hdr-Remote_import_paths
+Inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
 ## App Container Metadata Service
 
@@ -314,22 +315,22 @@ Retrievable at `http://$AC_METADATA_URL/acMetadata/v1/container`
 
 | Entry       | Description |
 |-------------|-------------|
-|annotations/ | Top level annotations from container runtime manifest.|
-|manifest     | The container manifest JSON |
-|uid          | The unique execution container uid.|
+|annotations/ | Top level annotations from container runtime manifest. |
+|manifest     | The container manifest JSON. |
+|uid          | The unique execution container uid. |
 
 ### App Metadata
 
 Every running process will be able to introspect its App Name via the `AC_APP_NAME` environment variable.
 This is necessary to query for the correct endpoint metadata.
 
-Retrievable at `http://$AC_METADATA_URL/acMetadata/v1/apps/${ac_app_name}/`
+Retrievable at `http://$AC_METADATA_URL/acMetadata/v1/apps/$AC_APP_NAME/`
 
 | Entry         | Description |
 |---------------|-------------|
-|annotations/   | Annotations from image manifest merged with app annotations from container runtime manifest.|
+|annotations/   | Annotations from image manifest merged with app annotations from container runtime manifest. |
 |image/manifest | The original manifest file of the app. |
-|image/id       | Cryptographic image ID this app is on.|
+|image/id       | Image ID (digest) this app is contained in. |
 
 ### Identity Endpoint
 
@@ -340,7 +341,7 @@ Accessible at `http://169.254.169.255/acMetadata/v1/container/hmac`
 
 | Entry | Description |
 |-------|-------------|
-|sign   | POST any object to this endpoint and retrieve a base64 hmac-sha256 signature as the response body. The metadata service holds onto the AES key as a sort of container TPM.|
+|sign   | POST any object to this endpoint and retrieve a base64 hmac-sha256 signature as the response body. The metadata service holds onto the AES key as a sort of container TPM. |
 |verify | Verify a signature from another container. POST a form with signature=&lt;base64 encoded signature&gt; and uid=&lt;uid of the container that generated the signature&gt;. Returns 200 OK if the signature passes. |
 
 
@@ -364,7 +365,7 @@ The schema validator will ensure that the keys conform to these constraints.
 
 ### Image Manifest Schema
 
-JSON Schema for the Image Manifest
+JSON Schema for the Image Manifest (app image manifest, ACI manifest)
 
 ```
 {
@@ -509,7 +510,7 @@ JSON Schema for the Image Manifest
         * **socketActivated** if this is set to true then the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
     * **isolators** is a list of well-known and optional isolation steps that should be applied to the app. **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** can be a freeform string. Any isolators specified in the Image Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
 * **dependencies** list of dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
-    * **app** name of the dependent app image (required).
+    * **app** name of the dependent app container image (required).
     * **imageID** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels** are optional, and should be a list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (optional, list of strings). This is the complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
@@ -527,7 +528,7 @@ If any labels are specified in the dependency, they are passed to the image disc
 
 If the image discovery process successfully returns an image, it will be compared as follows
 If the dependency specification has an image ID, it will be compared against the hash of image returned, and must match.
-Otherwise, the labels in the dependency specification are compared against the labels in the retrieved app image (i.e. in its ImageManifest), and must match.
+Otherwise, the labels in the dependency specification are compared against the labels in the retrieved ACI (i.e. in its ImageManifest), and must match.
 A label is considered to match if it meets one of three criteria:
 - It is present in the dependency specification and present in the dependency's ImageManifest with the same value.
 - It is absent from the dependency specification and present in the dependency's ImageManifest, with any value.
@@ -537,7 +538,7 @@ Alternatively, an AppImage might specify a dependency with no image ID and no "v
 
 ### Container Runtime Manifest Schema
 
-JSON Schema for the Container Runtime Manifest
+JSON Schema for the Container Runtime Manifest (container manifest)
 
 ```
 {
