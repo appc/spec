@@ -374,15 +374,15 @@ JSON Schema for the Image Manifest
     "labels": [
         {
             "name": "version",
-            "val": "1.0.0"
+            "value": "1.0.0"
         },
         {
             "name": "arch",
-            "val": "amd64"
+            "value": "amd64"
         },
         {
             "name": "os",
-            "val": "linux"
+            "value": "linux"
         }
     ],
     "app": {
@@ -412,23 +412,23 @@ JSON Schema for the Image Manifest
         "isolators": [
             {
                 "name": "private-network",
-                "val": "true"
+                "value": "true"
             },
             {
                 "name": "cpu/shares",
-                "val": "20"
+                "value": "20"
             },
             {
                 "name": "memory/limit",
-                "val": "1G"
+                "value": "1G"
             },
             {
                 "name": "cpu/mask",
-                "val": "0-3"
+                "value": "0-3"
             },
             {
                 "name": "capabilities/bounding-set",
-                "val": "CAP_NET_BIND_SERVICECAP_SYS_ADMIN"
+                "value": "CAP_NET_BIND_SERVICECAP_SYS_ADMIN"
             }
         ],
         "mountPoints": [
@@ -454,11 +454,11 @@ JSON Schema for the Image Manifest
             "labels": [
                 {
                     "name": "os",
-                    "val": "linux"
+                    "value": "linux"
                 },
                 {
                     "name": "env",
-                    "val": "canary"
+                    "value": "canary"
                 }
             ]
         }
@@ -473,19 +473,19 @@ JSON Schema for the Image Manifest
     "annotations": [
         {
             "name": "authors",
-            "val": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>"
+            "value": "Carly Container <carly@example.com>, Nat Network <[nat@example.com](mailto:nat@example.com)>"
         },
         {
             "name": "created",
-            "val": "2014-10-27T19:32:27.67021798Z"
+            "value": "2014-10-27T19:32:27.67021798Z"
         },
         {
             "name": "documentation",
-            "val": "https://example.com/docs"
+            "value": "https://example.com/docs"
         },
         {
             "name": "homepage",
-            "val": "https://example.com"
+            "value": "https://example.com"
         }
     ]
 }
@@ -494,7 +494,7 @@ JSON Schema for the Image Manifest
 * **acKind** is required and must be set to "ImageManifest"
 * **acVersion** is required and represents the version of the schema specification that the manifest implements (string, must be in [semver](http://semver.org/) format)
 * **name** is required, and will be used as a human readable index to the container image. (string, restricted to the AC Name formatting)
-* **labels** are optional, and should be a list of label objects (where the *name* is restricted to the AC Name formatting and *val* is an arbitrary string). Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Labels are used during image discovery and dependency resolution. Several well-known labels are defined:
+* **labels** are optional, and should be a list of label objects (where the *name* is restricted to the AC Name formatting and *value* is an arbitrary string). Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Labels are used during image discovery and dependency resolution. Several well-known labels are defined:
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
     * **os**, **arch** These two labels can be considered to describe the syscall ABI this image requires. **arch** is meaningful only if **os** is provided. If one or both values are not provided, the image is assumed to be OS- and/or architecture-independent. Currently supported combinations are listed in the [`types.ValidOSArch`](schema/types/labels.go) variable, which can be updated by an implementation that supports other combinations. The combinations whitelisted by default are (in format `os/arch`): `linux/amd64`, `linux/i386`, `freebsd/amd64`, `freebsd/i386`, `freebsd/arm`, `darwin/x86_64`, `darwin/i386`.
 * **app** is optional. If present, this defines the default parameters that can be used to execute this image as an application.
@@ -507,13 +507,13 @@ JSON Schema for the Image Manifest
     * **mountPoints** are the locations where a container is expecting external data to be mounted. The name indicates an executor-defined label to look up a mount point, and the path stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. "readOnly" should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
     * **ports** are the protocols and port numbers that the container will be listening on once started. The key is restricted to the AC Name formatting. This information is primarily informational to help the user find ports that are not well known. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **socketActivated** if this is set to true then the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
-    * **isolators** is a list of well-known and optional isolation steps that should be applied to the app. **name** is restricted to the [AC Name](#ac-name-type) formatting and **val** can be a freeform string. Any isolators specified in the Image Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
+    * **isolators** is a list of well-known and optional isolation steps that should be applied to the app. **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** can be a freeform string. Any isolators specified in the Image Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
 * **dependencies** list of dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
     * **app** name of the dependent app image (required).
     * **imageID** content hash of the dependency (optional). If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels** are optional, and should be a list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (optional, list of strings). This is the complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
-* **annotations** are optional, and should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
+* **annotations** are optional, and should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string). Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
     * **created** is the date on which this container was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
     * **authors** contact details of the people or organization responsible for the containers (freeform string)
     * **homepage** URL to find more information on the container (string, must be a URL with scheme HTTP or HTTPS)
@@ -556,12 +556,12 @@ JSON Schema for the Container Runtime Manifest
             "isolators": [
                 {
                     "name": "memory/limit",
-                    "val": "1G"
+                    "value": "1G"
                 }
             ],
             "annotations": [
                 "name": "foo",
-                "val": "baz"
+                "value": "baz"
             ]
         },
         {
@@ -588,13 +588,13 @@ JSON Schema for the Container Runtime Manifest
     "isolators": [
         {
            "name": "memory/limit",
-           "val": "4G"
+           "value": "4G"
         }
     ],
     "annotations": [
         {
            "name": "ip-address",
-           "val": "10.1.2.3"
+           "value": "10.1.2.3"
         }
     ]
 }
@@ -607,9 +607,9 @@ JSON Schema for the Container Runtime Manifest
     * **app** the name of the app (string, restricted to AC Name formatting)
     * **imageID** the content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
     * **isolators** the list of isolators that should be applied to this app (key is restricted to the AC Name formatting and the value can be a freeform string)
-    * **annotations** optional arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
+    * **annotations** optional arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** the list of volumes which should be mounted into each application's filesystem
     * **kind** string, currently either "empty" or "host" (bind mount)
     * **fulfills** the MountPoints of the containers that this volume can fulfill (string, restricted to AC Name formatting)
 * **isolators** the list of isolators that will apply to all apps in this container (name is restricted to the AC Name formatting and the value can be a freeform string)
-* **annotations** optional arbitrary metadata the executor should make available to applications via the metadata service. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *val* is an arbitrary string). Annotation names must be unique within the list.
+* **annotations** optional arbitrary metadata the executor should make available to applications via the metadata service. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string). Annotation names must be unique within the list.

@@ -3,9 +3,9 @@
     "acKind": "ImageManifest",
     "name": "coreos.com/ace-validator-main",
     "labels": [
-        { "name": "version", "val": "0.1.1" },
-        { "name": "os", "val": "linux" },
-        { "name": "arch", "val": "amd64" }
+        { "name": "version", "value": "0.1.1" },
+        { "name": "os", "value": "linux" },
+        { "name": "arch", "value": "amd64" }
     ],
     "app": {
         "exec": [
@@ -48,11 +48,11 @@
         "isolators": [
             {
                 "name": "private-network",
-                "val": "true"
+                "value": "true"
             },
             {
                 "name": "memory/limit",
-                "val": "1G"
+                "value": "1G"
             }
         ]
     },

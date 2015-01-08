@@ -32,8 +32,8 @@ $ cat /tmp/my-app/manifest
     "acVersion": "0.1.1",
     "name": "my-app",
     "labels": [
-        {"name": "os", "val": "linux"},
-        {"name": "arch", "val": "amd64"}
+        {"name": "os", "value": "linux"},
+        {"name": "arch", "value": "amd64"}
     ],
     "app": {
         "exec": [
@@ -79,11 +79,11 @@ tar xf /tmp/my-app.aci manifest -O | python -m json.tool
     "labels": [
         {
             "name": "os",
-            "val": "linux"
+            "value": "linux"
         },
         {
             "name": "arch",
-            "val": "amd64"
+            "value": "amd64"
         }
     ],
     "name": "my-app",
