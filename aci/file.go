@@ -1,12 +1,19 @@
 package aci
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/bzip2"
+	"compress/gzip"
 	"encoding/hex"
+	"errors"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os/exec"
+
+	"github.com/appc/spec/schema"
 )
 
 type FileType string
@@ -99,4 +106,90 @@ func XzReader(r io.Reader) io.ReadCloser {
 	}()
 
 	return rpipe
+}
+
+// ManifestFromImage extracts a new schema.ImageManifest from the given ACI image.
+func ManifestFromImage(rs io.ReadSeeker) (*schema.ImageManifest, error) {
+	var im schema.ImageManifest
+	manifestFound := false
+
+	tr, err := NewCompressedTarReader(rs)
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		hdr, err := tr.Next()
+		if err != nil {
+			return nil, err
+		}
+		if hdr.Name == "manifest" {
+			data, err := ioutil.ReadAll(tr)
+			if err != nil {
+				return nil, err
+			}
+			if err := im.UnmarshalJSON(data); err != nil {
+				return nil, err
+			}
+			manifestFound = true
+			break
+		}
+	}
+
+	if !manifestFound {
+		return nil, errors.New("error: missing manifest")
+	}
+	return &im, nil
+}
+
+// NewCompressedTarReader creates a new tar.Reader reading from the given ACI image.
+func NewCompressedTarReader(rs io.ReadSeeker) (*tar.Reader, error) {
+	cr, err := NewCompressedReader(rs)
+	if err != nil {
+		return nil, err
+	}
+	return tar.NewReader(cr), nil
+}
+
+// NewCompressedReader creates a new io.Reader from the given ACI image.
+func NewCompressedReader(rs io.ReadSeeker) (io.Reader, error) {
+
+	var (
+		dr  io.Reader
+		err error
+	)
+
+	_, err = rs.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	ftype, err := DetectFileType(rs)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = rs.Seek(0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	switch ftype {
+	case TypeGzip:
+		dr, err = gzip.NewReader(rs)
+		if err != nil {
+			return nil, err
+		}
+	case TypeBzip2:
+		dr = bzip2.NewReader(rs)
+	case TypeXz:
+		dr = XzReader(rs)
+	case TypeTar:
+		dr = rs
+	case TypeUnknown:
+		return nil, errors.New("error: unknown image filetype")
+	default:
+		return nil, errors.New("no type returned from DetectFileType?")
+	}
+	return dr, nil
 }

@@ -14,8 +14,8 @@ COVER=${COVER:-"-cover"}
 
 source ./build
 
-TESTABLE_AND_FORMATTABLE="discovery schema/types"
-FORMATTABLE="$TESTABLE_AND_FORMATTABLE ace aci actool schema pkg/tarheader"
+TESTABLE_AND_FORMATTABLE="aci discovery schema/types"
+FORMATTABLE="$TESTABLE_AND_FORMATTABLE ace actool schema pkg/tarheader"
 
 # user has not provided PKG override
 if [ -z "$PKG" ]; then
