@@ -606,6 +606,7 @@ JSON Schema for the Container Runtime Manifest (container manifest)
 * **uuid** an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt) that represents this instance of the container (string, must be in [RFC4122](http://www.ietf.org/rfc/rfc4122.txt) format)
 * **apps** the list of apps that will execute inside of this container
     * **app** the name of the app (string, restricted to AC Name formatting)
+    * **labels** are optional, and should be a list of label objects as specified under[Image Manifest Schema](#image-manifest-schema).
     * **imageID** the content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
     * **isolators** the list of isolators that should be applied to this app (key is restricted to the AC Name formatting and the value can be a freeform string)
     * **annotations** optional arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
