@@ -59,6 +59,8 @@ func TestHttpsOrHTTP(t *testing.T) {
 	tests := []struct {
 		name          string
 		insecure      bool
+		httpPort      uint
+		httpsPort     uint
 		get           httpgetter
 		expectUrlStr  string
 		expectSuccess bool
@@ -66,6 +68,8 @@ func TestHttpsOrHTTP(t *testing.T) {
 		{
 			"good-server",
 			false,
+			0,
+			0,
 			fakeHttpOrHttpsGet("myapp.html", true, true, 0),
 			"https://good-server?ac-discovery=1",
 			true,
@@ -73,6 +77,8 @@ func TestHttpsOrHTTP(t *testing.T) {
 		{
 			"file-not-found",
 			false,
+			0,
+			0,
 			fakeHttpOrHttpsGet("myapp.html", false, false, 404),
 			"",
 			false,
@@ -80,6 +86,8 @@ func TestHttpsOrHTTP(t *testing.T) {
 		{
 			"completely-broken-server",
 			false,
+			0,
+			0,
 			fakeHttpOrHttpsGet("myapp.html", false, false, 0),
 			"",
 			false,
@@ -87,6 +95,8 @@ func TestHttpsOrHTTP(t *testing.T) {
 		{
 			"file-only-on-http",
 			false, // do not accept fallback on http
+			0,
+			0,
 			fakeHttpOrHttpsGet("myapp.html", true, false, 404),
 			"",
 			false,
@@ -94,6 +104,8 @@ func TestHttpsOrHTTP(t *testing.T) {
 		{
 			"file-only-on-http",
 			true, // accept fallback on http
+			0,
+			0,
 			fakeHttpOrHttpsGet("myapp.html", true, false, 404),
 			"http://file-only-on-http?ac-discovery=1",
 			true,
@@ -101,15 +113,35 @@ func TestHttpsOrHTTP(t *testing.T) {
 		{
 			"https-server-is-down",
 			true, // accept fallback on http
+			0,
+			0,
 			fakeHttpOrHttpsGet("myapp.html", true, false, 0),
 			"http://https-server-is-down?ac-discovery=1",
+			true,
+		},
+		{
+			"custom-http-port-file-on-http",
+			true, // accept fallback on http
+			8080,
+			0,
+			fakeHttpOrHttpsGet("myapp.html", true, false, 404),
+			"http://custom-http-port-file-on-http:8080?ac-discovery=1",
+			true,
+		},
+		{
+			"custom-https-port-file-on-https",
+			true, // accept fallback on http
+			8080,
+			8090,
+			fakeHttpOrHttpsGet("myapp.html", true, true, 0),
+			"https://custom-https-port-file-on-https:8090?ac-discovery=1",
 			true,
 		},
 	}
 
 	for i, tt := range tests {
 		httpGet = tt.get
-		urlStr, body, err := httpsOrHTTP(tt.name, tt.insecure)
+		urlStr, body, err := httpsOrHTTP(tt.name, tt.httpPort, tt.httpsPort, tt.insecure)
 		if tt.expectSuccess {
 			if err != nil {
 				t.Fatalf("#%d httpsOrHTTP failed: %v", i, err)
