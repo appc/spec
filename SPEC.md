@@ -288,6 +288,10 @@ Anything implementing this spec should enforce any signing rules set in place by
 
 Discovery URLs that require interpolation are [RFC6570](https://tools.ietf.org/html/rfc6570) URI templates.
 
+### Discovery Authentication
+
+Authentication during the discovery process is optional. If an attempt at fetching the discovery URL, an app container image, or signature returns a `401 Unauthorized` implementations should enact the authentication policy set by the operator. For example, only perform HTTP basic auth over HTTPS.
+
 Inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
 ## App Container Metadata Service
