@@ -219,9 +219,10 @@ Additional isolators will be added to this specification over time.
 ## App Container Image Discovery
 
 An app name has a URL-like structure, for example `example.com/reduce-worker`.
-However, there is no scheme on this app name so we can't directly resolve it to an app container image URL.
+However, there is no scheme on this app name, so it cannot be directly resolved to an app container image URL.
 Furthermore, attributes other than the name may be required to unambiguously identify an app (version, OS and architecture).
 App Container Image Discovery prescribes a discovery process to retrieve an image based on the app name and these attributes.
+Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
 ### Simple Discovery
 
@@ -286,15 +287,20 @@ For example if the user has `example.com/project/subproject` and we first try `e
 
 All HTTP redirects should be followed when the discovery URL returns a `3xx` status code.
 
-Anything implementing this spec should enforce any signing rules set in place by the operator, and ensure the image manifest provided by the fetched ACI are all prefixed from the same domain.
-
 Discovery URLs that require interpolation are [RFC6570](https://tools.ietf.org/html/rfc6570) URI templates.
 
-### Discovery Authentication
+### Validation
 
-Authentication during the discovery process is optional. If an attempt at fetching the discovery URL, an app container image, or signature returns a `401 Unauthorized` implementations should enact the authentication policy set by the operator. For example, only perform HTTP basic auth over HTTPS.
+Implementations of the spec should enforce any signature validation rules set in place by the operator.
+For example, in a testing environment, signature validation might be disabled, in which case the implementation would omit the signature retrieval.
 
-Inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
+Implementations must ensure that the name in the Image Manifest in the retrieved ACI matches the initial name used for discovery.
+
+### Authentication
+
+Authentication during the discovery process is optional.
+If an attempt at fetching any resource (the initial discovery URL, an app container image, or signature) returns a `401 Unauthorized`, implementations should enact the authentication policy set by the operator.
+For example, some implementations might only perform HTTP basic authentication over HTTPS connections.
 
 ## App Container Metadata Service
 
