@@ -1,6 +1,9 @@
 package types
 
-import "testing"
+import (
+	"reflect"
+	"testing"
+)
 
 func makeAnno(n, v string) Annotation {
 	name, err := NewACName(n)
@@ -74,5 +77,35 @@ func TestAnnotationsAssertValid(t *testing.T) {
 		if gerr := (err != nil); gerr != tt.werr {
 			t.Errorf("#%d: gerr=%t, want %t (err=%v)", i, gerr, tt.werr, err)
 		}
+	}
+}
+
+func TestAnnotationsSet(t *testing.T) {
+	a := Annotations{}
+
+	a.Set("foo", "bar")
+	w := Annotations{
+		Annotation{ACName("foo"), "bar"},
+	}
+	if !reflect.DeepEqual(w, a) {
+		t.Fatalf("want %v, got %v", w, a)
+	}
+
+	a.Set("dog", "woof")
+	w = Annotations{
+		Annotation{ACName("foo"), "bar"},
+		Annotation{ACName("dog"), "woof"},
+	}
+	if !reflect.DeepEqual(w, a) {
+		t.Fatalf("want %v, got %v", w, a)
+	}
+
+	a.Set("foo", "baz")
+	w = Annotations{
+		Annotation{ACName("foo"), "baz"},
+		Annotation{ACName("dog"), "woof"},
+	}
+	if !reflect.DeepEqual(w, a) {
+		t.Fatalf("want %v, got %v", w, a)
 	}
 }

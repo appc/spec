@@ -74,10 +74,13 @@ func (a Annotations) Get(name string) (val string, ok bool) {
 }
 
 // Set sets the value of an annotation by the given name, overwriting if one already exists.
-func (a Annotations) Set(name ACName, value string) {
-	for _, anno := range a {
+func (a *Annotations) Set(name ACName, value string) {
+	for i, anno := range *a {
 		if anno.Name.Equals(name) {
-			anno.Value = value
+			(*a)[i] = Annotation{
+				Name:  name,
+				Value: value,
+			}
 			return
 		}
 	}
@@ -85,5 +88,5 @@ func (a Annotations) Set(name ACName, value string) {
 		Name:  name,
 		Value: value,
 	}
-	a = append(a, anno)
+	*a = append(*a, anno)
 }
