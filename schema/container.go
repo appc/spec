@@ -75,3 +75,11 @@ type RuntimeApp struct {
 	Isolators   []types.Isolator  `json:"isolators"`
 	Annotations types.Annotations `json:"annotations"`
 }
+
+func (app *RuntimeApp) GetAnnotation(name string) (val string, ok bool) {
+	return app.Annotations.Get(name)
+}
+
+func (app *RuntimeApp) SetAnnotation(name types.ACName, value string) {
+	app.Annotations = app.Annotations.Set(name, value)
+}
