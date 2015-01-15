@@ -72,3 +72,7 @@ func (im *ImageManifest) GetLabel(name string) (val string, ok bool) {
 func (im *ImageManifest) GetAnnotation(name string) (val string, ok bool) {
 	return im.Annotations.Get(name)
 }
+
+func (im *ImageManifest) SetAnnotation(name types.ACName, value string) {
+	im.Annotations = im.Annotations.Set(name, value)
+}
