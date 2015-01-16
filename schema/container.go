@@ -26,7 +26,7 @@ type containerRuntimeManifest ContainerRuntimeManifest
 var BlankContainerRuntimeManifest = ContainerRuntimeManifest{ACKind: ContainerRuntimeManifestKind}
 
 func (cm *ContainerRuntimeManifest) UnmarshalJSON(data []byte) error {
-	c := containerRuntimeManifest{}
+	c := containerRuntimeManifest(*cm)
 	err := json.Unmarshal(data, &c)
 	if err != nil {
 		return err

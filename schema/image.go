@@ -30,7 +30,7 @@ type imageManifest ImageManifest
 var BlankImageManifest = ImageManifest{ACKind: ImageManifestKind}
 
 func (im *ImageManifest) UnmarshalJSON(data []byte) error {
-	a := imageManifest{}
+	a := imageManifest(*im)
 	err := json.Unmarshal(data, &a)
 	if err != nil {
 		return err
