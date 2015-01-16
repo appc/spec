@@ -56,11 +56,26 @@
             }
         ]
     },
-    "annotations": {
-        "created": "2014-10-27T19:32:27.67021798Z",
-        "authors": "Carly Container <carly@example.com>, Nat Network <nat@example.com>",
-        "homepage": "https://github.com/containers/standard",
-        "documentation": "https://github.com/containers/standard/blob/master/README.md",
-        "lorem": "ipsum"
-    }
+    "annotations": [
+        {
+            "name": "created",
+            "value": "2014-10-27T19:32:27.67021798Z"
+        },
+        {
+            "name": "authors",
+            "value": "Carly Container <carly@example.com>, Nat Network <nat@example.com>"
+        },
+        {
+            "name": "homepage",
+            "value": "https://github.com/containers/standard"
+        },
+        {
+            "name": "documentation",
+            "value": "https://github.com/containers/standard/blob/master/README.md"
+        },
+        {
+            "name": "lorem",
+            "value": "ipsum"
+        }
+    ]
 }
