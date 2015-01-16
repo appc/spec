@@ -12,7 +12,7 @@ import (
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/pkg/tarheader"
 	"github.com/appc/spec/schema"
-	"github.com/ghodss/yaml"
+	"github.com/appc/spec/Godeps/_workspace/src/github.com/ghodss/yaml"
 )
 
 const (
