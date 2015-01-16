@@ -22,4 +22,6 @@ func init() {
 		panic(err)
 	}
 	AppContainerVersion = *v
+	BlankImageManifest.ACVersion = AppContainerVersion
+	BlankContainerRuntimeManifest.ACVersion = AppContainerVersion
 }

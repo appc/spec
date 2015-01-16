@@ -8,7 +8,8 @@ import (
 )
 
 const (
-	ACIExtension = ".aci"
+	ACIExtension      = ".aci"
+	ImageManifestKind = types.ACKind("ImageManifest")
 )
 
 type ImageManifest struct {
@@ -25,6 +26,8 @@ type ImageManifest struct {
 // imageManifest is a model to facilitate extra validation during the
 // unmarshalling of the ImageManifest
 type imageManifest ImageManifest
+
+var BlankImageManifest = ImageManifest{ACKind: ImageManifestKind}
 
 func (im *ImageManifest) UnmarshalJSON(data []byte) error {
 	a := imageManifest{}
@@ -47,14 +50,16 @@ func (im ImageManifest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(imageManifest(im))
 }
 
+var imKindError = types.InvalidACKindError(ImageManifestKind)
+
 // assertValid performs extra assertions on an ImageManifest to ensure that
 // fields are set appropriately, etc. It is used exclusively when marshalling
 // and unmarshalling an ImageManifest. Most field-specific validation is
 // performed through the individual types being marshalled; assertValid()
 // should only deal with higher-level validation.
 func (im *ImageManifest) assertValid() error {
-	if im.ACKind != "ImageManifest" {
-		return types.ACKindError(`missing or bad ACKind (must be "ImageManifest")`)
+	if im.ACKind != ImageManifestKind {
+		return imKindError
 	}
 	if im.ACVersion.Empty() {
 		return errors.New(`acVersion must be set`)

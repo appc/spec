@@ -7,6 +7,8 @@ import (
 	"github.com/appc/spec/schema/types"
 )
 
+const ContainerRuntimeManifestKind = types.ACKind("ContainerRuntimeManifest")
+
 type ContainerRuntimeManifest struct {
 	ACVersion   types.SemVer      `json:"acVersion"`
 	ACKind      types.ACKind      `json:"acKind"`
@@ -20,6 +22,8 @@ type ContainerRuntimeManifest struct {
 // containerRuntimeManifest is a model to facilitate extra validation during the
 // unmarshalling of the ContainerRuntimeManifest
 type containerRuntimeManifest ContainerRuntimeManifest
+
+var BlankContainerRuntimeManifest = ContainerRuntimeManifest{ACKind: ContainerRuntimeManifestKind}
 
 func (cm *ContainerRuntimeManifest) UnmarshalJSON(data []byte) error {
 	c := containerRuntimeManifest{}
@@ -42,14 +46,16 @@ func (cm ContainerRuntimeManifest) MarshalJSON() ([]byte, error) {
 	return json.Marshal(containerRuntimeManifest(cm))
 }
 
+var cmKindError = types.InvalidACKindError(ContainerRuntimeManifestKind)
+
 // assertValid performs extra assertions on an ContainerRuntimeManifest to
 // ensure that fields are set appropriately, etc. It is used exclusively when
 // marshalling and unmarshalling an ContainerRuntimeManifest. Most
 // field-specific validation is performed through the individual types being
 // marshalled; assertValid() should only deal with higher-level validation.
 func (cm *ContainerRuntimeManifest) assertValid() error {
-	if cm.ACKind != "ContainerRuntimeManifest" {
-		return types.ACKindError(`missing or bad ACKind (must be "ContainerRuntimeManifest")`)
+	if cm.ACKind != ContainerRuntimeManifestKind {
+		return cmKindError
 	}
 	return nil
 }
