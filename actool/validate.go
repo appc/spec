@@ -9,10 +9,12 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/schema"
+	"github.com/ghodss/yaml"
 )
 
 const (
@@ -44,7 +46,7 @@ func init() {
 
 func runValidate(args []string) (exit int) {
 	if len(args) < 1 {
-		stderr("must pass one or more files")
+		stderr("validate: must pass one or more files")
 		return 1
 	}
 
@@ -113,6 +115,15 @@ func runValidate(args []string) (exit int) {
 			if err != nil {
 				stderr("%s: unable to read file %s", path, err)
 				return 1
+			}
+			if filepath.Ext(path) == ymlSuffix {
+				fmt.Println("YAML manifest provided, converting to JSON")
+				b, err = yaml.YAMLToJSON(b)
+				if err != nil {
+					stderr("%s: error parsing Image Manifest as YAML: %v", path, err)
+					return 1
+
+				}
 			}
 			k := schema.Kind{}
 			if err := k.UnmarshalJSON(b); err != nil {

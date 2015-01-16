@@ -3,6 +3,7 @@ package main
 import (
 	"archive/tar"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
@@ -11,6 +12,11 @@ import (
 	"github.com/appc/spec/aci"
 	"github.com/appc/spec/pkg/tarheader"
 	"github.com/appc/spec/schema"
+	"github.com/ghodss/yaml"
+)
+
+const (
+	ymlSuffix = ".yml"
 )
 
 var (
@@ -159,6 +165,15 @@ func runBuild(args []string) (exit int) {
 		return 1
 	}
 	var im schema.ImageManifest
+	if filepath.Ext(mpath) == ymlSuffix {
+		fmt.Println("build: YAML manifest provided, converting to JSON")
+		b, err = yaml.YAMLToJSON(b)
+		if err != nil {
+			stderr("build: Error parsing Image Manifest as YAML: %v", err)
+			return 1
+
+		}
+	}
 	if err := im.UnmarshalJSON(b); err != nil {
 		stderr("build: Unable to load Image Manifest: %v", err)
 		return 1
