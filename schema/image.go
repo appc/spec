@@ -20,6 +20,7 @@ type ImageManifest struct {
 	Annotations   types.Annotations  `json:"annotations,omitempty"`
 	Dependencies  types.Dependencies `json:"dependencies,omitempty"`
 	PathWhitelist []string           `json:"pathWhitelist,omitempty"`
+	DeviceFiles   []string           `json:"deviceFiles,omitempty"`
 }
 
 // imageManifest is a model to facilitate extra validation during the

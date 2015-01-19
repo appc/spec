@@ -483,6 +483,14 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
         "/etc/reduce-worker.conf",
         "/etc/systemd/system/"
     ],
+    "deviceFiles": [
+        "/dev/null",
+        "/dev/zero",
+        "/dev/full",
+        "/dev/random",
+        "/dev/urandom",
+        "/dev/net/tun",
+    ]
     "annotations": [
         {
             "name": "authors",
@@ -527,6 +535,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
     * **imageID** (optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels** (optional) list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (optional, list of strings) complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
+* **deviceFiles** (optional, list of strings) list of paths to character device files or block device files that should be available in the container. The executor must ensure that the device files are created if they don't already exist and must ensure that the type, minor and major are set correctly. Since some device files use dynamically allocated major and minor, the executor must set the major and minor as currently set on the host rather than looking in the archive. Device files in the archive that are not listed in **deviceFiles** must not be modified.
 * **annotations** (optional) list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string). Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
     * **created** date on which this container was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
     * **authors** contact details of the people or organization responsible for the containers (freeform string)
