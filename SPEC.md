@@ -441,7 +441,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
             },
             {
                 "name": "capabilities/bounding-set",
-                "value": "CAP_NET_BIND_SERVICECAP_SYS_ADMIN"
+                "value": "CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"
             }
         ],
         "mountPoints": [
