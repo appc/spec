@@ -224,6 +224,13 @@ Furthermore, attributes other than the name may be required to unambiguously ide
 App Container Image Discovery prescribes a discovery process to retrieve an image based on the app name and these attributes.
 Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
+There are three URLs types:
+* Image URLs
+* Signature URLs
+* Public key URLs
+
+Simple and Meta Discovery processes use one or more templates (predefined or derived from various sources) to render Image and Signature URLs (while the Public keys URLs aren't templates) .
+
 ### Simple Discovery
 
 First, try to fetch the app container image by rendering the following template and directly retrieving the resulting URL:
