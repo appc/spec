@@ -231,6 +231,8 @@ There are three URLs types:
 
 Simple and Meta Discovery processes use one or more templates (predefined or derived from various sources) to render Image and Signature URLs (while the Public keys URLs aren't templates) .
 
+Note that, to discriminate between the image and its signature, the templates must contain `{ext}` and its values should be either `aci` (for the image) or `sig` (for the signature).
+
 ### Simple Discovery
 
 First, try to fetch the app container image by rendering the following template and directly retrieving the resulting URL:
