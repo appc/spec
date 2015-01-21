@@ -200,16 +200,16 @@ Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
 |Name|Type|Schema|Example|
-|-------------------------|------|------------------------------------|------------------------------------|
-|cpu/shares               |string|"&lt;uint&gt;"                      |"4096"                              |
-|memory/limit             |string|"&lt;bytes&gt;"                     |"1G", "5T", "4K"                    |
-|cpu/mask                 |string|"&lt;cpu range&gt;"                 |"0", "0-3", "0,2,4-7"               |
-|blockIO/readBandwidth    |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
-|blockIO/writeBandwidth   |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
-|networkIO/readBandwidth  |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
-|networkIO/writeBandwidth |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
-|privateNetwork           |string|"&lt;true&#124;false&gt;"           |"true"                              |
-|capabilities/boundingSet |string|"&lt;cap&gt; &lt;cap&gt; ..."       |"CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"|
+|---------------------------|------|------------------------------------|------------------------------------|
+|cpu/shares                 |string|"&lt;uint&gt;"                      |"4096"                              |
+|memory/limit               |string|"&lt;bytes&gt;"                     |"1G", "5T", "4K"                    |
+|cpu/mask                   |string|"&lt;cpu range&gt;"                 |"0", "0-3", "0,2,4-7"               |
+|block-io/read-bandwidth    |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
+|block-io/write-bandwidth   |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
+|network-io/read-bandwidth  |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
+|network-io/write-bandwidth |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
+|private-network            |string|"&lt;true&#124;false&gt;"           |"true"                              |
+|capabilities/bounding-set  |string|"&lt;cap&gt; &lt;cap&gt; ..."       |"CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"|
 
 #### Types
 
