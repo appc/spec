@@ -22,9 +22,6 @@ In addition, we validate:
  - metadata service reachable at http://169.254.169.255
 
 TODO(jonboulle):
- - metadata service reachable at AC_METADATA_URL
-
-TODO(jonboulle):
  - should we validate Isolators? (e.g. MemoryLimit + malloc, or capabilities)
  - should we validate ports? (e.g. that they are available to bind to within the network namespace of the container)
 
@@ -49,9 +46,9 @@ import (
 )
 
 const (
-	standardPath    = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-	appNameEnv      = "AC_APP_NAME"
-	metadataURLBase = "http://169.254.169.255/acMetadata/v1"
+	standardPath     = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+	appNameEnv       = "AC_APP_NAME"
+	metadataPathBase = "/acMetadata/v1"
 
 	// marker files to validate
 	prestartFile = "/prestart"
@@ -195,7 +192,7 @@ func ValidateEnvironment(wenv map[string]string) (r results) {
 		k := parts[0]
 		_, ok := wenv[k]
 		switch {
-		case k == appNameEnv, k == "PATH", k == "TERM":
+		case k == appNameEnv, k == "PATH", k == "TERM", k == "AC_METADATA_URL":
 		case !ok:
 			r = append(r, fmt.Errorf("unexpected environment variable %q set", k))
 		}
@@ -249,16 +246,18 @@ func metadataRequest(req *http.Request) ([]byte, error) {
 	return body, nil
 }
 
-func metadataGet(path string) ([]byte, error) {
-	req, err := http.NewRequest("GET", metadataURLBase+path, nil)
+func metadataGet(metadataURL, path string) ([]byte, error) {
+	uri := metadataURL + metadataPathBase + path
+	req, err := http.NewRequest("GET", uri, nil)
 	if err != nil {
 		panic(err)
 	}
 	return metadataRequest(req)
 }
 
-func metadataPost(path string, body []byte) ([]byte, error) {
-	req, err := http.NewRequest("POST", metadataURLBase+path, bytes.NewBuffer(body))
+func metadataPost(metadataURL, path string, body []byte) ([]byte, error) {
+	uri := metadataURL + metadataPathBase + path
+	req, err := http.NewRequest("POST", uri, bytes.NewBuffer(body))
 	if err != nil {
 		panic(err)
 	}
@@ -267,8 +266,9 @@ func metadataPost(path string, body []byte) ([]byte, error) {
 	return metadataRequest(req)
 }
 
-func metadataPostForm(path string, data url.Values) ([]byte, error) {
-	req, err := http.NewRequest("POST", metadataURLBase+path, strings.NewReader(data.Encode()))
+func metadataPostForm(metadataURL, path string, data url.Values) ([]byte, error) {
+	uri := metadataURL + metadataPathBase + path
+	req, err := http.NewRequest("POST", uri, strings.NewReader(data.Encode()))
 	if err != nil {
 		panic(err)
 	}
@@ -277,29 +277,33 @@ func metadataPostForm(path string, data url.Values) ([]byte, error) {
 	return metadataRequest(req)
 }
 
-func validateContainerAnnotations(crm *schema.ContainerRuntimeManifest) results {
+func validateContainerAnnotations(metadataURL string, crm *schema.ContainerRuntimeManifest) results {
 	r := results{}
 
-	actualAnnots := make(map[types.ACName]string)
+	var actualAnnots types.Annotations
 
-	annots, err := metadataGet("/container/annotations/")
+	annots, err := metadataGet(metadataURL, "/container/annotations/")
 	if err != nil {
 		return append(r, err)
 	}
 
 	for _, key := range strings.Split(string(annots), "\n") {
-		val, err := metadataGet("/container/annotations/" + key)
+		if key == "" {
+			continue
+		}
+
+		val, err := metadataGet(metadataURL, "/container/annotations/"+key)
 		if err != nil {
 			r = append(r, err)
 		}
 
-		lbl, err := types.NewACName(key)
+		name, err := types.NewACName(key)
 		if err != nil {
 			r = append(r, fmt.Errorf("invalid annotation label: %v", err))
 			continue
 		}
 
-		actualAnnots[*lbl] = string(val)
+		actualAnnots.Set(*name, string(val))
 	}
 
 	if !reflect.DeepEqual(actualAnnots, crm.Annotations) {
@@ -309,10 +313,10 @@ func validateContainerAnnotations(crm *schema.ContainerRuntimeManifest) results 
 	return r
 }
 
-func validateContainerMetadata(crm *schema.ContainerRuntimeManifest) results {
+func validateContainerMetadata(metadataURL string, crm *schema.ContainerRuntimeManifest) results {
 	r := results{}
 
-	uid, err := metadataGet("/container/uid")
+	uid, err := metadataGet(metadataURL, "/container/uid")
 	if err != nil {
 		return append(r, err)
 	}
@@ -320,10 +324,10 @@ func validateContainerMetadata(crm *schema.ContainerRuntimeManifest) results {
 		return append(r, fmt.Errorf("UUID mismatch: %v vs %v", string(uid), crm.UUID.String()))
 	}
 
-	return append(r, validateContainerAnnotations(crm)...)
+	return append(r, validateContainerAnnotations(metadataURL, crm)...)
 }
 
-func validateAppAnnotations(crm *schema.ContainerRuntimeManifest, app *schema.ImageManifest) results {
+func validateAppAnnotations(metadataURL string, crm *schema.ContainerRuntimeManifest, app *schema.ImageManifest) results {
 	r := results{}
 
 	// build a map of expected annotations by merging app.Annotations
@@ -337,19 +341,19 @@ func validateAppAnnotations(crm *schema.ContainerRuntimeManifest, app *schema.Im
 		expectedAnnots.Set(annot.Name, annot.Value)
 	}
 
-	actualAnnots := types.Annotations{}
+	var actualAnnots types.Annotations
 
-	annots, err := metadataGet("/apps/" + string(app.Name) + "/annotations/")
+	annots, err := metadataGet(metadataURL, "/apps/"+string(app.Name)+"/annotations/")
 	if err != nil {
 		return append(r, err)
 	}
 
 	for _, key := range strings.Split(string(annots), "\n") {
-		if len(key) == 0 {
+		if key == "" {
 			continue
 		}
 
-		val, err := metadataGet("/apps/" + string(app.Name) + "/annotations/" + key)
+		val, err := metadataGet(metadataURL, "/apps/"+string(app.Name)+"/annotations/"+key)
 		if err != nil {
 			r = append(r, err)
 		}
@@ -371,11 +375,11 @@ func validateAppAnnotations(crm *schema.ContainerRuntimeManifest, app *schema.Im
 	return r
 }
 
-func validateAppMetadata(crm *schema.ContainerRuntimeManifest, a schema.RuntimeApp) results {
+func validateAppMetadata(metadataURL string, crm *schema.ContainerRuntimeManifest, a schema.RuntimeApp) results {
 	appName := a.Name
 	r := results{}
 
-	am, err := metadataGet("/apps/" + string(appName) + "/image/manifest")
+	am, err := metadataGet(metadataURL, "/apps/"+string(appName)+"/image/manifest")
 	if err != nil {
 		return append(r, err)
 	}
@@ -385,7 +389,7 @@ func validateAppMetadata(crm *schema.ContainerRuntimeManifest, a schema.RuntimeA
 		return append(r, fmt.Errorf("failed to JSON-decode %q manifest: %v", string(appName), err))
 	}
 
-	id, err := metadataGet("/apps/" + string(appName) + "/image/id")
+	id, err := metadataGet(metadataURL, "/apps/"+string(appName)+"/image/id")
 	if err != nil {
 		r = append(r, err)
 	}
@@ -395,22 +399,22 @@ func validateAppMetadata(crm *schema.ContainerRuntimeManifest, a schema.RuntimeA
 		r = append(r, err)
 	}
 
-	return append(r, validateAppAnnotations(crm, app)...)
+	return append(r, validateAppAnnotations(metadataURL, crm, app)...)
 }
 
-func validateSigning(crm *schema.ContainerRuntimeManifest) results {
+func validateSigning(metadataURL string, crm *schema.ContainerRuntimeManifest) results {
 	r := results{}
 
 	plaintext := "Old MacDonald Had A Farm"
 
 	// Sign
-	sig, err := metadataPost("/container/hmac/sign", []byte(plaintext))
+	sig, err := metadataPost(metadataURL, "/container/hmac/sign", []byte(plaintext))
 	if err != nil {
 		return append(r, err)
 	}
 
 	// Verify
-	_, err = metadataPostForm("/container/hmac/verify", url.Values{
+	_, err = metadataPostForm(metadataURL, "/container/hmac/verify", url.Values{
 		"uid":       []string{crm.UUID.String()},
 		"signature": []string{string(sig)},
 	})
@@ -425,7 +429,12 @@ func validateSigning(crm *schema.ContainerRuntimeManifest) results {
 func ValidateMetadataSvc() results {
 	r := results{}
 
-	cm, err := metadataGet("/container/manifest")
+	metadataURL := os.Getenv("AC_METADATA_URL")
+	if metadataURL == "" {
+		return append(r, fmt.Errorf("AC_METADATA_URL is not set"))
+	}
+
+	cm, err := metadataGet(metadataURL, "/container/manifest")
 	if err != nil {
 		return append(r, err)
 	}
@@ -435,14 +444,14 @@ func ValidateMetadataSvc() results {
 		return append(r, fmt.Errorf("failed to JSON-decode container manifest: %v", err))
 	}
 
-	r = append(r, validateContainerMetadata(crm)...)
+	r = append(r, validateContainerMetadata(metadataURL, crm)...)
 
 	for _, app := range crm.Apps {
 		app := app
-		r = append(r, validateAppMetadata(crm, app)...)
+		r = append(r, validateAppMetadata(metadataURL, crm, app)...)
 	}
 
-	return append(r, validateSigning(crm)...)
+	return append(r, validateSigning(metadataURL, crm)...)
 }
 
 // checkMount checks that the given string is a mount point, and that it is
