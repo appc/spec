@@ -14,7 +14,7 @@ import (
 // should create an ArchiveWriter and add files to it; the ACI will be written
 // to the underlying tar.Writer
 type ArchiveWriter interface {
-	AddFile(path string, hdr *tar.Header, r io.Reader) error
+	AddFile(hdr *tar.Header, r io.Reader) error
 	Close() error
 }
 
@@ -34,7 +34,7 @@ func NewImageWriter(am schema.ImageManifest, w *tar.Writer) ArchiveWriter {
 	return aw
 }
 
-func (aw *imageArchiveWriter) AddFile(path string, hdr *tar.Header, r io.Reader) error {
+func (aw *imageArchiveWriter) AddFile(hdr *tar.Header, r io.Reader) error {
 	err := aw.Writer.WriteHeader(hdr)
 	if err != nil {
 		return err
@@ -65,7 +65,7 @@ func (aw *imageArchiveWriter) addFileNow(path string, contents []byte) error {
 		Gname:      "root",
 		ChangeTime: now,
 	}
-	return aw.AddFile(path, &hdr, buf)
+	return aw.AddFile(&hdr, buf)
 }
 
 func (aw *imageArchiveWriter) addManifest(name string, m json.Marshaler) error {

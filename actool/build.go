@@ -90,7 +90,7 @@ func buildWalker(root string, aw aci.ArchiveWriter) filepath.WalkFunc {
 			hdr.Size = 0
 			r = nil
 		}
-		if err := aw.AddFile(relpath, hdr, r); err != nil {
+		if err := aw.AddFile(hdr, r); err != nil {
 			return err
 		}
 
