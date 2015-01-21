@@ -34,15 +34,15 @@ func runDiscover(args []string) (exit int) {
 			return 1
 		}
 		eps, err := discovery.DiscoverEndpoints(*app, transportFlags.Insecure)
-
 		if err != nil {
 			stderr("error fetching %s: %s", name, err)
 			return 1
 		}
-		for _, list := range [][]string{eps.Sig, eps.ACI, eps.Keys} {
-			if len(list) != 0 {
-				fmt.Println(strings.Join(list, ","))
-			}
+		for _, aciEndpoint := range eps.ACIEndpoints {
+			fmt.Println("ACI: %s, Sig: %s\n", aciEndpoint.ACI, aciEndpoint.Sig)
+		}
+		if len(eps.Keys) > 0 {
+			fmt.Println("Keys: " + strings.Join(eps.Keys, ","))
 		}
 	}
 

@@ -57,8 +57,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 		get                    httpgetter
 		expectDiscoverySuccess bool
 		app                    App
-		expectedSig            []string
-		expectedACI            []string
+		expectedACIEndpoints   []ACIEndpoint
 		expectedKeys           []string
 	}{
 		{
@@ -72,10 +71,16 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
-			[]string{"https://storage.example.com/example.com/myapp-1.0.0.sig?torrent",
-				"hdfs://storage.example.com/example.com/myapp-1.0.0.sig"},
-			[]string{"https://storage.example.com/example.com/myapp-1.0.0.aci?torrent",
-				"hdfs://storage.example.com/example.com/myapp-1.0.0.aci"},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci?torrent",
+					Sig: "https://storage.example.com/example.com/myapp-1.0.0.sig?torrent",
+				},
+				ACIEndpoint{
+					ACI: "hdfs://storage.example.com/example.com/myapp-1.0.0.aci",
+					Sig: "hdfs://storage.example.com/example.com/myapp-1.0.0.sig",
+				},
+			},
 			[]string{"https://example.com/pubkeys.gpg"},
 		},
 		{
@@ -89,10 +94,16 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
-			[]string{"https://storage.example.com/example.com/myapp/foobar-1.0.0.sig?torrent",
-				"hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.sig"},
-			[]string{"https://storage.example.com/example.com/myapp/foobar-1.0.0.aci?torrent",
-				"hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.aci"},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp/foobar-1.0.0.aci?torrent",
+					Sig: "https://storage.example.com/example.com/myapp/foobar-1.0.0.sig?torrent",
+				},
+				ACIEndpoint{
+					ACI: "hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.aci",
+					Sig: "hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.sig",
+				},
+			},
 			[]string{"https://example.com/pubkeys.gpg"},
 		},
 		{
@@ -106,8 +117,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
-			[]string{},
-			[]string{},
+			[]ACIEndpoint{},
 			[]string{},
 		},
 		// Test missing label. Only one ac-discovery template should be
@@ -122,8 +132,12 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"version": "1.0.0",
 				},
 			},
-			[]string{"https://storage.example.com/example.com/myapp-1.0.0.sig"},
-			[]string{"https://storage.example.com/example.com/myapp-1.0.0.aci"},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci",
+					Sig: "https://storage.example.com/example.com/myapp-1.0.0.sig",
+				},
+			},
 			[]string{"https://example.com/pubkeys.gpg"},
 		},
 		// Test missing labels. version label should default to
@@ -135,8 +149,12 @@ func TestDiscoverEndpoints(t *testing.T) {
 				Name:   "example.com/myapp",
 				Labels: map[string]string{},
 			},
-			[]string{"https://storage.example.com/example.com/myapp-latest.sig"},
-			[]string{"https://storage.example.com/example.com/myapp-latest.aci"},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-latest.aci",
+					Sig: "https://storage.example.com/example.com/myapp-latest.sig",
+				},
+			},
 			[]string{"https://example.com/pubkeys.gpg"},
 		},
 		// Test with a label called "name". It should be ignored.
@@ -150,8 +168,12 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"version": "1.0.0",
 				},
 			},
-			[]string{"https://storage.example.com/example.com/myapp-1.0.0.sig"},
-			[]string{"https://storage.example.com/example.com/myapp-1.0.0.aci"},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci",
+					Sig: "https://storage.example.com/example.com/myapp-1.0.0.sig",
+				},
+			},
 			[]string{"https://example.com/pubkeys.gpg"},
 		},
 	}
@@ -166,22 +188,12 @@ func TestDiscoverEndpoints(t *testing.T) {
 			t.Fatalf("#%d DiscoverEndpoints failed: %v", i, err)
 		}
 
-		if len(de.Sig) != len(tt.expectedSig) {
-			t.Errorf("Sig array is wrong length want %d got %d", len(tt.expectedSig), len(de.Sig))
+		if len(de.ACIEndpoints) != len(tt.expectedACIEndpoints) {
+			t.Errorf("ACIEndpoints array is wrong length want %d got %d", len(tt.expectedACIEndpoints), len(de.ACIEndpoints))
 		} else {
-			for n, _ := range de.Sig {
-				if de.Sig[n] != tt.expectedSig[n] {
-					t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedSig[n], de.Sig[n])
-				}
-			}
-		}
-
-		if len(de.ACI) != len(tt.expectedACI) {
-			t.Errorf("ACI array is wrong length want %d got %d", len(tt.expectedACI), len(de.ACI))
-		} else {
-			for n, _ := range de.ACI {
-				if de.ACI[n] != tt.expectedACI[n] {
-					t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedACI[n], de.ACI[n])
+			for n, _ := range de.ACIEndpoints {
+				if de.ACIEndpoints[n] != tt.expectedACIEndpoints[n] {
+					t.Errorf("#%d ACIEndpoints[%d] mismatch: want %v got %v", i, n, tt.expectedACIEndpoints[n], de.ACIEndpoints[n])
 				}
 			}
 		}

@@ -16,10 +16,14 @@ type acMeta struct {
 	uri    string
 }
 
+type ACIEndpoint struct {
+	ACI string
+	Sig string
+}
+
 type Endpoints struct {
-	Sig  []string
-	ACI  []string
-	Keys []string
+	ACIEndpoints []ACIEndpoint
+	Keys         []string
 }
 
 const (
@@ -125,20 +129,21 @@ func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
 			// Ignore not handled variables as {ext} isn't already rendered.
 			uri, _ := renderTemplate(m.uri, tplVars...)
 			sig, ok := renderTemplate(uri, "{ext}", "sig")
-			if ok {
-				de.Sig = append(de.Sig, sig)
+			if !ok {
+				continue
 			}
 			aci, ok := renderTemplate(uri, "{ext}", "aci")
-			if ok {
-				de.ACI = append(de.ACI, aci)
+			if !ok {
+				continue
 			}
+			de.ACIEndpoints = append(de.ACIEndpoints, ACIEndpoint{ACI: aci, Sig: sig})
 
 		case "ac-discovery-pubkeys":
 			de.Keys = append(de.Keys, m.uri)
 		}
 	}
 
-	if len(de.ACI) == 0 {
+	if len(de.ACIEndpoints) == 0 {
 		return nil, fmt.Errorf("found no ACI meta tags")
 	}
 
