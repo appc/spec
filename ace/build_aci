@@ -16,7 +16,7 @@ fi
 
 for typ in main sidekick; do 
 	layoutdir="bin/ace-${typ}-layout"
-	mkdir -p ${layoutdir}/rootfs
+	mkdir -p ${layoutdir}/rootfs/opt/acvalidator
 	cp bin/ace-validator ${layoutdir}/rootfs/
 	cp ${PREFIX}/image_manifest_${typ}.json ${layoutdir}/manifest
 	# now build the tarball, and sign it
