@@ -382,7 +382,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
 ```
 {
     "acKind": "ImageManifest",
-    "acVersion": "0.1.1",
+    "acVersion": "0.2.0",
     "name": "example.com/reduce-worker",
     "labels": [
         {
@@ -556,7 +556,7 @@ JSON Schema for the Container Runtime Manifest (container manifest)
 ```
 {
 
-    "acVersion": "0.1.1",
+    "acVersion": "0.2.0",
     "acKind": "ContainerRuntimeManifest",
     "uuid": "6733C088-A507-4694-AABF-EDBE4FC5266F",
     "apps": [
