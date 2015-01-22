@@ -72,7 +72,7 @@ The image may be optionally compressed with gzip, bzip2, or xz.
 After compression, images may also be encrypted with AES symmetric encryption.
 
 ```
-tar cvf reduce-worker.tar app rootfs
+tar cvf reduce-worker.tar manifest rootfs
 gpg --output reduce-worker.sig --detach-sig reduce-worker.tar
 gzip reduce-worker.tar -c > reduce-worker.aci
 ```
