@@ -36,9 +36,12 @@
                 "name": "post-stop"
             }
         ],
-        "environment": {
-            "REDUCE_WORKER_DEBUG": "true"
-        },
+        "environment": [
+            {
+                "name": "REDUCE_WORKER_DEBUG",
+                "value": "true"
+            }
+        ],
         "isolators": [
             {
                 "name": "private-network",

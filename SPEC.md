@@ -419,9 +419,12 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
             }
         ],
         "workingDirectory": "/opt/work",
-        "environment": {
-            "REDUCE_WORKER_DEBUG": "true"
-        },
+        "environment": [
+            {
+                "name": "REDUCE_WORKER_DEBUG",
+                "value": "true"
+            }
+        ],
         "isolators": [
             {
                 "name": "private-network",
@@ -517,7 +520,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
         * **pre-start** - executed and must exit before the long running main **exec** binary is launched
         * **post-stop** - executed if the main **exec** process is killed. This can be used to cleanup resources in the case of clean application shutdown, but cannot be relied upon in the face of machine failure.
     * **workingDirectory** (optional) working directory of the launched application, relative to the application image's root (must be an absolute path, defaults to "/", ACE can override). If the directory does not exist in the application's assembled rootfs (including any dependent images and mounted volumes), the ACE must fail execution.
-    * **environment** (optional) app's preferred environment variables (map of freeform strings) (ACE can append)
+    * **environment** (optional) a list of name / value objects representing the app's environment variables (ACE can append). The **name** must consist solely of letters, digits, and underscores '_' as outlined in [IEEE Std 1003.1-2001](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html).
     * **mountPoints** (optional) locations where a container is expecting external data to be mounted. The name indicates an executor-defined label to look up a mount point, and the path stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. "readOnly" should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
     * **ports** (optional) protocols and port numbers that the container will be listening on once started. The key is restricted to the AC Name formatting. This information is primarily informational to help the user find ports that are not well known. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **socketActivated** (optional) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().

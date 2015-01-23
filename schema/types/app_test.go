@@ -18,6 +18,9 @@ func TestAppValid(t *testing.T) {
 				{Name: "pre-start"},
 				{Name: "post-stop"},
 			},
+			Environment: []EnvironmentVariable{
+				{Name: "DEBUG", Value: "true"},
+			},
 			WorkingDirectory: "/tmp",
 		},
 		App{
@@ -126,6 +129,21 @@ func TestAppWorkingDirectoryInvalid(t *testing.T) {
 	tests := []App{
 		App{
 			WorkingDirectory: "stuff",
+		},
+	}
+	for i, tt := range tests {
+		if err := tt.assertValid(); err == nil {
+			t.Errorf("#%d: err == nil, want non-nil", i)
+		}
+	}
+}
+
+func TestAppEnvironmentInvalid(t *testing.T) {
+	tests := []App{
+		App{
+			Environment: Environment{
+				EnvironmentVariable{"0DEBUG", "true"},
+			},
 		},
 	}
 	for i, tt := range tests {

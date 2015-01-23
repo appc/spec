@@ -61,7 +61,7 @@ tar xf /tmp/my-app.aci manifest -O | python -m json.tool
     "acVersion": "0.2.0",
     "annotations": null,
     "app": {
-        "environment": {},
+        "environment": [],
         "eventHandlers": null,
         "exec": [
             "/bin/my-app"
