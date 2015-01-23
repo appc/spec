@@ -8,15 +8,15 @@ import (
 )
 
 type App struct {
-	Exec             Exec              `json:"exec"`
-	EventHandlers    []EventHandler    `json:"eventHandlers,omitempty"`
-	User             string            `json:"user"`
-	Group            string            `json:"group"`
-	WorkingDirectory string            `json:"workingDirectory,omitempty"`
-	Environment      map[string]string `json:"environment,omitempty"`
-	MountPoints      []MountPoint      `json:"mountPoints,omitempty"`
-	Ports            []Port            `json:"ports,omitempty"`
-	Isolators        []Isolator        `json:"isolators,omitempty"`
+	Exec             Exec           `json:"exec"`
+	EventHandlers    []EventHandler `json:"eventHandlers,omitempty"`
+	User             string         `json:"user"`
+	Group            string         `json:"group"`
+	WorkingDirectory string         `json:"workingDirectory,omitempty"`
+	Environment      Environment    `json:"environment,omitempty"`
+	MountPoints      []MountPoint   `json:"mountPoints,omitempty"`
+	Ports            []Port         `json:"ports,omitempty"`
+	Isolators        []Isolator     `json:"isolators,omitempty"`
 }
 
 // app is a model to facilitate extra validation during the
@@ -34,7 +34,7 @@ func (a *App) UnmarshalJSON(data []byte) error {
 		return err
 	}
 	if na.Environment == nil {
-		na.Environment = make(map[string]string)
+		na.Environment = make(Environment, 0)
 	}
 	*a = na
 	return nil
@@ -67,6 +67,9 @@ func (a *App) assertValid() error {
 			return fmt.Errorf("Only one eventHandler of name %q allowed", name)
 		}
 		eh[name] = true
+	}
+	if err := a.Environment.assertValid(); err != nil {
+		return err
 	}
 	return nil
 }

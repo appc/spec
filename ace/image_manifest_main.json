@@ -28,9 +28,12 @@
         "user": "0",
         "group": "0",
         "workingDirectory": "/opt/acvalidator",
-        "environment": {
-            "IN_ACE_VALIDATOR": "correct"
-        },
+        "environment": [
+            {
+                "name": "IN_ACE_VALIDATOR",
+                "value": "correct"
+            }
+        ],
         "mountPoints": [
             {
                 "name": "database",
