@@ -227,7 +227,7 @@ func metadataRequest(req *http.Request) ([]byte, error) {
 		Timeout: 100 * time.Millisecond,
 	}
 
-	req.Header["Metadata-Flavor"] = []string{"AppContainer header"}
+	req.Header["Metadata-Flavor"] = []string{"AppContainer"}
 
 	resp, err := cli.Do(req)
 	if err != nil {
