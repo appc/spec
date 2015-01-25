@@ -3,6 +3,7 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"path/filepath"
 )
 
 // Volume encapsulates a volume which should be mounted into the filesystem
@@ -26,6 +27,9 @@ func (v Volume) assertValid() error {
 	case "host":
 		if v.Source == "" {
 			return errors.New("source for host volume cannot be empty")
+		}
+		if !filepath.IsAbs(v.Source) {
+			return errors.New("source for host volume must be absolute path")
 		}
 		return nil
 	default:
