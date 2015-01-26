@@ -208,7 +208,6 @@ Additional isolators will be added to this specification over time.
 |block-io/write-bandwidth   |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
 |network-io/read-bandwidth  |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
 |network-io/write-bandwidth |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
-|private-network            |string|"&lt;true&#124;false&gt;"           |"true"                              |
 |capabilities/bounding-set  |string|"&lt;cap&gt; &lt;cap&gt; ..."       |"CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"|
 
 #### Types
@@ -426,10 +425,6 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
             }
         ],
         "isolators": [
-            {
-                "name": "private-network",
-                "value": "true"
-            },
             {
                 "name": "cpu/shares",
                 "value": "20"

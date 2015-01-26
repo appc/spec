@@ -44,10 +44,6 @@
         ],
         "isolators": [
             {
-                "name": "private-network",
-                "value": "true"
-            },
-            {
                 "name": "cpu/shares",
                 "value": "20"
             },
