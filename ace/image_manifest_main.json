@@ -50,10 +50,6 @@
         ],
         "isolators": [
             {
-                "name": "private-network",
-                "value": "true"
-            },
-            {
                 "name": "memory/limit",
                 "value": "1G"
             }
