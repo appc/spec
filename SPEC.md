@@ -399,7 +399,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
     ],
     "app": {
         "exec": [
-            "/usr/bin/reduce-worker"
+            "/usr/bin/reduce-worker",
+            "--quiet"
         ],
         "user": "100",
         "group": "300",
@@ -412,7 +413,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest)
             },
             {
                 "exec": [
-                    "/usr/bin/deregister-worker"
+                    "/usr/bin/deregister-worker",
+                    "--verbose"
                 ],
                 "name": "post-stop"
             }
