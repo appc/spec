@@ -162,6 +162,8 @@ This example container will use a set of three apps:
 | example.com/worker-backup          | 1.0.0   | sha512-3e86b59982e49066c5d813af1c2e2579cbf57... |
 | example.com/reduce-worker-register | 1.0.0   | sha512-86298e1fdb95ec9a45b5935504e26ec29b8fe... |
 
+The chroot means the app `reduce-worker` will not see the files from `worker-backup.aci` or `reduce-worker-register.aci`. If the three apps have a dependency on a common ancestror image, the files from that ancestror image will be visible by all apps, however a change performed by one app will not be shared to the other apps. Apps willing to share read-write files should set up volumes.
+
 #### Volume Setup
 
 Volumes that are specified in the Container Runtime Manifest are mounted into each of the apps via a bind mount.
