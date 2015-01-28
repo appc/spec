@@ -118,6 +118,13 @@ Image Format TODO
 * Define security requirements for a container. In particular is any isolation of users required between containers? What user does each application run under and can this be root (i.e. "real" root in the host).
 * Define how apps are supposed to communicate; can they/do they 'see' each other (a section in the apps perspective would help)?
 
+### Pod Manifest
+
+The [pod manifest](#pod-manifest-schema) encapsulates a grouping of application images to be executed in a container.
+A pod manifest references application images using the [Dependency Matching](#dependency-matching) mechanism.
+Consequently, references in a pod manifest can be either deterministic (resolving unambiguously to a particular app image) or dynamic (resolved at a particular point in time).
+A pod manifest may serve as input to an executor, and is resolved into a Container Runtime Manifest before execution.
+
 
 ## App Container Executor
 
@@ -129,7 +136,8 @@ This specification attempts to define a reasonable subset of steps to accomplish
 * Executing the application inside of this environment
 
 There are two "perspectives" in this process.
-The "*executor*" perspective consists of the steps that the container executor must take to set up the containers. The "*app*" perspective is how the app processes inside the container see the environment.
+The "*executor*" perspective consists of the steps that the container executor must take to set up the containers. 
+The "*app*" perspective is how the app processes inside the container see the environment.
 
 ### Executor Perspective
 
@@ -149,9 +157,10 @@ These details are orthogonal to the runtime environment.
 
 #### Container Runtime Manifest
 
-A container executes one or more apps with shared PID namespace, network namespace, mount namespace, IPC namespace and UTS namespace.
+A container executes a pod.
+A pod consists of one or more apps with shared PID namespace, network namespace, mount namespace, IPC namespace and UTS namespace.
 Each app will start chrooted into its own unique read-write rootfs before execution.
-The definition of the container is a list of apps that should be launched together, along with isolators that should apply to the entire container.
+The definition of the container is a list of apps that should be launched together (typically, resolved from a pod manifest), along with isolators that should apply to the entire container, and any annotations added by the executor.
 This is codified in a [Container Runtime Manifest](#container-runtime-manifest-schema).
 
 This example container will use a set of three apps:
@@ -371,6 +380,16 @@ An AC Name Type cannot be an empty string.
 The AC Name Type is used as the primary key for a number of fields in the schemas below.
 The schema validator will ensure that the keys conform to these constraints.
 
+## Image ID Type
+
+An Image ID Type encapsulates the cryptographic hash of an image.
+The type is a string of the format "type-value", where "type" indicates the hash function used and "value" is the hex-encoded string of the hash.
+The only currently accepted type is "sha512".
+
+Examples:
+
+* sha512-8d3fffddf79e9a232ffd19f9ccaa4d6b37a6a243dbe0f23137b108a043d9da13121a9b505c804956b22e93c7f93969f4a7ba8ddea45bf4aab0bebc8f814e0991
+
 
 ## Manifest Schemas
 
@@ -547,6 +566,55 @@ This facilitates "wildcard" matching and a variety of common usage patterns, lik
 For example, an AppImage containing a set of bash scripts might omit both "os" and "arch", and hence could be used as a dependency by a variety of different AppImages.
 Alternatively, an AppImage might specify a dependency with no image ID and no "version" label, and the image discovery mechanism could always retrieve the latest version of an AppImage
 
+### Pod Manifest Schema
+
+JSON Schema for the Pod Manifest
+
+```
+{
+
+    "acVersion": "0.2.0",
+    "acKind": "PodManifest",
+    "apps": [
+        {
+            "app": "example.com/reduce-worker",
+            "imageID": "sha512-..."
+        },
+        {
+            "app": "example.com/worker-backup",
+            "imageID": "sha512-...",
+            "labels": [
+                {
+                    "name": "os",
+                    "value": "linux"
+                },
+                {
+                    "name": "env",
+                    "value": "canary"
+                }
+            ]
+        },
+        {
+            "app": "example.com/reduce-worker-register",
+            "imageID": "sha512-...",
+            "labels": [
+                {
+                    "name": "version",
+                    "value": "latest"
+                }
+            ]
+        }
+    ]
+}
+```
+
+* **acVersion** (required) represents the version of the schema spec (string, must be in [semver](http://semver.org/) format)
+* **acKind** (required) must be set to "ContainerRuntimeManifest"
+* **apps** (required) list of apps that constitute this pod. See [Dependency Matching](#dependency-matching) for how apps should be resolved.
+    * **app** (optional) name of the app (string, restricted to AC Name formatting)
+    * **imageID** (optional) content hash of the app. If provided, the retrieved app must match the hash. This can be used to produce deterministic, reproducible instances of a pod.
+    * **labels** (optional) list of label objects of the same form as in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
+
 ### Container Runtime Manifest Schema
 
 JSON Schema for the Container Runtime Manifest (container manifest)
@@ -559,11 +627,11 @@ JSON Schema for the Container Runtime Manifest (container manifest)
     "uuid": "6733C088-A507-4694-AABF-EDBE4FC5266F",
     "apps": [
         {
-            "app": "example.com/reduce-worker-1.0.0",
+            "app": "example.com/reduce-worker",
             "imageID": "sha512-..."
         },
         {
-            "app": "example.com/worker-backup-1.0.0",
+            "app": "example.com/worker-backup",
             "imageID": "sha512-...",
             "isolators": [
                 {
@@ -577,7 +645,7 @@ JSON Schema for the Container Runtime Manifest (container manifest)
             ]
         },
         {
-            "app": "example.com/reduce-worker-register-1.0.0",
+            "app": "example.com/reduce-worker-register",
             "imageID": "sha512-..."
         }
     ],
@@ -617,7 +685,7 @@ JSON Schema for the Container Runtime Manifest (container manifest)
 * **uuid** (required) must be an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt) that represents this instance of the container (string, must be in [RFC4122](http://www.ietf.org/rfc/rfc4122.txt) format)
 * **apps** (required) list of apps that will execute inside of this container
     * **app** (optional) name of the app (string, restricted to AC Name formatting)
-    * **imageID** (required) content hash of the image that this app will execute inside of (string, must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
+    * **imageID** (required) content hash of the image that this app will execute inside of (string, must be of the "Image ID" type)
     * **isolators** (optional) list of isolators that should be applied to this app (key is restricted to the AC Name formatting and the value can be a freeform string)
     * **annotations** (optional) arbitrary metadata appended to the app. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** (optional) list of volumes which should be mounted into each application's filesystem
