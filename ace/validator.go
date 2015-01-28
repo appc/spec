@@ -408,13 +408,16 @@ func validateSigning(metadataURL string, crm *schema.ContainerRuntimeManifest) r
 	plaintext := "Old MacDonald Had A Farm"
 
 	// Sign
-	sig, err := metadataPost(metadataURL, "/container/hmac/sign", []byte(plaintext))
+	sig, err := metadataPostForm(metadataURL, "/container/hmac/sign", url.Values{
+		"content": []string{plaintext},
+	})
 	if err != nil {
 		return append(r, err)
 	}
 
 	// Verify
 	_, err = metadataPostForm(metadataURL, "/container/hmac/verify", url.Values{
+		"content":   []string{plaintext},
 		"uid":       []string{crm.UUID.String()},
 		"signature": []string{string(sig)},
 	})

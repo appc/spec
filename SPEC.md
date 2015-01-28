@@ -352,8 +352,8 @@ Accessible at `http://169.254.169.255/acMetadata/v1/container/hmac`
 
 | Entry | Description |
 |-------|-------------|
-|sign   | POST any object to this endpoint and retrieve a base64 hmac-sha256 signature as the response body. The metadata service holds onto the AES key as a sort of container TPM. |
-|verify | Verify a signature from another container. POST a form with signature=&lt;base64 encoded signature&gt; and uid=&lt;uid of the container that generated the signature&gt;. Returns 200 OK if the signature passes. |
+|sign   | POST a form with content=&lt;object to sign&gt; and retrieve a base64 hmac-sha512 signature as the response body. The metadata service holds onto the secret key as a sort of container TPM. |
+|verify | Verify a signature from another container. POST a form with content=&lt;object that was signed&gt;, uid=&lt;uid of the container that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
 
 
 ## AC Name Type
