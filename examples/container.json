@@ -9,6 +9,10 @@
         },
         {
             "app": "example.com/worker-backup",
+            "mounts": [
+                {"volume": "database", "mountPoint": "db"},
+                {"volume": "buildoutput", "mountPoint": "out"}
+            ],
             "imageID": "sha512-...",
             "isolators": [
                 {
@@ -30,18 +34,14 @@
     ],
     "volumes": [
         {
+            "name": "database",
             "kind": "host",
             "source": "/opt/tenant1/database",
-            "readOnly": true,
-            "fulfills": [
-                "database"
-            ]
+            "readOnly": true
         },
         {
-            "kind": "empty",
-            "fulfills": [
-                "buildoutput"
-            ]
+            "name": "buildoutput",
+            "kind": "empty"
         }
     ],
     "isolators": [
