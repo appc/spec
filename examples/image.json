@@ -18,7 +18,8 @@
     ],
     "app": {
         "exec": [
-            "/usr/bin/reduce-worker"
+            "/usr/bin/reduce-worker",
+            "--quiet"
         ],
         "user": "100",
         "group": "300",
@@ -31,7 +32,8 @@
             },
             {
                 "exec": [
-                    "/usr/bin/deregister-worker"
+                    "/usr/bin/deregister-worker",
+                    "--verbose"
                 ],
                 "name": "post-stop"
             }
