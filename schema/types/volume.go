@@ -44,7 +44,7 @@ func (v Volume) assertValid() error {
 		}
 		return nil
 	default:
-		return errors.New(`unrecognized volume type: should be one of "empty", "host"`)
+		return errors.New(`unrecognized volume kind: should be one of "empty", "host"`)
 	}
 }
 
@@ -79,7 +79,7 @@ func (v Volume) String() string {
 // VolumeFromString takes a command line volume parameter and returns a volume
 //
 // Example volume parameters:
-// 	database,type=host,source=/tmp,readOnly=true
+// 	database,kind=host,source=/tmp,readOnly=true
 func VolumeFromString(vp string) (*Volume, error) {
 	var vol Volume
 
