@@ -69,7 +69,7 @@ func (al AppList) Get(name types.ACName) *RuntimeApp {
 	return nil
 }
 
-// RuntimeMountPoint describes the mapping between a volume and an apps
+// Mount describes the mapping between a volume and an apps
 // MountPoint that will be fulfilled at runtime.
 type Mount struct {
 	Volume     types.ACName `json:"volume"`
@@ -78,10 +78,10 @@ type Mount struct {
 
 func (r Mount) assertValid() error {
 	if r.Volume.Empty() {
-		return errors.New("source must be set")
+		return errors.New("volume must be set")
 	}
 	if r.MountPoint.Empty() {
-		return errors.New("destination must be set")
+		return errors.New("mountPoint must be set")
 	}
 	return nil
 }
