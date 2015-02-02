@@ -1,5 +1,23 @@
 package tarheader
 
+/*
+#define _BSD_SOURCE
+#include <sys/types.h>
+
+unsigned int
+my_major(dev_t dev)
+{
+  return major(dev);
+}
+
+unsigned int
+my_minor(dev_t dev)
+{
+  return minor(dev);
+}
+
+*/
+import "C"
 import (
 	"archive/tar"
 	"os"
@@ -18,9 +36,8 @@ func populateHeaderUnix(h *tar.Header, fi os.FileInfo, seen map[uint64]string) {
 	h.Uid = int(st.Uid)
 	h.Gid = int(st.Gid)
 	if st.Mode&syscall.S_IFMT == syscall.S_IFBLK || st.Mode&syscall.S_IFMT == syscall.S_IFCHR {
-		// FIXME: it would be better to use the C macros: major(3), minor(3)
-		h.Devminor = int64(st.Rdev & 0xff)
-		h.Devmajor = int64((st.Rdev >> 8) & 0xfff)
+		h.Devminor = int64(C.my_minor(C.dev_t(st.Rdev)))
+		h.Devmajor = int64(C.my_major(C.dev_t(st.Rdev)))
 	}
 	// If we have already seen this inode, generate a hardlink
 	p, ok := seen[uint64(st.Ino)]
