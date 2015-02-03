@@ -582,7 +582,6 @@ JSON Schema for the Pod Manifest
         },
         {
             "app": "example.com/worker-backup",
-            "imageID": "sha512-...",
             "labels": [
                 {
                     "name": "os",
@@ -596,7 +595,6 @@ JSON Schema for the Pod Manifest
         },
         {
             "app": "example.com/reduce-worker-register",
-            "imageID": "sha512-...",
             "labels": [
                 {
                     "name": "version",
