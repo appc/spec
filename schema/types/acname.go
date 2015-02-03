@@ -12,8 +12,8 @@ const (
 
 // ACName (an App-Container Name) is a format used by keys in different
 // formats of the App Container Standard. An ACName is restricted to
-// characters accepted by the DNS RFC[1] and "/". ACNames are
-// case-insensitive for comparison purposes, but case-preserving.
+// characters accepted by the DNS RFC[1] and "/"; all alphabetical characters
+// must be lowercase only.
 //
 // [1] http://tools.ietf.org/html/rfc1123#page-13
 type ACName string
