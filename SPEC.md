@@ -99,7 +99,7 @@ An example application container image builder is [actool](https://github.com/ap
 
 ### Image Manifest
 
-The [image manifest](#image-manifest-schema) is a JSON file that includes details about the contents of the ACI, and optionally information about how to execute a process inside the ACI's rootfs.
+The [image manifest](#image-manifest-schema) is a [JSON](https://tools.ietf.org/html/rfc4627) file that includes details about the contents of the ACI, and optionally information about how to execute a process inside the ACI's rootfs.
 If included, execution details include mount points that should exist, the user, the command args, default cgroup settings and more.
 The manifest may also define binaries to execute in response to lifecycle events of the main process such as *pre-start* and *post-stop*.
 
@@ -376,7 +376,7 @@ The schema validator will ensure that the keys conform to these constraints.
 
 ### Image Manifest Schema
 
-JSON Schema for the Image Manifest (app image manifest, ACI manifest)
+JSON Schema for the Image Manifest (app image manifest, ACI manifest), conforming to [RFC4627](https://tools.ietf.org/html/rfc4627)
 
 ```
 {
@@ -551,7 +551,7 @@ Alternatively, an AppImage might specify a dependency with no image ID and no "v
 
 ### Container Runtime Manifest Schema
 
-JSON Schema for the Container Runtime Manifest (container manifest)
+JSON Schema for the Container Runtime Manifest (container manifest), conforming to [RFC4627](https://tools.ietf.org/html/rfc4627)
 
 ```
 {
