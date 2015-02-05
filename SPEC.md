@@ -602,7 +602,8 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
             "name": "work",
             "kind": "host",
             "source": "/opt/tenant1/work",
-            "readOnly": true
+            "readOnly": true,
+            "fulfills" "/work"
         }
     ],
     "isolators": [
