@@ -9,9 +9,9 @@ import (
 	"github.com/appc/spec/pkg/tarheader"
 )
 
-// BuildWalker creates a filepath.WalkFunc that walks over
-// the given root and adds files to the given
-// ArchiveWriter
+// BuildWalker creates a filepath.WalkFunc that walks over the given root
+// (which should represent an ACI layout on disk) and adds the files in the
+// rootfs/ subdirectory to the given ArchiveWriter
 func BuildWalker(root string, aw ArchiveWriter) filepath.WalkFunc {
 	// cache of inode -> filepath, used to leverage hard links in the archive
 	inos := map[uint64]string{}
