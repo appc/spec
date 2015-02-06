@@ -33,10 +33,21 @@ func runDiscover(args []string) (exit int) {
 			stderr("%s: %s", name, err)
 			return 1
 		}
-		eps, err := discovery.DiscoverEndpoints(*app, transportFlags.Insecure)
+		eps := &discovery.Endpoints{}
+		simpleEps, err := discovery.SimpleDiscoverEndpoints(*app, transportFlags.Insecure)
 		if err != nil {
-			stderr("error fetching %s: %s", name, err)
-			return 1
+			stderr("error doing simple discovery for %s: %s", name, err)
+		} else {
+			eps.ACIEndpoints = append(eps.ACIEndpoints, simpleEps.ACIEndpoints...)
+			eps.Keys = append(eps.Keys, simpleEps.Keys...)
+		}
+
+		metaEps, err := discovery.MetaDiscoverEndpoints(*app, transportFlags.Insecure)
+		if err != nil {
+			stderr("error doing matadata discovery for %s: %s", name, err)
+		} else {
+			eps.ACIEndpoints = append(eps.ACIEndpoints, metaEps.ACIEndpoints...)
+			eps.Keys = append(eps.Keys, metaEps.Keys...)
 		}
 		for _, aciEndpoint := range eps.ACIEndpoints {
 			fmt.Println("ACI: %s, Sig: %s\n", aciEndpoint.ACI, aciEndpoint.Sig)

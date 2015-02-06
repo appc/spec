@@ -27,7 +27,8 @@ type Endpoints struct {
 }
 
 const (
-	defaultVersion = "latest"
+	defaultVersion          = "latest"
+	simpleDiscoveryTemplate = `%s://{name}-{version}-{os}-{arch}.{ext}`
 )
 
 var (
@@ -102,7 +103,7 @@ func createTemplateVars(app App) []string {
 	return tplVars
 }
 
-func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
+func doMetaDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
 	if app.Labels["version"] == "" {
 		app.Labels["version"] = defaultVersion
 	}
@@ -153,16 +154,48 @@ func doDiscover(app App, pre string, insecure bool) (*Endpoints, error) {
 // DiscoverEndpoints will make HTTPS requests to find the ac-discovery meta
 // tags and optionally will use HTTP if insecure is set. Based on the app
 // passed the discovery templates will be filled out and returned in eps.
-func DiscoverEndpoints(app App, insecure bool) (eps *Endpoints, err error) {
+func MetaDiscoverEndpoints(app App, insecure bool) (eps *Endpoints, err error) {
 	parts := strings.Split(string(app.Name), "/")
 	for i := range parts {
 		end := len(parts) - i
 		pre := strings.Join(parts[:end], "/")
-		eps, err = doDiscover(app, pre, insecure)
+		eps, err = doMetaDiscover(app, pre, insecure)
 		if err == nil {
 			break
 		}
 	}
 
 	return
+}
+
+func SimpleDiscoverEndpoints(app App, insecure bool) (eps *Endpoints, err error) {
+	if app.Labels["version"] == "" {
+		app.Labels["version"] = defaultVersion
+	}
+	tplVars := createTemplateVars(app)
+
+	de := &Endpoints{}
+
+	// Simple Discovery endpoints
+	schemes := []string{"https"}
+	if insecure {
+		schemes = append(schemes, "http")
+	}
+	for _, scheme := range schemes {
+		// Ignore not handled variables as {ext} isn't already rendered.
+		uri, _ := renderTemplate(fmt.Sprintf(simpleDiscoveryTemplate, scheme), tplVars...)
+		sig, ok := renderTemplate(uri, "{ext}", "sig")
+		if !ok {
+			continue
+		}
+		aci, ok := renderTemplate(uri, "{ext}", "aci")
+		if !ok {
+			continue
+		}
+		de.ACIEndpoints = append(de.ACIEndpoints, ACIEndpoint{ACI: aci, Sig: sig})
+	}
+	if len(de.ACIEndpoints) == 0 {
+		return nil, fmt.Errorf("not enough labels to generate simple discovery url")
+	}
+	return de, nil
 }
