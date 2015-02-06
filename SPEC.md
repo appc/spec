@@ -628,6 +628,5 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
     * **kind** (required) either "empty" or "host". "empty" fulfills a mount point by ensuring the path exists (writes go to container). "host" fulfills a mount point with a bind mount from a **source**.
     * **source** (required if **kind** is "host") absolute path on host to be bind mounted into the container under a mount point.
     * **readOnly** (optional if **kind** is "host") whether or not the volume should be mounted read only.
-    * **fulfills** (required) MountPoints of the containers that this volume can fulfill (string, restricted to AC Name formatting)
 * **isolators** (optional) list of isolators that will apply to all apps in this container (name is restricted to the AC Name formatting and the value can be a freeform string)
 * **annotations** (optional) arbitrary metadata the executor should make available to applications via the metadata service. Should be a list of annotation objects (where the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string). Annotation names must be unique within the list.
