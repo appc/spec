@@ -314,7 +314,6 @@ The app container specification defines an HTTP-based metadata service for provi
 ### Metadata Server
 
 The ACE must provide a Metadata server on the address given to the container via the `AC_METADATA_URL` environment variable.
-By convention, the default address will be `http://169.254.169.255`.
 
 Clients querying any of these endpoints must specify the `Metadata-Flavor: AppContainer` header.
 
