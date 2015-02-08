@@ -576,9 +576,11 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
                 }
             ],
             "annotations": [
-                "name": "foo",
-                "value": "baz"
-            },
+                {
+                    "name": "foo",
+                    "value": "baz"
+                }
+            ],
             "mounts": [
                  {"volume": "work", "mountPoint": "backup"}
             ]
