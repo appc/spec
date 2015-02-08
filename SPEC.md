@@ -48,7 +48,7 @@ Now, let's dive into the pieces that took us from three URLs to a running contai
 ## App Container Image
 
 An *App Container Image* (ACI) contains all files and metadata needed to execute a given app.
-In some ways you can think of an ACI as equivalent to a static binary.
+In some ways an ACI can be thought of as equivalent to a static binary.
 
 ### Image Layout
 
@@ -64,50 +64,56 @@ It includes a *rootfs* with all of the files that will exist in the root of the 
 
 ### Image Archives
 
-The ACI archive format aims for flexibility and relies on very boring technologies: HTTP, gpg, tar and gzip.
-This set of formats makes it easy to build, host and secure a container using technologies that are battle-tested.
+The ACI file format ("image archive") aims for flexibility and relies on standard and common technologies: HTTP, gpg, tar and gzip.
+This set of formats makes it easy to build, host and secure a container using technologies that are widely available and battle-tested.
 
-Image archives MUST be a tar formatted file.
-The image may be optionally compressed with gzip, bzip2, or xz.
-After compression, images may also be encrypted with AES symmetric encryption.
+- Image archives MUST be a tar formatted file.
+- All files in the image MUST maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
+- Image archives MUST be named with the suffix `.aci`, irrespective of compression/encryption (see below).
+- Image archives SHOULD be signed using PGP, in detached signature mode.
+- Image signatures MUST be named with the suffix `.aci.asc`.
+
+There are two further transformations that may be applied to image archives for transport:
+- Image archives MAY be compressed with `gzip`, `bzip2`, or `xz`.
+- Image archives MAY be encrypted with AES symmetric encryption, after (optional) compression.
+
+The following example demonstrates the creation of a simple ACI using common command-line tools.
+In this case, the ACI is both compressed and encrypted.
 
 ```
 tar cvf reduce-worker.tar manifest rootfs
 gpg --output reduce-worker.sig --detach-sig reduce-worker.tar
 gzip reduce-worker.tar -c > reduce-worker.aci
-```
-
-Optional encryption:
-
-```
 gpg --output reduce-worker.aci --digest-algo sha256 --cipher-algo AES256 --symmetric reduce-worker.aci
 ```
 
-All files in the image must maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
+**Note**: the key distribution mechanism to facilitate image signature validation is not defined here.
+Implementations of the app container spec will need to provide a mechanism for users to configure the list of signing keys to trust, or use the key discovery described in [App Container Image Discovery](#app-container-image-discovery).
+
+An example application container image builder is [actool](https://github.com/appc/spec/tree/master/actool).
+
+### Image ID
 
 An image is addressed and verified against the hash of its uncompressed tar file, the _image ID_.
+The image ID provides a way to uniquely and globally reference an image, and verify its integrity at any point.
 The default digest format is sha512, but all hash IDs in this format are prefixed by the algorithm used (e.g. sha512-a83...).
 
 ```
 echo sha512-$(sha512sum reduce-worker.tar | awk '{print $1}')
 ```
 
-**Note**: the key distribution mechanism is not defined here.
-Implementations of the app container spec will need to provide a mechanism for users to configure the list of signing keys to trust or use the key discovery described in "App Container Image Discovery".
-
-An example application container image builder is [actool](https://github.com/appc/spec/tree/master/actool).
-
 ### Image Manifest
 
 The [image manifest](#image-manifest-schema) is a [JSON](https://tools.ietf.org/html/rfc4627) file that includes details about the contents of the ACI, and optionally information about how to execute a process inside the ACI's rootfs.
 If included, execution details include mount points that should exist, the user, the command args, default cgroup settings and more.
-The manifest may also define binaries to execute in response to lifecycle events of the main process such as *pre-start* and *post-stop*.
+The manifest MAY also define binaries to execute in response to lifecycle events of the main process such as *pre-start* and *post-stop*.
 
+Image manifests MUST be valid JSON located in the file `manifest` in the root of the image archive.
 Image manifests MAY specify dependencies, which describe how to assemble the final rootfs from a collection of other images.
-As an example, you might have an app that needs special certificates layered into its filesystem.
-In this case, you can reference the name "example.com/trusted-certificate-authority" as a dependency in the image manifest.
+As an example, an app might require special certificates to be layered into its filesystem.
+In this case, the app can reference the name "example.com/trusted-certificate-authority" as a dependency in the image manifest.
 The dependencies are applied in order and each image dependency can overwrite files from the previous dependency.
-An optional path whitelist can be provided, in which case all non-specified files from all dependencies will be omitted in the final, assembled rootfs.
+An optional *path whitelist* can be provided, in which case all non-specified files from all dependencies will be omitted in the final, assembled rootfs.
 
 Image Format TODO
 
