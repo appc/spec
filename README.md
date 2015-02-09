@@ -194,7 +194,7 @@ user: "Joe Bloggs (Example, Inc) <joe@example.com>"
 Wrote main layout to      bin/ace_main_layout
 Wrote unsigned main ACI   bin/ace_validator_main.aci
 Wrote main layout hash    bin/sha512-f7eb89d44f44d416f2872e43bc5a4c6c3e12c460e845753e0a7b28cdce0e89d2
-Wrote main ACI signature  bin/ace_validator_main.sig
+Wrote main ACI signature  bin/ace_validator_main.aci.asc
 
 You need a passphrase to unlock the secret key for
 user: "Joe Bloggs (Example, Inc) <joe@example.com>"
@@ -203,7 +203,7 @@ user: "Joe Bloggs (Example, Inc) <joe@example.com>"
 Wrote sidekick layout to      bin/ace_sidekick_layout
 Wrote unsigned sidekick ACI   bin/ace_validator_sidekick.aci
 Wrote sidekick layout hash    bin/sha512-13b5598069dbf245391cc12a71e0dbe8f8cdba672072135ebc97948baacf30b2
-Wrote sidekick ACI signature  bin/ace_validator_sidekick.sig
+Wrote sidekick ACI signature  bin/ace_validator_sidekick.aci.asc
 
 ```
 
