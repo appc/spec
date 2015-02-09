@@ -2,12 +2,19 @@ package types
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 )
 
 const (
 	valchars = `abcdefghijklmnopqrstuvwxyz0123456789.-/`
+)
+
+var (
+	invalidChars = regexp.MustCompile("[^a-z0-9./-]")
+	invalidEdges = regexp.MustCompile("(^[./-]+)|([./-]+$)")
 )
 
 // ACName (an App-Container Name) is a format used by keys in different
@@ -71,4 +78,23 @@ func (n *ACName) UnmarshalJSON(data []byte) error {
 // MarshalJSON implements the json.Marshaler interface
 func (n *ACName) MarshalJSON() ([]byte, error) {
 	return json.Marshal(n.String())
+}
+
+// SanitizeACName replaces every invalid ACName character in s with a dash
+// making it a legal ACName string. If the character is an upper case letter it
+// replaces it with its lower case. It also removes illegal edge characters
+// (hyphens, periods and slashes).
+//
+// This is a helper function and its algorithm is not part of the spec. It
+// should not be called without the user explicitly asking for a suggestion.
+func SanitizeACName(s string) (string, error) {
+	s = strings.ToLower(s)
+	s = invalidChars.ReplaceAllString(s, "-")
+	s = invalidEdges.ReplaceAllString(s, "")
+
+	if s == "" {
+		return "", errors.New("must contain at least one valid character")
+	}
+
+	return s, nil
 }
