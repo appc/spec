@@ -33,13 +33,13 @@ func TestEmptyApp(t *testing.T) {
 
 func TestImageManifestMerge(t *testing.T) {
 	imj := `{"name": "example.com/test"}`
-	var im ImageManifest
+	im := &ImageManifest{}
 
 	if im.UnmarshalJSON([]byte(imj)) == nil {
 		t.Fatal("Manifest JSON without acKind and acVersion unmarshalled successfully")
 	}
 
-	im = BlankImageManifest
+	im = BlankImageManifest()
 
 	err := im.UnmarshalJSON([]byte(imj))
 	if err != nil {

@@ -27,7 +27,9 @@ type ImageManifest struct {
 // unmarshalling of the ImageManifest
 type imageManifest ImageManifest
 
-var BlankImageManifest = ImageManifest{ACKind: ImageManifestKind}
+func BlankImageManifest() *ImageManifest {
+	return &ImageManifest{ACKind: ImageManifestKind, ACVersion: AppContainerVersion}
+}
 
 func (im *ImageManifest) UnmarshalJSON(data []byte) error {
 	a := imageManifest(*im)

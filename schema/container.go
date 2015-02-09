@@ -23,7 +23,9 @@ type ContainerRuntimeManifest struct {
 // unmarshalling of the ContainerRuntimeManifest
 type containerRuntimeManifest ContainerRuntimeManifest
 
-var BlankContainerRuntimeManifest = ContainerRuntimeManifest{ACKind: ContainerRuntimeManifestKind}
+func BlankContainerRuntimeManifest() *ContainerRuntimeManifest {
+	return &ContainerRuntimeManifest{ACKind: ContainerRuntimeManifestKind, ACVersion: AppContainerVersion}
+}
 
 func (cm *ContainerRuntimeManifest) UnmarshalJSON(data []byte) error {
 	c := containerRuntimeManifest(*cm)
