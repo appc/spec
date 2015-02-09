@@ -3,10 +3,8 @@
 [![Build Status](https://travis-ci.org/appc/spec.png?branch=master)](https://travis-ci.org/appc/spec)
 
 This repository contains schema definitions and tools for the App Container specification.
-These are technical details on how an appc image is downloaded over a network, cryptographically verified, ane executed on a host.
+These are technical details on how an appc image is downloaded over a network, cryptographically verified, and executed on a host.
 See [SPEC.md](SPEC.md) for details of the specification itself.
-
-_Thank you to Tobi Knaup and Ben Hindman from Mesosphere, and the Pivotal Engineering team for providing initial feedback on the spec._
 
 For information on the packages in the repository, see their respective [godocs](http://godoc.org/github.com/appc/spec).
 
