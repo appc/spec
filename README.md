@@ -36,7 +36,7 @@ Some examples of build systems and tools that have been built so far include:
 
 ## What are some implementations of the spec?
 
-The most mature implementation of the spec today is (Rocket)[https://github.com/coreos/rocket] but other implementations are being built too:
+The most mature implementation of the spec today is [Rocket](https://github.com/coreos/rocket) but other implementations are being built too:
 
 - [Jet Pack](https://github.com/4ofcoins/jetpack) - Freebsd/Go
 - [libappc](https://github.com/cdaylward/libappc) - C++ library
