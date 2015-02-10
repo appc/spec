@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"runtime"
 	"strings"
 
 	"github.com/appc/spec/discovery"
@@ -29,6 +30,12 @@ func runDiscover(args []string) (exit int) {
 
 	for _, name := range args {
 		app, err := discovery.NewAppFromString(name)
+		if app.Labels["os"] == "" {
+			app.Labels["os"] = runtime.GOOS
+		}
+		if app.Labels["arch"] == "" {
+			app.Labels["arch"] = runtime.GOARCH
+		}
 		if err != nil {
 			stderr("%s: %s", name, err)
 			return 1
