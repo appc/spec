@@ -11,6 +11,10 @@ var (
 	validACName  = regexp.MustCompile("^[a-z0-9]+([-./][a-z0-9]+)*$")
 	invalidChars = regexp.MustCompile("[^a-z0-9./-]")
 	invalidEdges = regexp.MustCompile("(^[./-]+)|([./-]+$)")
+
+	ErrEmptyACName = ACNameError("ACName cannot be empty")
+	ErrInvalidChar = ACNameError("ACName must contain only lower case " +
+		`alphanumeric characters plus ".", "-", "/"`)
 )
 
 // ACName (an App-Container Name) is a format used by keys in different
@@ -25,6 +29,8 @@ func (n ACName) String() string {
 	return string(n)
 }
 
+// Set sets the ACName to the given value, if it is valid; if not,
+// an error is returned.
 func (n *ACName) Set(s string) error {
 	nn, err := NewACName(s)
 	if err == nil {
@@ -38,6 +44,7 @@ func (n ACName) Equals(o ACName) bool {
 	return strings.ToLower(string(n)) == strings.ToLower(string(o))
 }
 
+// Empty returns a boolean indicating whether this ACName is empty.
 func (n ACName) Empty() bool {
 	return n.String() == ""
 }
@@ -45,11 +52,22 @@ func (n ACName) Empty() bool {
 // NewACName generates a new ACName from a string. If the given string is
 // not a valid ACName, nil and an error are returned.
 func NewACName(s string) (*ACName, error) {
-	if !validACName.MatchString(s) {
-		return nil, ACNameError("Invalid ACName, must contain lower case " +
-			"alphanumeric characters plus \".\", \"-\", \"/\"")
+	n := ACName(s)
+	if err := n.assertValid(); err != nil {
+		return nil, err
 	}
-	return (*ACName)(&s), nil
+	return &n, nil
+}
+
+func (n ACName) assertValid() error {
+	s := string(n)
+	if len(s) == 0 {
+		return ErrEmptyACName
+	}
+	if !validACName.MatchString(s) {
+		return ErrInvalidChar
+	}
+	return nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface
@@ -67,7 +85,10 @@ func (n *ACName) UnmarshalJSON(data []byte) error {
 }
 
 // MarshalJSON implements the json.Marshaler interface
-func (n *ACName) MarshalJSON() ([]byte, error) {
+func (n ACName) MarshalJSON() ([]byte, error) {
+	if err := n.assertValid(); err != nil {
+		return nil, err
+	}
 	return json.Marshal(n.String())
 }
 
