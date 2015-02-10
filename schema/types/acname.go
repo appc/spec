@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	valchars = `abcdefghijklmnopqrstuvwxyz0123456789.-/`
+	valchars = `abcdefghijklmnopqrstuvwxyz0123456789.-/:`
 )
 
 // ACName (an App-Container Name) is a format used by keys in different
