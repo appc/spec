@@ -36,6 +36,26 @@ func TestNewAppFromString(t *testing.T) {
 
 			false,
 		},
+		{
+			"example.com:8080/reduce-worker:1.0.0",
+
+			&App{
+				Name: "example.com:8080/reduce-worker",
+				Labels: map[string]string{
+					"version": "1.0.0",
+				},
+			},
+			false,
+		},
+		{
+			"example.com:8080/reduce-worker",
+
+			&App{
+				Name:   "example.com:8080/reduce-worker",
+				Labels: map[string]string{},
+			},
+			false,
+		},
 
 		// bad AC name for app
 		{
