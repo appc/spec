@@ -29,6 +29,12 @@ func TestNewACNameBad(t *testing.T) {
 		"EXAMPLE.com",
 		"foo.com/BAR",
 		"example.com/app_1",
+		"/app",
+		"app/",
+		"-app",
+		"app-",
+		".app",
+		"app.",
 	}
 	for i, in := range tests {
 		l, err := NewACName(in)

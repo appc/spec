@@ -3,16 +3,12 @@ package types
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 )
 
-const (
-	valchars = `abcdefghijklmnopqrstuvwxyz0123456789.-/`
-)
-
 var (
+	validACName  = regexp.MustCompile("^[a-z0-9]+([-./][a-z0-9]+)*$")
 	invalidChars = regexp.MustCompile("[^a-z0-9./-]")
 	invalidEdges = regexp.MustCompile("(^[./-]+)|([./-]+$)")
 )
@@ -49,14 +45,9 @@ func (n ACName) Empty() bool {
 // NewACName generates a new ACName from a string. If the given string is
 // not a valid ACName, nil and an error are returned.
 func NewACName(s string) (*ACName, error) {
-	if len(s) == 0 {
-		return nil, fmt.Errorf("ACName cannot be empty")
-	}
-	for _, c := range s {
-		if !strings.ContainsRune(valchars, c) {
-			msg := fmt.Sprintf("invalid char in ACName: %c", c)
-			return nil, ACNameError(msg)
-		}
+	if !validACName.MatchString(s) {
+		return nil, ACNameError("Invalid ACName, must contain lower case " +
+			"alphanumeric characters plus \".\", \"-\", \"/\"")
 	}
 	return (*ACName)(&s), nil
 }
