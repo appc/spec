@@ -32,13 +32,20 @@ func NewApp(name string, labels map[string]string) (*App, error) {
 // Example app parameters:
 // 	example.com/reduce-worker:1.0.0
 // 	example.com/reduce-worker,channel=alpha,label=value
+// 	example.com:8080/reduce-worker:1.0.0
+// 	example.com:8080/reduce-worker
 func NewAppFromString(app string) (*App, error) {
 	var (
 		name   string
 		labels map[string]string
 	)
 
-	app = strings.Replace(app, ":", ",version=", -1)
+	i := strings.Index(app, "/")
+	if i == -1 {
+		app = strings.Replace(app, ":", ",version=", -1)
+	} else {
+		app = app[:i] + strings.Replace(app[i:], ":", ",version=", -1)
+	}
 	app = "name=" + app
 	v, err := url.ParseQuery(strings.Replace(app, ",", "&", -1))
 	if err != nil {
