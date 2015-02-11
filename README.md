@@ -185,7 +185,7 @@ The [`ace`](ace/) package contains a simple go application, the _ACE validator_,
 
 To use the ACE validator, first compile it into an ACI using the supplied `build_aci` script:
 ```
-$ app-container/ace/build_aci 
+$ ace/build_aci
 
 You need a passphrase to unlock the secret key for
 user: "Joe Bloggs (Example, Inc) <joe@example.com>"
