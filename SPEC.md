@@ -70,7 +70,7 @@ This set of formats makes it easy to build, host and secure a container using te
 - Image archives MUST be a tar formatted file.
 - All files in the image MUST maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
 - Image archives MUST be named with the suffix `.aci`, irrespective of compression/encryption (see below).
-- Image archives SHOULD be signed using PGP, in detached signature mode.
+- Image archives SHOULD be signed using PGP, the format MUST be ascii-armored detached signature mode.
 - Image signatures MUST be named with the suffix `.aci.asc`.
 
 There are two further transformations that may be applied to image archives for transport:
@@ -82,7 +82,7 @@ In this case, the ACI is both compressed and encrypted.
 
 ```
 tar cvf reduce-worker.tar manifest rootfs
-gpg --output reduce-worker.sig --detach-sig reduce-worker.tar
+gpg --armor --output reduce-worker.aci.asc --detach-sig reduce-worker.tar
 gzip reduce-worker.tar -c > reduce-worker.aci
 gpg --output reduce-worker.aci --digest-algo sha256 --cipher-algo AES256 --symmetric reduce-worker.aci
 ```
@@ -240,9 +240,9 @@ For example, given the app name `example.com/reduce-worker`, with version `1.0.0
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci
 
 If this fails, move on to meta discovery.
-If this succeeds, try fetching the signature using the same template but with a `.sig` extension:
+If this succeeds, try fetching the signature using the same template but with a `.aci.asc` extension:
 
-    https://example.com/reduce-worker-1.0.0-linux-amd64.sig
+    https://example.com/reduce-worker-1.0.0-linux-amd64.aci.asc
 
 ### Meta Discovery
 
@@ -275,12 +275,12 @@ The algorithm first ensures that the prefix of the AC Name matches the prefix-ma
 curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
-where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `sig` for retrieving an app container image or signature respectively.
+where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `aci.asc` for retrieving an app container image or signature respectively.
 
 In our example above this would be:
 
 ```
-sig: https://storage.example.com/linux/amd64/reduce-worker-1.0.0.sig
+sig: https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci.asc
 aci: https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci
 keys: https://example.com/pubkeys.gpg
 ```
