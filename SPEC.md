@@ -67,7 +67,8 @@ It includes a *rootfs* with all of the files that will exist in the root of the 
 The ACI file format ("image archive") aims for flexibility and relies on standard and common technologies: HTTP, gpg, tar and gzip.
 This set of formats makes it easy to build, host and secure a container using technologies that are widely available and battle-tested.
 
-- Image archives MUST be a tar formatted file.
+- Image archives MUST be a tar formatted file with no duplicate entries.
+- Image archives MUST have only two top-level pathnames, `manifest` (a regular file) and `rootfs` (a directory). Image archives with additional files outside of `rootfs` are not valid.
 - All files in the image MUST maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
 - Image archives MUST be named with the suffix `.aci`, irrespective of compression/encryption (see below).
 - Image archives SHOULD be signed using PGP, the format MUST be ascii-armored detached signature mode.
