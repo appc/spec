@@ -2,50 +2,52 @@
 
 [![Build Status](https://travis-ci.org/appc/spec.png?branch=master)](https://travis-ci.org/appc/spec)
 
-This repository contains schema definitions and tools for the App Container specification.
-These are technical details on how an appc image is downloaded over a network, cryptographically verified, and executed on a host.
+This repository contains schema definitions and tools for the App Container (appc) specification.
+These include technical details on how an appc image is downloaded over a network, cryptographically verified, and executed on a host.
 See [SPEC.md](SPEC.md) for details of the specification itself.
 
 For information on the packages in the repository, see their respective [godocs](http://godoc.org/github.com/appc/spec).
 
-## What is the App Container spec? 
+## What is the App Container spec?
 
-The App Container (appc) is a well-specified community developed specification to define an image format, runtime environment and discovery mechanism for application containers.
-An application container is a way of packaging and executing processes on a computer system that isolates the application from changes to the underlying host OS.
-For example an application packaged as a container would bring its own copy of a python runtime, shared libraries and application code and would not share those packages with the host.
+App Container (appc) is a well-specified and community developed specification that defines an image format, runtime environment and discovery mechanism for application containers.
+An _application container_ is a way of packaging and executing processes on a computer system that isolates the application from the underlying host operating system.
+For example, a Python web app packaged as a container would bring its own copy of a Python runtime, shared libraries, and application code, and would not share those packages with the host.
 
-App containers are useful because they put developers in full control of the exact versions of software dependencies for their applications.
-This reduces surprises from dev, test and prod while freeing the underlying OS from worrying about shipping software specific to the applications it will run.
+Application containers are useful because they put developers in full control of the exact versions of software dependencies for their applications.
+This reduces surprises that can arise because of discrepancies between different environments (like development, test, and production), while freeing the underlying OS from worrying about shipping software specific to the applications it will run.
 This decoupling of concerns increases the ability for the OS and application to be serviced for updates and security patches.
 
-For these reasons we want the world to run containers. A world where your application can be packaged once, and ran in the environment you choose.
+For these reasons we want the world to run containersr: a world where your application can be packaged once, and run in the environment you choose.
+
 The App Container (appc) spec aims to have the following properties:
 
-- Composable. All tools for downloading, installing, and running containers should be well integrated, but independent and composable.
-- Security. Isolation should be pluggable, and the crypto primitives for strong trust, image auditing and application identity should exist from day one.
-- Image distribution. Discovery of container images should be simple and facilitate a federated namespace, and distributed retrieval. This opens the possibility of alternative protocols, such as BitTorrent, and deployments to private environments without the requirement of a registry.
-- Open. The format and runtime should be well-specified and developed by a community. We want independent implementations of tools to be able to run the same container consistently.
+- **Composable**. All tools for downloading, installing, and running containers should be well integrated, but independent and composable.
+- **Secure**. Isolation should be pluggable, and the cryptographic primitives for strong trust, image auditing and application identity should exist from day one.
+- **Decentralized**. Discovery of container images should be simple and facilitate a federated namespace and distributed retrieval. This opens the possibility of alternative protocols, such as BitTorrent, and deployments to private environments without the requirement of a registry.
+- **Open**. The format and runtime should be well-specified and developed by a community. We want independent implementations of tools to be able to run the same container consistently.
 
 ## What is the promise of the App Container Spec?
 
-By explicitly defining how an app is packaged into an image, downloaded over a network, and executed as a container outside of a particular implementation we hope to enable a community of engineers to build tooling around the fundamental building block of a container.
+By explicitly defining - separate of any particular implementation - how an app is packaged into an image, downloaded over a network, and executed as a container, we hope to enable a community of engineers to build tooling around the fundamental building block of a container.
 Some examples of build systems and tools that have been built so far include:
 
 - [goaci](https://github.com/jonboulle/goaci) - ACI builder for Go projects
-- [docker2aci](https://github.com/appc/docker2aci) - ACI builder from docker images
+- [docker2aci](https://github.com/appc/docker2aci) - ACI builder from Docker images
+- [actool](https://github.com/appc/spec/actool) - ACI builder from root filesystems
 
 ## What are some implementations of the spec?
 
-The most mature implementation of the spec today is [Rocket](https://github.com/coreos/rocket) but other implementations are being built too:
+The most mature implementation of the spec today is [Rocket](https://github.com/coreos/rocket), but several other implementations are being actively worked on:
 
-- [Jet Pack](https://github.com/3ofcoins/jetpack) - Freebsd/Go
+- [Jet Pack](https://github.com/3ofcoins/jetpack) - FreeBSD/Go
 - [libappc](https://github.com/cdaylward/libappc) - C++ library
 - [Nose Cone](https://github.com/cdaylward/nosecone) - Linux/C++
 - [Rocket](https://github.com/coreos/rocket) - Linux/Go
 
 ## Building ACIs
 
-`actool` can be used to build an Application Container Image from an [Image Layout](SPEC.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs). 
+`actool` can be used to build an Application Container Image from an [Image Layout](SPEC.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs).
 
 For example, to build a simple ACI (in this case consisting of a single binary), one could do the following:
 ```
