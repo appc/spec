@@ -34,7 +34,7 @@ Some examples of build systems and tools that have been built so far include:
 
 - [goaci](https://github.com/jonboulle/goaci) - ACI builder for Go projects
 - [docker2aci](https://github.com/appc/docker2aci) - ACI builder from Docker images
-- [actool](https://github.com/appc/spec/actool) - ACI builder from root filesystems
+- [actool](https://github.com/appc/spec/tree/master/actool) - ACI builder from root filesystems
 
 ## What are some implementations of the spec?
 
