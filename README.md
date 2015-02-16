@@ -18,7 +18,7 @@ Application containers are useful because they put developers in full control of
 This reduces surprises that can arise because of discrepancies between different environments (like development, test, and production), while freeing the underlying OS from worrying about shipping software specific to the applications it will run.
 This decoupling of concerns increases the ability for the OS and application to be serviced for updates and security patches.
 
-For these reasons we want the world to run containersr: a world where your application can be packaged once, and run in the environment you choose.
+For these reasons we want the world to run containers, a world where your application can be packaged once, and run in the environment you choose.
 
 The App Container (appc) spec aims to have the following properties:
 
