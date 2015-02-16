@@ -67,24 +67,22 @@ It includes a *rootfs* with all of the files that will exist in the root of the 
 The ACI file format ("image archive") aims for flexibility and relies on standard and common technologies: HTTP, gpg, tar and gzip.
 This set of formats makes it easy to build, host and secure a container using technologies that are widely available and battle-tested.
 
+- Image archives MUST be named with the suffix `.aci`, irrespective of compression/encryption (see below).
 - Image archives MUST be a tar formatted file with no duplicate entries.
 - Image archives MUST have only two top-level pathnames, `manifest` (a regular file) and `rootfs` (a directory). Image archives with additional files outside of `rootfs` are not valid.
 - All files in the image MUST maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
-- Image archives MUST be named with the suffix `.aci`, irrespective of compression/encryption (see below).
-- Image archives SHOULD be signed using PGP, the format MUST be ascii-armored detached signature mode.
-- Image signatures MUST be named with the suffix `.aci.asc`.
-
-There are two further transformations that may be applied to image archives for transport:
 - Image archives MAY be compressed with `gzip`, `bzip2`, or `xz`.
 - Image archives MAY be encrypted with AES symmetric encryption, after (optional) compression.
+- Image archives SHOULD be signed using PGP, the format MUST be ascii-armored detached signature mode.
+- Image signatures MUST be named with the suffix `.aci.asc`.
 
 The following example demonstrates the creation of a simple ACI using common command-line tools.
 In this case, the ACI is both compressed and encrypted.
 
 ```
 tar cvf reduce-worker.tar manifest rootfs
-gpg --armor --output reduce-worker.aci.asc --detach-sig reduce-worker.tar
 gzip reduce-worker.tar -c > reduce-worker.aci
+gpg --armor --output reduce-worker.aci.asc --detach-sig reduce-worker.aci
 gpg --output reduce-worker.aci --digest-algo sha256 --cipher-algo AES256 --symmetric reduce-worker.aci
 ```
 
