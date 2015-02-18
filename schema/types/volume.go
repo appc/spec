@@ -11,7 +11,7 @@ import (
 )
 
 // Volume encapsulates a volume which should be mounted into the filesystem
-// of all apps in a ContainerRuntimeManifest
+// of all apps in a PodManifest
 type Volume struct {
 	Name ACName `json:"name"`
 	Kind string `json:"kind"`

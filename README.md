@@ -127,7 +127,7 @@ tar xf /tmp/my-app.aci manifest -O | python -m json.tool
 
 `actool validate` can be used by implementations of the App Container Specification to check that files they produce conform to the expectations.
 
-### Validating Image Manifests and Container Runtime Manifests
+### Validating Image Manifests and Pod Manifests
 
 To validate one of the two manifest types in the specification, simply run `actool validate` against the file.
 
@@ -148,7 +148,7 @@ image2.json: valid ImageManifest
 `actool` will automatically determine which type of manifest it is checking (by using the `acKind` field common to all manifests), so there is no need to specify which type of manifest is being validated:
 ```
 $ actool -debug validate /tmp/my_container
-/tmp/my_container: valid ContainerRuntimeManifest
+/tmp/my_container: valid PodManifest
 ```
 
 If a manifest fails validation the first error encountered is returned along with a non-zero exit status:

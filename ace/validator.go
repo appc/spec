@@ -23,7 +23,7 @@ In addition, we validate:
 
 TODO(jonboulle):
  - should we validate Isolators? (e.g. MemoryLimit + malloc, or capabilities)
- - should we validate ports? (e.g. that they are available to bind to within the network namespace of the container)
+ - should we validate ports? (e.g. that they are available to bind to within the network namespace of the pod)
 
 */
 
@@ -267,12 +267,12 @@ func metadataPostForm(metadataURL, path string, data url.Values) ([]byte, error)
 	return metadataRequest(req)
 }
 
-func validateContainerAnnotations(metadataURL string, crm *schema.ContainerRuntimeManifest) results {
+func validateContainerAnnotations(metadataURL string, pm *schema.PodManifest) results {
 	r := results{}
 
 	var actualAnnots types.Annotations
 
-	annots, err := metadataGet(metadataURL, "/container/annotations/")
+	annots, err := metadataGet(metadataURL, "/pod/annotations/")
 	if err != nil {
 		return append(r, err)
 	}
@@ -282,7 +282,7 @@ func validateContainerAnnotations(metadataURL string, crm *schema.ContainerRunti
 			continue
 		}
 
-		val, err := metadataGet(metadataURL, "/container/annotations/"+key)
+		val, err := metadataGet(metadataURL, "/pod/annotations/"+key)
 		if err != nil {
 			r = append(r, err)
 		}
@@ -296,34 +296,34 @@ func validateContainerAnnotations(metadataURL string, crm *schema.ContainerRunti
 		actualAnnots.Set(*name, string(val))
 	}
 
-	if !reflect.DeepEqual(actualAnnots, crm.Annotations) {
-		r = append(r, fmt.Errorf("container annotations mismatch: %v vs %v", actualAnnots, crm.Annotations))
+	if !reflect.DeepEqual(actualAnnots, pm.Annotations) {
+		r = append(r, fmt.Errorf("pod annotations mismatch: %v vs %v", actualAnnots, pm.Annotations))
 	}
 
 	return r
 }
 
-func validateContainerMetadata(metadataURL string, crm *schema.ContainerRuntimeManifest) results {
+func validateContainerMetadata(metadataURL string, pm *schema.PodManifest) results {
 	r := results{}
 
-	uid, err := metadataGet(metadataURL, "/container/uid")
+	uid, err := metadataGet(metadataURL, "/pod/uid")
 	if err != nil {
 		return append(r, err)
 	}
-	if strings.ToLower(string(uid)) != strings.ToLower(crm.UUID.String()) {
-		return append(r, fmt.Errorf("UUID mismatch: %v vs %v", string(uid), crm.UUID.String()))
+	if strings.ToLower(string(uid)) != strings.ToLower(pm.UUID.String()) {
+		return append(r, fmt.Errorf("UUID mismatch: %v vs %v", string(uid), pm.UUID.String()))
 	}
 
-	return append(r, validateContainerAnnotations(metadataURL, crm)...)
+	return append(r, validateContainerAnnotations(metadataURL, pm)...)
 }
 
-func validateAppAnnotations(metadataURL string, crm *schema.ContainerRuntimeManifest, app *schema.ImageManifest) results {
+func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *schema.ImageManifest) results {
 	r := results{}
 
 	// build a map of expected annotations by merging app.Annotations
-	// with ContainerRuntimeManifest overrides
+	// with PodManifest overrides
 	expectedAnnots := app.Annotations
-	a := crm.Apps.Get(app.Name)
+	a := pm.Apps.Get(app.Name)
 	if a == nil {
 		panic("could not find app in manifest!")
 	}
@@ -365,7 +365,7 @@ func validateAppAnnotations(metadataURL string, crm *schema.ContainerRuntimeMani
 	return r
 }
 
-func validateAppMetadata(metadataURL string, crm *schema.ContainerRuntimeManifest, a schema.RuntimeApp) results {
+func validateAppMetadata(metadataURL string, pm *schema.PodManifest, a schema.RuntimeApp) results {
 	appName := a.Name
 	r := results{}
 
@@ -389,16 +389,16 @@ func validateAppMetadata(metadataURL string, crm *schema.ContainerRuntimeManifes
 		r = append(r, err)
 	}
 
-	return append(r, validateAppAnnotations(metadataURL, crm, app)...)
+	return append(r, validateAppAnnotations(metadataURL, pm, app)...)
 }
 
-func validateSigning(metadataURL string, crm *schema.ContainerRuntimeManifest) results {
+func validateSigning(metadataURL string, pm *schema.PodManifest) results {
 	r := results{}
 
 	plaintext := "Old MacDonald Had A Farm"
 
 	// Sign
-	sig, err := metadataPostForm(metadataURL, "/container/hmac/sign", url.Values{
+	sig, err := metadataPostForm(metadataURL, "/pod/hmac/sign", url.Values{
 		"content": []string{plaintext},
 	})
 	if err != nil {
@@ -406,9 +406,9 @@ func validateSigning(metadataURL string, crm *schema.ContainerRuntimeManifest) r
 	}
 
 	// Verify
-	_, err = metadataPostForm(metadataURL, "/container/hmac/verify", url.Values{
+	_, err = metadataPostForm(metadataURL, "/pod/hmac/verify", url.Values{
 		"content":   []string{plaintext},
-		"uid":       []string{crm.UUID.String()},
+		"uid":       []string{pm.UUID.String()},
 		"signature": []string{string(sig)},
 	})
 
@@ -427,24 +427,24 @@ func ValidateMetadataSvc() results {
 		return append(r, fmt.Errorf("AC_METADATA_URL is not set"))
 	}
 
-	cm, err := metadataGet(metadataURL, "/container/manifest")
+	pod, err := metadataGet(metadataURL, "/pod/manifest")
 	if err != nil {
 		return append(r, err)
 	}
 
-	crm := &schema.ContainerRuntimeManifest{}
-	if err = json.Unmarshal(cm, crm); err != nil {
-		return append(r, fmt.Errorf("failed to JSON-decode container manifest: %v", err))
+	pm := &schema.PodManifest{}
+	if err = json.Unmarshal(pod, pm); err != nil {
+		return append(r, fmt.Errorf("failed to JSON-decode pod manifest: %v", err))
 	}
 
-	r = append(r, validateContainerMetadata(metadataURL, crm)...)
+	r = append(r, validateContainerMetadata(metadataURL, pm)...)
 
-	for _, app := range crm.Apps {
+	for _, app := range pm.Apps {
 		app := app
-		r = append(r, validateAppMetadata(metadataURL, crm, app)...)
+		r = append(r, validateAppMetadata(metadataURL, pm, app)...)
 	}
 
-	return append(r, validateSigning(metadataURL, crm)...)
+	return append(r, validateSigning(metadataURL, pm)...)
 }
 
 // checkMount checks that the given string is a mount point, and that it is
