@@ -125,7 +125,7 @@ func ManifestFromImage(rs io.ReadSeeker) (*schema.ImageManifest, error) {
 		case io.EOF:
 			return nil, errors.New("missing manifest")
 		case nil:
-			if filepath.Clean(hdr.Name) == "manifest" {
+			if filepath.Clean(hdr.Name) == ManifestFile {
 				data, err := ioutil.ReadAll(tr)
 				if err != nil {
 					return nil, err
