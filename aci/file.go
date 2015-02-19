@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 	"os/exec"
+	"path"
 
 	"github.com/appc/spec/schema"
 )
@@ -123,7 +124,7 @@ func ManifestFromImage(rs io.ReadSeeker) (*schema.ImageManifest, error) {
 		if err != nil {
 			return nil, err
 		}
-		if hdr.Name == "manifest" {
+		if path.Clean(hdr.Name) == ManifestFile {
 			data, err := ioutil.ReadAll(tr)
 			if err != nil {
 				return nil, err
