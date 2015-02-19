@@ -26,10 +26,3 @@ type ACNameError string
 func (e ACNameError) Error() string {
 	return string(e)
 }
-
-// An AMStartedOnError is returned when the wrong StartedOn is set in an ImageManifest
-type AMStartedOnError string
-
-func (e AMStartedOnError) Error() string {
-	return string(e)
-}
