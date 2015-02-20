@@ -61,6 +61,28 @@ type ACIFiles struct {
 // RenderedACI is an (ordered) slice of ACIFiles
 type RenderedACI []*ACIFiles
 
+// GetRenderedACIWithImageID, given an imageID, starts with the matching image
+// available in the store, creates the dependencies list and returns the
+// RenderedACI list.
+func GetRenderedACIWithImageID(imageID types.Hash, ap ACIRegistry) (RenderedACI, error) {
+	imgs, err := CreateDepListFromImageID(imageID, ap)
+	if err != nil {
+		return nil, err
+	}
+	return GetRenderedACIFromList(imgs, ap)
+}
+
+// GetRenderedACI, given an image app name and optional labels, starts with the
+// best matching image available in the store, creates the dependencies list
+// and returns the RenderedACI list.
+func GetRenderedACI(name types.ACName, labels types.Labels, ap ACIRegistry) (RenderedACI, error) {
+	imgs, err := CreateDepListFromNameLabels(name, labels, ap)
+	if err != nil {
+		return nil, err
+	}
+	return GetRenderedACIFromList(imgs, ap)
+}
+
 // GetRenderedACIFromList returns the RenderedACI list. All file outside rootfs
 // are excluded (at the moment only "manifest").
 func GetRenderedACIFromList(imgs Images, ap ACIProvider) (RenderedACI, error) {
