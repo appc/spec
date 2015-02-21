@@ -365,7 +365,9 @@ Accessible at `$AC_METADATA_URL/acMetadata/v1/container/hmac`
 
 ## AC Name Type
 
-An AC Name Type is restricted to lowercase characters accepted by the DNS [RFC](http://tools.ietf.org/html/rfc1123#page-13) and "/".
+An AC Name Type is restricted to lowercase characters accepted by the DNS [RFC1123](http://tools.ietf.org/html/rfc1123#page-13) and "/".
+An AC Name Type cannot be an empty string and must begin and end with an alphanumeric character.
+An AC Name Type will match the following [RE2](https://code.google.com/p/re2/wiki/Syntax) regular expression: `^[a-z0-9]+([-./][a-z0-9]+)*$`
 
 Examples:
 
@@ -374,7 +376,6 @@ Examples:
 * example.com/ourapp
 * sub-domain.example.com/org/product/release
 
-An AC Name Type cannot be an empty string.
 The AC Name Type is used as the primary key for a number of fields in the schemas below.
 The schema validator will ensure that the keys conform to these constraints.
 
