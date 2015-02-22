@@ -2,7 +2,6 @@ package types
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -55,7 +54,6 @@ func TestACKindUnmarshalBad(t *testing.T) {
 	for i, in := range tests {
 		var a, b ACKind
 		err := a.UnmarshalJSON([]byte(in))
-		fmt.Println(err)
 		if err == nil {
 			t.Errorf("#%d: err=nil, want non-nil", i)
 		} else if !reflect.DeepEqual(a, b) {
