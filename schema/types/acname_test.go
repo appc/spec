@@ -159,6 +159,7 @@ func TestSanitizeACNameBad(t *testing.T) {
 func TestACNameUnmarshalBad(t *testing.T) {
 	tests := []string{
 		"",
+		"garbage",
 		`""`,
 		`"EXAMPLE"`,
 		`"example.com/app_1"`,
@@ -192,9 +193,11 @@ func TestACNameUnmarshalGood(t *testing.T) {
 
 func TestACNameMarshalBad(t *testing.T) {
 	tests := map[string]error{
-		"Foo":  ErrInvalidChar,
-		"foo#": ErrInvalidChar,
-		"":     ErrEmptyACName,
+		"Foo":          ErrInvalidChar,
+		"foo#":         ErrInvalidChar,
+		"/foo":         ErrInvalidEdge,
+		"example.com/": ErrInvalidEdge,
+		"":             ErrEmptyACName,
 	}
 	for in, werr := range tests {
 		a := ACName(in)

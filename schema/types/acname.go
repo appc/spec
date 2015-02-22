@@ -8,19 +8,25 @@ import (
 )
 
 var (
-	validACName  = regexp.MustCompile("^[a-z0-9]+([-./][a-z0-9]+)*$")
+	// ValidACName is a regular expression that defines a valid ACName
+	ValidACName = regexp.MustCompile("^[a-z0-9]+([-./][a-z0-9]+)*$")
+
 	invalidChars = regexp.MustCompile("[^a-z0-9./-]")
 	invalidEdges = regexp.MustCompile("(^[./-]+)|([./-]+$)")
 
 	ErrEmptyACName = ACNameError("ACName cannot be empty")
+	ErrInvalidEdge = ACNameError("ACName must start and end with only lower case " +
+		"alphanumeric characters")
 	ErrInvalidChar = ACNameError("ACName must contain only lower case " +
 		`alphanumeric characters plus ".", "-", "/"`)
 )
 
-// ACName (an App-Container Name) is a format used by keys in different
-// formats of the App Container Standard. An ACName is restricted to
-// characters accepted by the DNS RFC[1] and "/"; all alphabetical characters
-// must be lowercase only.
+// ACName (an App-Container Name) is a format used by keys in different formats
+// of the App Container Standard. An ACName is restricted to characters
+// accepted by the DNS RFC[1] and "/"; all alphabetical characters must be
+// lowercase only. Furthermore, the first and last character ("edges") must be
+// alphanumeric, and an ACName cannot be empty. Programmatically, an ACName
+// must conform to the regular expression ValidACName.
 //
 // [1] http://tools.ietf.org/html/rfc1123#page-13
 type ACName string
@@ -64,8 +70,11 @@ func (n ACName) assertValid() error {
 	if len(s) == 0 {
 		return ErrEmptyACName
 	}
-	if !validACName.MatchString(s) {
+	if invalidChars.MatchString(s) {
 		return ErrInvalidChar
+	}
+	if invalidEdges.MatchString(s) {
+		return ErrInvalidEdge
 	}
 	return nil
 }

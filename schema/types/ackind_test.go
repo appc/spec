@@ -46,8 +46,8 @@ func TestACKindMarshalGood(t *testing.T) {
 
 func TestACKindUnmarshalBad(t *testing.T) {
 	tests := []string{
-		"garbage",
-		"ImageManifest",
+		"ImageManifest", // Not a valid JSON-encoded string
+		`"garbage"`,
 		`"AppManifest"`,
 		`""`,
 	}
