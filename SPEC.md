@@ -198,7 +198,7 @@ Note that logging mechanisms other than stdout and stderr are not required by th
 * **AC_APP_NAME** name of the application, as defined in the image manifest
 * **AC_METADATA_URL** URL where the metadata service for this container can be found
 
-### Isolators
+#### Isolators
 
 Isolators enforce resource constraints rather than namespacing.
 Isolators may be applied to individual applications, to whole containers, or to both.
@@ -216,10 +216,30 @@ Additional isolators will be added to this specification over time.
 |network-io/write-bandwidth |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
 |capabilities/bounding-set  |string|"&lt;cap&gt; &lt;cap&gt; ..."       |"CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"|
 
-#### Types
+##### Types
 
 * uint: base 10 formatted unsigned int as a string
 * bytes: Suffix to a base 10 int to make it a K, M, G, or T for base 1024
+
+#### Devices and File Systems
+
+Apps should expect to run in an environment with basic device nodes and filesystems.
+The exact device nodes and filesystems available depend on the operating system.
+
+##### Linux
+
+|     Path     |  Type  |
+| ------------ | ------ |
+| /proc        | proc   |
+| /dev/null    | devfs  |
+| /dev/zero    | devfs  |
+| /dev/full    | devfs  |
+| /dev/random  | devfs  |
+| /dev/urandom | devfs  |
+| /dev/tty     | devfs  |
+| /dev/net/tun | devfs  |
+| /dev/console | devfs  |
+
 
 ## App Container Image Discovery
 
