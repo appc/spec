@@ -225,7 +225,7 @@ The first example is "capabilities" but this will be expanded to include things 
 * **set** list of capabilities that will be removed from the process's capabilities bounding set
 
 ```
-"name": "linux/capabilities-remove-set",
+"name": "os/linux/capabilities-remove-set",
 "value": {
   "set": [
     "CAP_SYS_PTRACE",
@@ -241,7 +241,7 @@ The first example is "capabilities" but this will be expanded to include things 
 * **set** list of capabilities that will be retained in the process's capabilities bounding set
 
 ```
-"name": "linux/capabilities-retain-set",
+"name": "os/linux/capabilities-retain-set",
 "value": {
   "set": [
     "CAP_KILL",

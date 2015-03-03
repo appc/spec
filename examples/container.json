@@ -31,8 +31,8 @@
                 ],
                 "isolators": [
                     {
-                        "name": "memory/limit",
-                        "value": "1G"
+                        "name": "resource/memory",
+                        "value": {"limit": "1G"}
                     }
                 ]
             },
@@ -55,6 +55,12 @@
             "mounts": [
                 {"volume": "database", "mountPoint": "db"},
                 {"volume": "buildoutput", "mountPoint": "out"}
+            ],
+            "isolators": [
+                {
+                    "name": "resource/memory",
+                    "value": {"limit": "1G"}
+                }
             ],
             "annotations": [
                 {
@@ -91,8 +97,8 @@
     ],
     "isolators": [
         {
-            "name": "memory/limit",
-            "value": "4G"
+            "name": "resource/memory",
+            "value": {"limit": "4G"}
         }
     ],
     "annotations": [
