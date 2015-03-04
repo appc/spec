@@ -4,21 +4,57 @@
     "uuid": "6733C088-A507-4694-AABF-EDBE4FC5266F",
     "apps": [
         {
-            "app": "example.com/reduce-worker",
-            "imageID": "sha512-..."
+            "name": "reduce-worker",
+            "image": {
+                "name": "example.com/reduce-worker",
+                "id": "sha512-...",
+                "labels": [
+                    {
+                        "name":  "version",
+                        "value": "1.0.0"
+                    }
+                ]
+            },
+            "app": {
+                "exec": [
+                    "/bin/reduce-worker",
+                    "--debug=true",
+                    "--data-dir=/mnt/foo"
+                ],
+                "group": "0",
+                "user": "0",
+                "mountPoints": [
+                    {
+                        "name": "work",
+                        "path": "/mnt/foo"
+                    }
+                ],
+                "isolators": [
+                    {
+                        "name": "memory/limit",
+                        "value": "1G"
+                    }
+                ]
+            },
+            "mounts": [
+                {"volume": "work", "mountPoint": "work"}
+            ]
         },
         {
-            "app": "example.com/worker-backup",
+            "name": "backup",
+            "image": {
+                "name": "example.com/worker-backup",
+                "id": "sha512-...",
+                "labels": [
+                    {
+                        "name":  "version",
+                        "value": "1.0.0"
+                    }
+                ]
+            },
             "mounts": [
                 {"volume": "database", "mountPoint": "db"},
                 {"volume": "buildoutput", "mountPoint": "out"}
-            ],
-            "imageID": "sha512-...",
-            "isolators": [
-                {
-                    "name": "memory/limit",
-                    "value": "1G"
-                }
             ],
             "annotations": [
                 {
@@ -28,8 +64,17 @@
             ]
         },
         {
-            "app": "example.com/reduce-worker-register",
-            "imageID": "sha512-..."
+            "name": "register",
+            "image": {
+                "name": "example.com/reduce-worker-register",
+                "id": "sha512-...",
+                "labels": [
+                    {
+                        "name":  "version",
+                        "value": "1.0.0"
+                    }
+                ]
+            }
         }
     ],
     "volumes": [

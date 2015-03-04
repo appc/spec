@@ -569,34 +569,70 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
     "uuid": "6733C088-A507-4694-AABF-EDBE4FC5266F",
     "apps": [
         {
-            "app": "example.com/reduce-worker-1.0.0",
-            "imageID": "sha512-...",
+            "name": "reduce-worker",
+            "image": {
+                "name": "example.com/reduce-worker",
+                "id": "sha512-...",
+                "labels": [
+                    {
+                        "name":  "version",
+                        "value": "1.0.0"
+                    }
+                ]
+            },
+            "app": {
+                "exec": [
+                    "/bin/reduce-worker",
+                    "--debug=true",
+                    "--data-dir=/mnt/foo"
+                ],
+                "group": "0",
+                "user": "0",
+                "mountPoints": [
+                    {
+                        "name": "work",
+                        "path": "/mnt/foo"
+                    }
+                ]
+            },
             "mounts": [
-                 {"volume": "work", "mountPoint": "work"}
+                {"volume": "work", "mountPoint": "work"}
             ]
         },
         {
-            "app": "example.com/worker-backup-1.0.0",
-            "imageID": "sha512-...",
-            "isolators": [
-                {
-                    "name": "memory/limit",
-                    "value": "1G"
-                }
-            ],
-            "annotations": [
-                {
-                    "name": "foo",
-                    "value": "baz"
-                }
-            ],
-            "mounts": [
-                 {"volume": "work", "mountPoint": "backup"}
-            ]
+            "name": "backup",
+            "image": {
+                "name": "example.com/worker-backup",
+                "id": "sha512-...",
+                "labels": [
+                    {
+                        "name": "version",
+                        "value": "1.0.0"
+                    }
+                ],
+                "annotations": [
+                    {
+                        "name": "foo",
+                        "value": "bax"
+                    }
+                ],
+                "mounts": [
+                    {"volume": "work", "mountPoint": "backup"}
+                ]
+            }
         },
         {
-            "app": "example.com/reduce-worker-register-1.0.0",
-            "imageID": "sha512-..."
+            "name": "register",
+            "image": {
+                "name": "example.com/reduce-worker-register",
+                "id": "sha512-...",
+                "labels": [
+                    {
+                        "name": "version",
+                        "value": "1.0.0"
+                    }
+                ]
+            }
         }
     ],
     "volumes": [
@@ -626,12 +662,15 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
 * **acKind** (string, required) must be set to "ContainerRuntimeManifest"
 * **uuid** (string, required) must be an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt) that represents this instance of the container (must be in [RFC4122](http://www.ietf.org/rfc/rfc4122.txt) format)
 * **apps** (list of objects, required) list of apps that will execute inside of this container. Each app object has the following set of key-value pairs:
-    * **app** (string, optional) name of the app (restricted to AC Name formatting)
-    * **imageID** (string, required) content hash of the image that this app will execute inside of (must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
+    * **name** (string, optional) name of the app (restricted to AC Name formatting)
+    * **image** (object, required) identifiers of the image providing this app
+        * **id** (string, required) content hash of the image that this app will execute inside of (must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
+        * **name** (string, optional) name of the image (restricted to AC Name formatting)
+        * **labels** (list of objects, optional) additional labels characterizing the image
+    * **app** (object, optional) substitute for the app object of the referred image's ImageManifest. See [Image Manifest Schema](#image-manifest-schema) for what the app object contains.
     * **mounts** (list of objects, optional) list of mounts mapping an app mountPoint to a volume. Each mount has the following set of key-value pairs:
       * **volume** (string, required) name of the volume that will fulfill this mount (restricted to the AC Name formatting)
       * **mountPoint** (string, required) name of the app mount point to place the volume on (restricted to the AC Name formatting)
-    * **isolators** (list of objects, optional) list of isolators that should be applied to this app. Isolators must have a **name** key restricted to the AC Name formatting and a **value** key that can be a freeform string)
     * **annotations** (list of objects, optional) arbitrary metadata appended to the app. The annotation objects must have a *name* key that has a value that is restricted to the [AC Name](#ac-name-type) formatting and *value* key that is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** (list of objects, optional) list of volumes which should be mounted into each application's filesystem
     * **name** (string, required) used to map the volume to an app's mountPoint at runtime. (restricted to the AC Name formatting)

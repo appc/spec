@@ -97,8 +97,15 @@ func (r Mount) assertValid() error {
 // RuntimeApp describes an application referenced in a ContainerRuntimeManifest
 type RuntimeApp struct {
 	Name        types.ACName      `json:"name"`
-	ImageID     types.Hash        `json:"imageID"`
+	Image       RuntimeImage      `json:"image"`
+	App         *types.App        `json:"app,omitempty"`
 	Mounts      []Mount           `json:"mounts"`
-	Isolators   []types.Isolator  `json:"isolators"`
 	Annotations types.Annotations `json:"annotations"`
+}
+
+// RuntimeImage describes an image referenced in a RuntimeApp
+type RuntimeImage struct {
+	Name   types.ACName `json:"name"`
+	ID     types.Hash   `json:"id"`
+	Labels types.Labels `json:"labels"`
 }
