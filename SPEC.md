@@ -358,20 +358,33 @@ Furthermore, attributes other than the name may be required to unambiguously ide
 App Container Image Discovery prescribes a discovery process to retrieve an image based on the app name and these attributes.
 Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
+There are three URLs types:
+* Image URLs
+* Signature URLs
+* Public key URLs
+
+Simple and Meta Discovery processes use one or more templates (predefined or derived from various sources) to render Image and Signature URLs (while the Public keys URLs aren't templates).
+
+Note that, to discriminate between the image and its signature, the templates must contain `{ext}` and its values should be either `aci` (for the image) or `aci.asc` (for the signature).
+
 ### Simple Discovery
 
-First, try to fetch the app container image by rendering the following template and directly retrieving the resulting URL:
+The simple discovery template is:
 
-    https://{name}-{version}-{os}-{arch}.aci
+    https://{name}-{version}-{os}-{arch}.{ext}
+
+First, try to fetch the app container image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
 
 For example, given the app name `example.com/reduce-worker`, with version `1.0.0`, arch `amd64`, and os `linux`, try to retrieve:
 
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci
 
 If this fails, move on to meta discovery.
-If this succeeds, try fetching the signature using the same template but with a `.aci.asc` extension:
+If this succeeds, try fetching the signature using the same template but with `{ext}` rendered to `aci.asc`:
 
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci.asc
+
+Simple discovery doesn't provide a way to discover Public Keys.
 
 ### Meta Discovery
 
