@@ -46,20 +46,16 @@
         ],
         "isolators": [
             {
-                "name": "cpu/shares",
-                "value": "20"
+                "name": "resource/cpu",
+                "value": {"limit": "20"}
             },
             {
-                "name": "memory/limit",
-                "value": "1G"
+                "name": "resource/memory",
+                "value": {"limit": "1G"}
             },
             {
-                "name": "cpu/mask",
-                "value": "0"
-            },
-            {
-                "name": "capabilities/bounding-set",
-                "value": "CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"
+                "name": "os/linux/capabilities-revoke-set",
+                "value": {"set": ["CAP_NET_BIND_SERVICE", "CAP_SYS_ADMIN"]}
             }
         ],
         "mountPoints": [

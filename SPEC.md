@@ -201,25 +201,154 @@ Note that logging mechanisms other than stdout and stderr are not required by th
 ### Isolators
 
 Isolators enforce resource constraints rather than namespacing.
-Isolators may be applied to individual applications, to whole containers, or to both.
+Isolators may be scoped to individual applications, to whole containers, or to both.
 Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
-|Name|Type|Schema|Example|
-|---------------------------|------|------------------------------------|------------------------------------|
-|cpu/shares                 |string|"&lt;uint&gt;"                      |"4096"                              |
-|memory/limit               |string|"&lt;bytes&gt;"                     |"1G", "5T", "4K"                    |
-|cpu/mask                   |string|"&lt;cpu range&gt;"                 |"0", "0-3", "0,2,4-7"               |
-|block-io/read-bandwidth    |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
-|block-io/write-bandwidth   |string|"&lt;path to file&gt; &lt;bytes&gt;"|"/tmp 1K"                           |
-|network-io/read-bandwidth  |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
-|network-io/write-bandwidth |string|"&lt;device name&gt; &lt;bytes&gt;" |"eth0 100M"                         |
-|capabilities/bounding-set  |string|"&lt;cap&gt; &lt;cap&gt; ..."       |"CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"|
+An isolator is a standalone JSON object with only one required field: "name".
+All other fields are specific to the isolator.
 
-#### Types
+An executor MAY ignore isolators that it does not understand and run the container without them.
+But, an executor MUST make information about which isolators were ignored, enforced or modified available to the user.
+An executor MAY implement a "strict mode" where an image cannot run unless all isolators are in place.
 
-* uint: base 10 formatted unsigned int as a string
-* bytes: Suffix to a base 10 int to make it a K, M, G, or T for base 1024
+### Linux Isolators
+
+These isolators are specific to the Linux kernel and are impossible to represent as a 1-to-1 mapping on other kernels.
+The first example is "capabilities" but this will be expanded to include things such as SELinux, SMACK or AppArmor.
+
+#### linux/capabilities-remove-set
+
+* Scope: app
+
+**Parameters:**
+* **set** list of capabilities that will be removed from the process's capabilities bounding set
+
+```
+"name": "os/linux/capabilities-remove-set",
+"value": {
+  "set": [
+    "CAP_SYS_PTRACE",
+  ]
+}
+```
+
+#### linux/capabilities-retain-set
+
+* Scope: app
+
+**Parameters:**
+* **set** list of capabilities that will be retained in the process's capabilities bounding set
+
+```
+"name": "os/linux/capabilities-retain-set",
+"value": {
+  "set": [
+    "CAP_KILL",
+    "CAP_CHOWN"
+  ]
+}
+```
+
+### Resource Isolators
+
+A resource is something that can be consumed by a container such as memory (RAM), CPU, and network bandwidth. These resource isolators will have a request and limit quantity:
+
+- request will be the guaranteed quantity resources given to the container. Going over the request may result in throttling or denial. If request is omitted, it defaults to limit.
+
+- limit is the cap on the maximum amount of resources that will be made available to the container. If more resources than the limit are consumed, it may be terminated or throttled to no more than the limit.
+
+Limit and requests will always be a resource type's natural base units (e.g., bytes, not MB). These quantities may either be unsuffixed, have suffices (E, P, T, G, M, K, m) or power-of-two suffices (Ei, Pi, Ti, Gi, Mi, Ki). For example, the following represent roughly the same value: 128974848, "129e6", "129M" , "123Mi". Small quantities can be represented directly as decimals (e.g., 0.3), or using milli-units (e.g., "300m").
+
+#### resource/block-bandwidth
+
+* Scope: app/container
+
+**Parameters:**
+* **devicePaths** the block devices that this limit will be placed on
+* **limit** read/write bytes per second
+
+```
+"name": "resouce/block-bandwidth",
+"value": {
+  "default": true,
+  "limit": "2M"
+}
+```
+
+**TODO**: The default=true behvaior probably covers nearly 80% of all use cases but we need to define a way to target particular devices.
+
+#### resource/block-iops
+
+* Scope: app/container
+
+**Parameters:**
+* **default** must be set to true and means that this bandwidth limit applies to all interfaces except localhost by default.
+* **limit** read/write input/output operations per second
+
+```
+"name": "resource/block-iops",
+"value": {
+  "default": true,
+  "limit": "1000"
+}
+```
+
+**TODO**: The default=true behvaior probably covers nearly 80% of all use cases but we need to define a way to target particular devices.
+
+
+#### resource/cpu
+
+* Scope: app/container
+
+**Parameters:**
+* **request** milli-cores that are requested
+* **limit** milli-cores that can be consumed before the kernel temporarily throttles the process
+
+```
+"name": "resource/cpu",
+"value": {
+  "request": "250",
+  "limit": "500"
+}
+```
+
+**Note**: a milli-core is the milli-seconds/second that the app will be able to run. e.g. 1000 would represent full use of a single CPU core every second.
+
+#### resource/memory
+
+* Scope: app/container
+
+**Parameters:**
+* **request** bytes of memory that the app is requesting to use and allocations over this request will be reclaimed in case of contention
+* **limit** bytes of memory that the app can allocate before the kernel considers the container out of memory and stops allowing allocations.
+
+```
+"name": "resource/memory",
+"value": {
+  "request": "1G",
+  "limit": "2G"
+}
+```
+
+#### resource/network-bandwidth
+
+* Scope: app/container
+
+**Parameters:**
+* **default** must be set to true and means that this bandwidth limit applies to all interfaces except localhost by default.
+* **limit** read/write bytes per second
+
+```
+"name": "resource/network-bandwidth",
+"value": {
+  "default": true,
+  "limit": "1G"
+}
+```
+
+**NOTE**: Limits SHOULD NOT apply to localhost communication between apps in a container.
+**TODO**: The default=true behvaior probably covers nearly 80% of all use cases but we need to define a network interface tagging spec for appc.
 
 ## App Container Image Discovery
 
@@ -434,20 +563,24 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         ],
         "isolators": [
             {
-                "name": "cpu/shares",
-                "value": "20"
+                "name": "resources/cpu",
+                "value": {
+                    "request": "250",
+                    "limit": "500"
+                }
             },
             {
-                "name": "memory/limit",
-                "value": "1G"
+                "name": "resource/memory",
+                "value": {
+                    "request": "1G",
+                    "limit": "2G"
+                }
             },
             {
-                "name": "cpu/mask",
-                "value": "0-3"
-            },
-            {
-                "name": "capabilities/bounding-set",
-                "value": "CAP_NET_BIND_SERVICE CAP_SYS_ADMIN"
+                "name": "linux/capabilities-retain-set",
+                "value": {
+                    "set": ["CAP_NET_BIND_SERVICE", "CAP_SYS_ADMIN"]
+                }
             }
         ],
         "mountPoints": [
@@ -524,7 +657,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         * **post-stop** - executed if the main **exec** process is killed. This can be used to cleanup resources in the case of clean application shutdown, but cannot be relied upon in the face of machine failure.
     * **workingDirectory** (string, optional) working directory of the launched application, relative to the application image's root (must be an absolute path, defaults to "/", ACE can override). If the directory does not exist in the application's assembled rootfs (including any dependent images and mounted volumes), the ACE must fail execution.
     * **environment** (list of objects, optional) represents the app's environment variables (ACE can append). The listed objects must have two key-value pairs: **name** and **value**. The **name** must consist solely of letters, digits, and underscores '_' as outlined in [IEEE Std 1003.1-2001](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html). The **value** is an arbitrary string.
-    * **isolators** (list of objects, optional) well-known isolation steps that should be applied to the app. The listed objects should have two key-value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** can be a freeform string. Any isolators specified in the Image Manifest can be overridden at runtime via the Container Runtime Manifest. The executor can either ignore isolator keys it does not understand or error. In practice this means there might be certain isolators (for example, an AppArmor policy) that an executor doesn't understand so it will simply skip that entry.
+    * **isolators** (optional) list of isolation steps that should be applied to the app.
+        * **name** is restricted to the [AC Name](#ac-name-type) formatting
     * **mountPoints** (list of objects, optional) locations where a container is expecting external data to be mounted. The listed objects should contain three key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. **readOnly" should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
     * **ports** (list of objects, optional) are protocols and port numbers that the container will be listening on once started. All of the keys in the listed objects are restricted to the AC Name formatting. This information is primarily to help the user find ports that are not well known. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **socketActivated** (boolean, optional) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
@@ -608,6 +742,15 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
                         "value": "1.0.0"
                     }
                 ],
+                "isolators": [
+                    {
+                        "name": "resource/memory",
+                        "value": {
+                            "request": "1G",
+                            "limit": "2G"
+                        }
+                    }
+                ],
                 "annotations": [
                     {
                         "name": "foo",
@@ -618,6 +761,15 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
                     {"volume": "work", "mountPoint": "backup"}
                 ]
             }
+            "annotations": [
+                {
+                    "name": "foo",
+                    "value": "baz"
+                }
+            ],
+            "mounts": [
+                 {"volume": "work", "mountPoint": "backup"}
+            ]
         },
         {
             "name": "register",
@@ -643,9 +795,11 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
     ],
     "isolators": [
         {
-           "name": "memory/limit",
-           "value": "4G"
-        }
+            "name": "resource/memory",
+            "value": {
+                "limit": "4G"
+            }
+        },
     ],
     "annotations": [
         {
