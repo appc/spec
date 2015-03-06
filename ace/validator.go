@@ -394,8 +394,8 @@ func validateAppMetadata(metadataURL string, crm *schema.ContainerRuntimeManifes
 		r = append(r, err)
 	}
 
-	if string(id) != a.ImageID.String() {
-		err = fmt.Errorf("%q's image id mismatch: %v vs %v", string(appName), id, a.ImageID)
+	if string(id) != a.Image.ID.String() {
+		err = fmt.Errorf("%q's image id mismatch: %v vs %v", string(appName), id, a.Image.ID)
 		r = append(r, err)
 	}
 
