@@ -371,11 +371,11 @@ Note that, to discriminate between the image and its signature, the templates mu
 
 The simple discovery template is:
 
-    https://{name}-{version}-{os}-{arch}.{ext}
+    https://{name}-{tag}-{os}-{arch}.{ext}
 
 First, try to fetch the app container image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
 
-For example, given the app name `example.com/reduce-worker`, with version `1.0.0`, arch `amd64`, and os `linux`, try to retrieve:
+For example, given the app name `example.com/reduce-worker`, with tag `1.0.0`, arch `amd64`, and os `linux`, try to retrieve:
 
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci
 
@@ -406,18 +406,18 @@ Then inspect the HTML returned for meta tags that have the following format:
 Some examples for different schemes and URLs:
 
 ```
-<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{version}.{ext}?torrent">
-<meta name="ac-discovery" content="example.com hdfs://storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
+<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{tag}.{ext}?torrent">
+<meta name="ac-discovery" content="example.com hdfs://storage.example.com/{name}-{tag}-{os}-{arch}.{ext}">
 <meta name="ac-discovery-pubkeys" content="example.com https://example.com/pubkeys.gpg">
 ```
 
 The algorithm first ensures that the prefix of the AC Name matches the prefix-match and then if there is a match it will request the equivalent of:
 
 ```
-curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
+curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{tag}/$tag/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
-where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `aci.asc` for retrieving an app container image or signature respectively.
+where _appname_, _tag_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `aci.asc` for retrieving an app container image or signature respectively.
 
 In our example above this would be:
 
@@ -533,7 +533,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
     "name": "example.com/reduce-worker",
     "labels": [
         {
-            "name": "version",
+            "name": "tag",
             "value": "1.0.0"
         },
         {
@@ -660,7 +660,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 * **acVersion** (string, required) represents the version of the schema specification that the manifest implements (string, must be in [semver](http://semver.org/) format)
 * **name** (string, required) used as a human readable index to the container image. (string, restricted to the AC Name formatting)
 * **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
-    * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
+    * **tag** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
     * **os**, **arch** can together be considered to describe the syscall ABI this image requires. **arch** is meaningful only if **os** is provided. If one or both values are not provided, the image is assumed to be OS- and/or architecture-independent. Currently supported combinations are listed in the [`types.ValidOSArch`](schema/types/labels.go) variable, which can be updated by an implementation that supports other combinations. The combinations whitelisted by default are (in format `os/arch`): `linux/amd64`, `linux/i386`, `freebsd/amd64`, `freebsd/i386`, `freebsd/arm`, `darwin/x86_64`, `darwin/i386`.
 * **app** (object, optional) if present, defines the default parameters that can be used to execute this image as an application.
     * **exec** (list of strings, required) executable to launch and any flags (must be non-empty; the executable must be an absolute path within the app rootfs; ACE can append or override)
@@ -700,7 +700,7 @@ A label is considered to match if it meets one of three criteria:
 - It is absent from the dependency specification and present in the dependency's ImageManifest, with any value.
 This facilitates "wildcard" matching and a variety of common usage patterns, like "noarch" or "latest" dependencies.
 For example, an AppImage containing a set of bash scripts might omit both "os" and "arch", and hence could be used as a dependency by a variety of different AppImages.
-Alternatively, an AppImage might specify a dependency with no image ID and no "version" label, and the image discovery mechanism could always retrieve the latest version of an AppImage
+Alternatively, an AppImage might specify a dependency with no image ID and no "tag" label, and the image discovery mechanism could always retrieve the latest tag of an AppImage
 
 ### Container Runtime Manifest Schema
 
@@ -720,7 +720,7 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
                 "id": "sha512-...",
                 "labels": [
                     {
-                        "name":  "version",
+                        "name":  "tag",
                         "value": "1.0.0"
                     }
                 ]
@@ -751,7 +751,7 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
                 "id": "sha512-...",
                 "labels": [
                     {
-                        "name": "version",
+                        "name": "tag",
                         "value": "1.0.0"
                     }
                 ],
@@ -791,7 +791,7 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
                 "id": "sha512-...",
                 "labels": [
                     {
-                        "name": "version",
+                        "name": "tag",
                         "value": "1.0.0"
                     }
                 ]

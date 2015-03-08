@@ -18,7 +18,7 @@ func TestNewAppFromString(t *testing.T) {
 			&App{
 				Name: "example.com/reduce-worker",
 				Labels: map[string]string{
-					"version": "1.0.0",
+					"tag": "1.0.0",
 				},
 			},
 			false,

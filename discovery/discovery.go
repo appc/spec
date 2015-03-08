@@ -33,7 +33,7 @@ func (e *Endpoints) Append(ep Endpoints) {
 }
 
 const (
-	defaultVersion = "latest"
+	defaultTag = "latest"
 )
 
 var (
@@ -110,8 +110,8 @@ func createTemplateVars(app App) []string {
 }
 
 func doDiscover(pre string, app App, insecure bool) (*Endpoints, error) {
-	if app.Labels["version"] == "" {
-		app.Labels["version"] = defaultVersion
+	if app.Labels["tag"] == "" {
+		app.Labels["tag"] = defaultTag
 	}
 
 	_, body, err := httpsOrHTTP(pre, insecure)
