@@ -177,24 +177,14 @@ func ValidateWorkingDirectory(wwd string) (r results) {
 	return
 }
 
-// ValidateEnvironment ensures that the given environment exactly maps the
-// environment in which this process is running
+// ValidateEnvironment ensures that the given environment contains the
+// necessary/expected environment variables.
 func ValidateEnvironment(wenv map[string]string) (r results) {
 	for wkey, wval := range wenv {
 		gval := os.Getenv(wkey)
 		if gval != wval {
 			err := fmt.Errorf("environment variable %q not set as expected (need %q)", wkey, wval)
 			r = append(r, err)
-		}
-	}
-	for _, s := range os.Environ() {
-		parts := strings.SplitN(s, "=", 2)
-		k := parts[0]
-		_, ok := wenv[k]
-		switch {
-		case k == appNameEnv, k == "PATH", k == "TERM", k == "AC_METADATA_URL":
-		case !ok:
-			r = append(r, fmt.Errorf("unexpected environment variable %q set", k))
 		}
 	}
 	return

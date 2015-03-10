@@ -190,13 +190,17 @@ Note that logging mechanisms other than stdout and stderr are not required by th
 
 #### Execution Environment
 
-* **Working directory** defaults to the root of the application image, overridden with "workingDirectory"
+The following environment variables MUST be set for each application's main process and any lifecycle processes:
 * **PATH** `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
 * **USER, LOGNAME** username of the user executing this app
 * **HOME** home directory of the user
 * **SHELL** login shell of the user
 * **AC_APP_NAME** name of the application, as defined in the image manifest
 * **AC_METADATA_URL** URL where the metadata service for this container can be found
+
+An executor MAY set additional environment variables for the application processes.
+
+Additionally, processes must have their **working directory** set to the value of the application's **workingDirectory** option, if specified, or the root of the application image by default.
 
 ### Isolators
 
