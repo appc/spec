@@ -252,13 +252,20 @@ The first example is "capabilities" but this will be expanded to include things 
 
 ### Resource Isolators
 
-A resource is something that can be consumed by a container such as memory (RAM), CPU, and network bandwidth. These resource isolators will have a request and limit quantity:
+A _resource_ is something that can be consumed by a container such as memory (RAM), CPU, and network bandwidth.
+Resource isolators have a *request* and *limit* quantity:
 
-- request will be the guaranteed quantity resources given to the container. Going over the request may result in throttling or denial. If request is omitted, it defaults to limit.
+- **request** is the minimum amount of a resource guaranteed to be available to the container.
+If the container attempts to consume a resource in excess of its request, it may be throttled or denied.
+If **request** is omitted, it defaults to the value of **limit**.
 
-- limit is the cap on the maximum amount of resources that will be made available to the container. If more resources than the limit are consumed, it may be terminated or throttled to no more than the limit.
+- **limit** is the maximum amount of a resource available to the container.
+If the container consumes a resource in excess of its limit, it must be terminated or throttled to no more than the limit.
 
-Limit and requests will always be a resource type's natural base units (e.g., bytes, not MB). These quantities may either be unsuffixed, have suffices (E, P, T, G, M, K, m) or power-of-two suffices (Ei, Pi, Ti, Gi, Mi, Ki). For example, the following represent roughly the same value: 128974848, "129e6", "129M" , "123Mi". Small quantities can be represented directly as decimals (e.g., 0.3), or using milli-units (e.g., "300m").
+Limit and request values will always be of a resource type's natural base units (e.g., bytes, not MB).
+These quantities may either be unsuffixed, have suffices (E, P, T, G, M, K, m) or power-of-two suffices (Ei, Pi, Ti, Gi, Mi, Ki).
+For example, the following represent roughly the same value: 128974848, "129e6", "129M" , "123Mi".
+Small quantities can be represented directly as decimals (e.g., 0.3), or using milli-units (e.g., "300m").
 
 #### resource/block-bandwidth
 
