@@ -10,7 +10,7 @@
                 "id": "sha512-...",
                 "labels": [
                     {
-                        "name":  "version",
+                        "name":  "tag",
                         "value": "1.0.0"
                     }
                 ]
@@ -47,7 +47,7 @@
                 "id": "sha512-...",
                 "labels": [
                     {
-                        "name":  "version",
+                        "name":  "tag",
                         "value": "1.0.0"
                     }
                 ]
@@ -76,7 +76,7 @@
                 "id": "sha512-...",
                 "labels": [
                     {
-                        "name":  "version",
+                        "name":  "tag",
                         "value": "1.0.0"
                     }
                 ]

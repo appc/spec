@@ -66,9 +66,9 @@ func TestDiscoverEndpoints(t *testing.T) {
 			App{
 				Name: "example.com/myapp",
 				Labels: map[string]string{
-					"version": "1.0.0",
-					"os":      "linux",
-					"arch":    "amd64",
+					"tag":  "1.0.0",
+					"os":   "linux",
+					"arch": "amd64",
 				},
 			},
 			[]ACIEndpoint{
@@ -89,9 +89,9 @@ func TestDiscoverEndpoints(t *testing.T) {
 			App{
 				Name: "example.com/myapp/foobar",
 				Labels: map[string]string{
-					"version": "1.0.0",
-					"os":      "linux",
-					"arch":    "amd64",
+					"tag":  "1.0.0",
+					"os":   "linux",
+					"arch": "amd64",
 				},
 			},
 			[]ACIEndpoint{
@@ -112,9 +112,9 @@ func TestDiscoverEndpoints(t *testing.T) {
 			App{
 				Name: "example.com/myapp/foobar/bazzer",
 				Labels: map[string]string{
-					"version": "1.0.0",
-					"os":      "linux",
-					"arch":    "amd64",
+					"tag":  "1.0.0",
+					"os":   "linux",
+					"arch": "amd64",
 				},
 			},
 			[]ACIEndpoint{},
@@ -129,7 +129,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			App{
 				Name: "example.com/myapp",
 				Labels: map[string]string{
-					"version": "1.0.0",
+					"tag": "1.0.0",
 				},
 			},
 			[]ACIEndpoint{
@@ -140,7 +140,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
 		},
-		// Test missing labels. version label should default to
+		// Test missing labels. tag label should default to
 		// "latest" and the first template should be rendered
 		{
 			fakeHTTPGet("myapp2.html", 0),
@@ -164,8 +164,8 @@ func TestDiscoverEndpoints(t *testing.T) {
 			App{
 				Name: "example.com/myapp",
 				Labels: map[string]string{
-					"name":    "labelcalledname",
-					"version": "1.0.0",
+					"name": "labelcalledname",
+					"tag":  "1.0.0",
 				},
 			},
 			[]ACIEndpoint{

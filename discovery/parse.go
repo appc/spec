@@ -38,7 +38,7 @@ func NewAppFromString(app string) (*App, error) {
 		labels map[string]string
 	)
 
-	app = strings.Replace(app, ":", ",version=", -1)
+	app = strings.Replace(app, ":", ",tag=", -1)
 	app = "name=" + app
 	v, err := url.ParseQuery(strings.Replace(app, ",", "&", -1))
 	if err != nil {
