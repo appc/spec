@@ -221,7 +221,7 @@ An executor MAY implement a "strict mode" where an image cannot run unless all i
 These isolators are specific to the Linux kernel and are impossible to represent as a 1-to-1 mapping on other kernels.
 The first example is "capabilities" but this will be expanded to include things such as SELinux, SMACK or AppArmor.
 
-#### linux/capabilities-remove-set
+#### os/linux/capabilities-remove-set
 
 * Scope: app
 
@@ -232,12 +232,12 @@ The first example is "capabilities" but this will be expanded to include things 
 "name": "os/linux/capabilities-remove-set",
 "value": {
   "set": [
-    "CAP_SYS_PTRACE",
+    "CAP_SYS_PTRACE"
   ]
 }
 ```
 
-#### linux/capabilities-retain-set
+#### os/linux/capabilities-retain-set
 
 * Scope: app
 
@@ -280,7 +280,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * **limit** read/write bytes per second
 
 ```
-"name": "resouce/block-bandwidth",
+"name": "resource/block-bandwidth",
 "value": {
   "default": true,
   "limit": "2M"
@@ -601,7 +601,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
                 }
             },
             {
-                "name": "linux/capabilities-retain-set",
+                "name": "os/linux/capabilities-retain-set",
                 "value": {
                     "set": ["CAP_NET_BIND_SERVICE", "CAP_SYS_ADMIN"]
                 }
