@@ -210,9 +210,11 @@ Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
 An isolator is a standalone JSON object with only one required field: "name".
-All other fields are specific to the isolator.
+All other fields are optional or specific to the isolator.
 
-An executor MAY ignore isolators that it does not understand and run the container without them.
+An isolator MAY include a field named "required". If the "required" field is present and has value "true" then an executor MUST either enforce the isolator or refuse to execute the container and return an error. A missing "required" field is treated as a value of "false".
+
+An executor MAY ignore isolators that it does not understand and run the container without them as long as those isolators do not have "required" set to "true.
 But, an executor MUST make information about which isolators were ignored, enforced or modified available to the user.
 An executor MAY implement a "strict mode" where an image cannot run unless all isolators are in place.
 
