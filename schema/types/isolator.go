@@ -50,8 +50,8 @@ type IsolatorValue interface {
 	AssertValid() error
 }
 type Isolator struct {
-	Name     ACName          `json:"name"`
-	ValueRaw json.RawMessage `json:"value"`
+	Name     ACName           `json:"name"`
+	ValueRaw *json.RawMessage `json:"value"`
 	value    IsolatorValue
 }
 type isolator Isolator
@@ -71,7 +71,7 @@ func (i *Isolator) UnmarshalJSON(b []byte) error {
 	con, ok := isolatorMap[ii.Name]
 	if ok {
 		dst = con()
-		err = dst.UnmarshalJSON(ii.ValueRaw)
+		err = dst.UnmarshalJSON(*ii.ValueRaw)
 		if err != nil {
 			return err
 		}
@@ -82,6 +82,7 @@ func (i *Isolator) UnmarshalJSON(b []byte) error {
 	}
 
 	i.value = dst
+	i.ValueRaw = ii.ValueRaw
 	i.Name = ii.Name
 
 	return nil
