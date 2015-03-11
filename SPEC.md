@@ -209,8 +209,8 @@ Isolators may be scoped to individual applications, to whole containers, or to b
 Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
-An isolator is a standalone JSON object with only one required field: "name".
-All other fields are specific to the isolator.
+An isolator is a JSON object with two required fields: "name" and "value".
+"name" is a string restricted to AC Name formatting. "value" can be an arbitrary JSON value.
 
 An executor MAY ignore isolators that it does not understand and run the container without them.
 But, an executor MUST make information about which isolators were ignored, enforced or modified available to the user.
