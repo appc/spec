@@ -56,12 +56,6 @@
                 {"volume": "database", "mountPoint": "db"},
                 {"volume": "buildoutput", "mountPoint": "out"}
             ],
-            "isolators": [
-                {
-                    "name": "resource/memory",
-                    "value": {"limit": "1G"}
-                }
-            ],
             "annotations": [
                 {
                     "name": "foo",

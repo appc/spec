@@ -765,34 +765,35 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
                         "name": "version",
                         "value": "1.0.0"
                     }
+                ]
+            },
+            "app:" {
+                "exec": [
+                    "/bin/reduce-backup"
+                ],
+                "group": "0",
+                "user": "0",
+                "mountPoints": [
+                    {
+                        "name": "backup",
+                        "path": "/mnt/bar"
+                    }
                 ],
                 "isolators": [
                     {
                         "name": "resource/memory",
-                        "value": {
-                            "request": "1G",
-                            "limit": "2G"
-                        }
+                        "value": {"limit": "1G"}
                     }
-                ],
-                "annotations": [
-                    {
-                        "name": "foo",
-                        "value": "bax"
-                    }
-                ],
-                "mounts": [
-                    {"volume": "work", "mountPoint": "backup"}
                 ]
-            }
+            },
+            "mounts": [
+                {"volume": "work", "mountPoint": "backup"}
+            ],
             "annotations": [
                 {
                     "name": "foo",
                     "value": "baz"
                 }
-            ],
-            "mounts": [
-                 {"volume": "work", "mountPoint": "backup"}
             ]
         },
         {
