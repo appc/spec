@@ -50,8 +50,8 @@
         ],
         "isolators": [
             {
-                "name": "memory/limit",
-                "value": "1G"
+                "name": "resource/memory",
+                "value": {"limit": "1G"}
             }
         ]
     },
