@@ -85,7 +85,7 @@ func ValidateLayout(dir string) error {
 	return validate(imOK, im, rfsOK, flist)
 }
 
-// ValidateLayout takes a *tar.Reader and validates that the layout of the
+// ValidateArchive takes a *tar.Reader and validates that the layout of the
 // filesystem the reader encapsulates matches that expected by the
 // Application Container Image format.  If any errors are encountered during
 // the validation, it will abort and return the first one.
