@@ -60,8 +60,7 @@ func ValidateLayout(dir string) error {
 		if err != nil {
 			return err
 		}
-		name := filepath.Base(rpath)
-		switch name {
+		switch rpath {
 		case ".":
 		case ManifestFile:
 			im, err = os.Open(fpath)
