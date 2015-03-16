@@ -684,7 +684,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
     * **isolators** (optional) list of isolation steps that should be applied to the app.
         * **name** is restricted to the [AC Name](#ac-name-type) formatting
     * **mountPoints** (list of objects, optional) locations where a container is expecting external data to be mounted. The listed objects should contain three key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. **readOnly** should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
-    * **ports** (list of objects, optional) are protocols and port numbers that the container will be listening on once started. All of the keys in the listed objects are restricted to the AC Name formatting. This information is primarily to help the user find ports that are not well known. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
+    * **ports** (list of objects, optional) are protocols and port numbers that the container will be listening on once started. All of the keys in the listed objects are restricted to the AC Name formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **socketActivated** (boolean, optional) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
 * **dependencies** (list of objects, optional) dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
     * **app** (string, required) name of the dependent app container image.
@@ -831,6 +831,12 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
            "name": "ip-address",
            "value": "10.1.2.3"
         }
+    ],
+    "ports": [
+        {
+            "name": "ftp",
+            "hostPort": 2121
+        }
     ]
 }
 ```
@@ -856,3 +862,6 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
     * **readOnly** (boolean, optional if **kind** is "host") whether or not the volume should be mounted read only.
 * **isolators** (list of objects, optional) list of isolators that will apply to all apps in this container. Each object has two key value pairs: **name** is restricted to the AC Name formatting and **value** can be a freeform string)
 * **annotations** (list of objects, optional) arbitrary metadata the executor should make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
+* **ports** (list of objects, optional) list of ports that will be exposed on the host.
+    * **name** (string, required) name the port in the image manifest that should be exposed on the host (restricted to the AC Name formatting).
+    * **hostPort** (integer, required) the port number on the host that will be mapped to the container port.

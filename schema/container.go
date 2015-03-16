@@ -10,13 +10,14 @@ import (
 const ContainerRuntimeManifestKind = types.ACKind("ContainerRuntimeManifest")
 
 type ContainerRuntimeManifest struct {
-	ACVersion   types.SemVer      `json:"acVersion"`
-	ACKind      types.ACKind      `json:"acKind"`
-	UUID        types.UUID        `json:"uuid"`
-	Apps        AppList           `json:"apps"`
-	Volumes     []types.Volume    `json:"volumes"`
-	Isolators   []types.Isolator  `json:"isolators"`
-	Annotations types.Annotations `json:"annotations"`
+	ACVersion   types.SemVer        `json:"acVersion"`
+	ACKind      types.ACKind        `json:"acKind"`
+	UUID        types.UUID          `json:"uuid"`
+	Apps        AppList             `json:"apps"`
+	Volumes     []types.Volume      `json:"volumes"`
+	Isolators   []types.Isolator    `json:"isolators"`
+	Annotations types.Annotations   `json:"annotations"`
+	Ports       []types.ExposedPort `json:"ports"`
 }
 
 // containerRuntimeManifest is a model to facilitate extra validation during the
