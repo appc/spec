@@ -20,3 +20,4 @@ ACIs that define the label `os=linux` can expect this environment by default.
 | /dev/urandom | [device](http://man7.org/linux/man-pages/man4/random.4.html)             |
 | /dev/tty     | [device](http://man7.org/linux/man-pages/man4/tty.4.html)                |
 | /dev/console | [device](http://man7.org/linux/man-pages/man4/console.4.html)            |
+| /dev/shm     | [tmpfs](https://www.kernel.org/doc/Documentation/filesystems/tmpfs.txt)  |
