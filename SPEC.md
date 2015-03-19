@@ -16,13 +16,13 @@ The specification consists of several key sections:
 
 1. The **[App Container Image](#app-container-image)** defines: how files are assembled together into a single image, verified on download and placed onto disk to be run.
 
-2. The **[App Container Executor](#app-container-executor)** defines: how applications are grouped into execution units and the environment they are run inside (including, for example, filesystem layout, resource constraints, and networking).
+2. **[App Container Image Discovery](#app-container-image-discovery)** defines: how to take a name like `example.com/reduce-worker` and translate that into a downloadable image.
 
-    * The [Pod Manifest](#pod-manifest) defines how one or more App Container Images are grouped into a deployable, executable unit.
+3. The **[App Container Pod](#app-container-pods-pods)** (or "Pod") defines: how one or more App Container Images are grouped into a deployable, executable unit.
 
-    * The [Metadata Service](#app-container-metadata-service) defines how an app can introspect and get a cryptographically verifiable identity from the execution environment.
+4. The **[App Container Executor](#app-container-executor)** defines: how pods are executed and the environment they are run inside (including, for example, filesystem layout, resource constraints, and networking).
 
-3. **[App Container Image Discovery](#app-container-image-discovery)** defines: how to take a name like `example.com/reduce-worker` and translate that into a downloadable image.
+    * The [Metadata Service](#app-container-metadata-service) defines how apps within pods can introspect and get a cryptographically verifiable identity from the execution environment.
 
 
 ## Example Use Case
@@ -118,14 +118,7 @@ The dependencies are applied in order and each image dependency can overwrite fi
 Execution details specified in image dependencies are ignored.
 An optional *path whitelist* can be provided, in which case all non-specified files from all dependencies will be omitted in the final, assembled rootfs.
 
-## App Container Executor
-
-The **App Container Executor** defines the process by which applications contained in ACIs are executed.
-There are two "perspectives" in this process.
-The "*executor*" perspective consists of the steps that the App Container Executor (ACE) must take to set up the environment for the pod and applications.
-The "*app*" perspective is how the app processes inside the pod see the environment.
-
-## Pods
+## App Container Pods (pods)
 
 The deployable, executable unit in the App Container specification is the **pod**.
 A **pod** is a list of apps that should be launched together inside a shared context.
@@ -137,16 +130,15 @@ The shared context is defined as the conjunction of the following Linux namespac
 - UTS namespace
 The context may also consist of one or more isolators.
 
-Each app in a pod will start chrooted into its own unique read-write rootfs before execution.
-
 The definition of the **pod** - namely, the list of constituent apps, and any isolators that should apply to the entire pod - is codified in a [Pod Manifest](#pod-manifest-schema).
 Pod Manifests can serve the role of both _deployable template_ and _runtime manifest_: a template can be a candidate for a series of transformations before execution.
 For example, a Pod Manifest might reference an app with a label requirement of `version=latest`, which another tool might subsequently resolve to a specific version.
 Another example would be that volumes are "late-bound" by the executor; alternatively, an executor might add annotations.
+Pod Manifests also provide the ability to override application execution parameters for their constituent ACIs (i.e. the `app` section of the respective Image Manifests).
 
 A Pod Manifest must be fully resolved (_reified_) before execution.
 Specifically, a Pod Manifest must have all `mountPoint`s satisfied by `volume`s, and must reference all applications deterministically (by image ID).
-At runtime, the reified Pod manifest is exposed to applications through the metadata service.
+At runtime, the reified Pod Manifest is exposed to applications through the metadata service.
 
 Pod TODO:
 * Define the garbage collection lifecycle of the pod filesystem including:
@@ -157,7 +149,12 @@ Pod TODO:
     * Start and stop order
 * Define security requirements for a pod. In particular is any isolation of users required between pods? What user does each application run under and can this be root (i.e. "real" root in the host). #231
 
-### Executor Perspective
+## App Container Executor
+
+The **App Container Executor** defines the process by which applications contained in ACIs are executed.
+There are two "perspectives" in this process.
+The "*executor*" perspective consists of the steps that the App Container Executor (ACE) must take to set up the environment for the pod and applications.
+The "*app*" perspective is how the app processes inside the pod see the environment.
 
 This example pod will use a set of three apps:
 
@@ -186,6 +183,7 @@ tar xzvf /var/lib/pce/hello.aci -C hello
 Other implementations could increase performance and de-duplicate data by building on top of overlay filesystems, copy-on-write block devices, or a content-addressed file store.
 These details are orthogonal to the runtime environment.
 
+Each app in a pod will start chrooted into its own unique read-write rootfs before execution.
 
 #### Volume Setup
 
