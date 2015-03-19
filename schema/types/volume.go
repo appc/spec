@@ -19,7 +19,7 @@ type Volume struct {
 	// currently used only by "host"
 	// TODO(jonboulle): factor out?
 	Source   string `json:"source,omitempty"`
-	ReadOnly bool   `json:"readOnly,omitempty"`
+	ReadOnly *bool  `json:"readOnly,omitempty"`
 }
 
 type volume Volume
@@ -69,7 +69,7 @@ func (v Volume) MarshalJSON() ([]byte, error) {
 }
 
 func (v Volume) String() string {
-	s := fmt.Sprintf("%s,kind=%s,readOnly=%t", v.Name, v.Kind, v.ReadOnly)
+	s := fmt.Sprintf("%s,kind=%s,readOnly=%t", v.Name, v.Kind, *v.ReadOnly)
 	if v.Source != "" {
 		s = s + fmt.Sprintf("source=%s", v.Source)
 	}
@@ -110,7 +110,7 @@ func VolumeFromString(vp string) (*Volume, error) {
 			if err != nil {
 				return nil, err
 			}
-			vol.ReadOnly = ro
+			vol.ReadOnly = &ro
 		default:
 			return nil, fmt.Errorf("unknown volume parameter %q", key)
 		}
