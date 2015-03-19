@@ -7,9 +7,9 @@ import (
 	"github.com/appc/spec/schema/types"
 )
 
-const ContainerRuntimeManifestKind = types.ACKind("ContainerRuntimeManifest")
+const PodManifestKind = types.ACKind("PodManifest")
 
-type ContainerRuntimeManifest struct {
+type PodManifest struct {
 	ACVersion   types.SemVer        `json:"acVersion"`
 	ACKind      types.ACKind        `json:"acKind"`
 	UUID        types.UUID          `json:"uuid"`
@@ -20,45 +20,45 @@ type ContainerRuntimeManifest struct {
 	Ports       []types.ExposedPort `json:"ports"`
 }
 
-// containerRuntimeManifest is a model to facilitate extra validation during the
-// unmarshalling of the ContainerRuntimeManifest
-type containerRuntimeManifest ContainerRuntimeManifest
+// podManifest is a model to facilitate extra validation during the
+// unmarshalling of the PodManifest
+type podManifest PodManifest
 
-func BlankContainerRuntimeManifest() *ContainerRuntimeManifest {
-	return &ContainerRuntimeManifest{ACKind: ContainerRuntimeManifestKind, ACVersion: AppContainerVersion}
+func BlankPodManifest() *PodManifest {
+	return &PodManifest{ACKind: PodManifestKind, ACVersion: AppContainerVersion}
 }
 
-func (cm *ContainerRuntimeManifest) UnmarshalJSON(data []byte) error {
-	c := containerRuntimeManifest(*cm)
-	err := json.Unmarshal(data, &c)
+func (pm *PodManifest) UnmarshalJSON(data []byte) error {
+	p := podManifest(*pm)
+	err := json.Unmarshal(data, &p)
 	if err != nil {
 		return err
 	}
-	ncm := ContainerRuntimeManifest(c)
-	if err := ncm.assertValid(); err != nil {
+	npm := PodManifest(p)
+	if err := npm.assertValid(); err != nil {
 		return err
 	}
-	*cm = ncm
+	*pm = npm
 	return nil
 }
 
-func (cm ContainerRuntimeManifest) MarshalJSON() ([]byte, error) {
-	if err := cm.assertValid(); err != nil {
+func (pm PodManifest) MarshalJSON() ([]byte, error) {
+	if err := pm.assertValid(); err != nil {
 		return nil, err
 	}
-	return json.Marshal(containerRuntimeManifest(cm))
+	return json.Marshal(podManifest(pm))
 }
 
-var cmKindError = types.InvalidACKindError(ContainerRuntimeManifestKind)
+var pmKindError = types.InvalidACKindError(PodManifestKind)
 
-// assertValid performs extra assertions on an ContainerRuntimeManifest to
+// assertValid performs extra assertions on an PodManifest to
 // ensure that fields are set appropriately, etc. It is used exclusively when
-// marshalling and unmarshalling an ContainerRuntimeManifest. Most
+// marshalling and unmarshalling an PodManifest. Most
 // field-specific validation is performed through the individual types being
 // marshalled; assertValid() should only deal with higher-level validation.
-func (cm *ContainerRuntimeManifest) assertValid() error {
-	if cm.ACKind != ContainerRuntimeManifestKind {
-		return cmKindError
+func (pm *PodManifest) assertValid() error {
+	if pm.ACKind != PodManifestKind {
+		return pmKindError
 	}
 	return nil
 }
@@ -95,7 +95,7 @@ func (r Mount) assertValid() error {
 	return nil
 }
 
-// RuntimeApp describes an application referenced in a ContainerRuntimeManifest
+// RuntimeApp describes an application referenced in a PodManifest
 type RuntimeApp struct {
 	Name        types.ACName      `json:"name"`
 	Image       RuntimeImage      `json:"image"`

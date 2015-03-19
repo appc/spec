@@ -2,33 +2,36 @@
 
 _For version information, see [VERSION](VERSION)_
 
-The "App Container" defines an image format, image discovery mechanism and execution environment that can exist in several independent implementations. The core goals include:
+"App Container" (appc) is a specification describing how applications can be packaged, distributed, and executed in a portable and self-contained way.
+The specification defines an image format, image discovery mechanism, and execution environment.
+The core goals of the specification include:
 
-* Design for fast downloads and starts of the containers
-* Ensure images are cryptographically verifiable and highly-cacheable
-* Design for composability and independent implementations
-* Use common technologies for crypto, archive, compression and transport
-* Use the DNS namespace to name and discover container images
+* Designing for fast downloads and starts of App Containers
+* Ensuring images are cryptographically verifiable and highly cacheable
+* Designing for composability and independent implementations
+* Using common technologies for cryptography, archiving, compression and transport
+* Using the DNS namespace to name and discover images
 
-To achieve these goals this specification is split out into a number of smaller sections.
+The specification consists of several key sections:
 
 1. The **[App Container Image](#app-container-image)** defines: how files are assembled together into a single image, verified on download and placed onto disk to be run.
 
-2. The **[App Container Executor](#app-container-executor)** defines: how an app container image on disk is run and the environment it is run inside including cgroups, namespaces and networking.
+2. The **[App Container Executor](#app-container-executor)** defines: how applications are grouped into execution units and the environment they are run inside (including, for example, filesystem layout, resource constraints, and networking).
 
-    * The [Metadata Server](#app-container-metadata-service) defines how a container can introspect and get a cryptographically verifiable identity from the execution environment.
+    * The [Pod Manifest](#pod-manifest) defines how one or more App Container Images are grouped into a deployable, executable unit.
 
-3. The **[App Container Image Discovery](#app-container-image-discovery)** defines: how to take a name like example.com/reduce-worker and translate that into a downloadable image.
+    * The [Metadata Service](#app-container-metadata-service) defines how an app can introspect and get a cryptographically verifiable identity from the execution environment.
+
+3. **[App Container Image Discovery](#app-container-image-discovery)** defines: how to take a name like `example.com/reduce-worker` and translate that into a downloadable image.
 
 
 ## Example Use Case
 
 To provide context to the specs outlined below we will walk through an example.
 
-A user wants to launch a container running three processes.
+A user wants to launch an "App Container" running three processes.
 The three processes the user wants to run are the apps named `example.com/reduce-worker-register`, `example.com/reduce-worker`, and `example.com/reduce-backup`.
-First, the executor will check the cache and find that it doesn't have images available for these apps.
-So, it will make an HTTPS request to example.com and using the `<meta>` tags there finds that the containers can be found at:
+First, an executor will make an HTTPS request to example.com and, on inspecting the `<meta>` tags in the returned page, determines that the images can be found at:
 
 	https://storage-mirror.example.com/reduce-worker.aci
 	https://storage-mirror.example.com/worker-backup.aci
@@ -38,12 +41,12 @@ The executor downloads these three images and puts them into its local on-disk c
 Then the executor extracts three fresh copies of the images to create instances of the "on-disk app format" and reads the three image manifests to figure out what binaries will need to be executed.
 
 Based on user input, the executor now sets up the necessary cgroups, network interfaces, etc. and runs the `pre-start` event handlers for each app.
-Next, it forks the `reduce-worker`, `worker-backup`, and `register` processes in their shared namespaces inside the container, chrooted into their respective root filesystems.
+Next, it forks the `reduce-worker`, `worker-backup`, and `register` processes in their shared namespaces, chrooted into their respective root filesystems.
 
-At some point, the container will get some notification that it needs to stop.
+At some point, the App Container will get some notification that it needs to stop (for example, upon host shutdown).
 The executor will send `SIGTERM` to the processes and after they have exited the `post-stop` event handlers for each app will run.
 
-Now, let's dive into the pieces that took us from three URLs to a running container on our system.
+Now, let's dive into the pieces that took us from three URLs to a running App Container on our system.
 
 ## App Container Image
 
@@ -52,7 +55,7 @@ In some ways an ACI can be thought of as equivalent to a static binary.
 
 ### Image Layout
 
-The on-disk layout of an app container is straightforward.
+The on-disk layout of an App Container Image is straightforward.
 It includes a *rootfs* with all of the files that will exist in the root of the app, and an *app image manifest* describing the contents of the image and how to execute the app.
 
 ```
@@ -65,7 +68,7 @@ It includes a *rootfs* with all of the files that will exist in the root of the 
 ### Image Archives
 
 The ACI file format ("image archive") aims for flexibility and relies on standard and common technologies: HTTP, gpg, tar and gzip.
-This set of formats makes it easy to build, host and secure a container using technologies that are widely available and battle-tested.
+This set of formats makes it easy to build, host and secure an ACI using technologies that are widely available and battle-tested.
 
 - Image archives MUST be named with the suffix `.aci`, irrespective of compression/encryption (see below).
 - Image archives MUST be a tar formatted file with no duplicate entries.
@@ -87,9 +90,9 @@ gpg --output reduce-worker.aci --digest-algo sha256 --cipher-algo AES256 --symme
 ```
 
 **Note**: the key distribution mechanism to facilitate image signature validation is not defined here.
-Implementations of the app container spec will need to provide a mechanism for users to configure the list of signing keys to trust, or use the key discovery described in [App Container Image Discovery](#app-container-image-discovery).
+Implementations of the App Container spec will need to provide a mechanism for users to configure the list of signing keys to trust, or use the key discovery described in [App Container Image Discovery](#app-container-image-discovery).
 
-An example application container image builder is [actool](https://github.com/appc/spec/tree/master/actool).
+An example App Container Image builder is [actool](https://github.com/appc/spec/tree/master/actool).
 
 ### Image ID
 
@@ -115,34 +118,64 @@ The dependencies are applied in order and each image dependency can overwrite fi
 Execution details specified in image dependencies are ignored.
 An optional *path whitelist* can be provided, in which case all non-specified files from all dependencies will be omitted in the final, assembled rootfs.
 
-Image Format TODO
-
-* Define the garbage collection lifecycle of the container filesystem including:
-    * Format of app exit code and signal
-    * The refcounting plan for resources consumed by the ACE such as volumes
-* Define the lifecycle of the container as all exit or first to exit
-* Define security requirements for a container. In particular is any isolation of users required between containers? What user does each application run under and can this be root (i.e. "real" root in the host).
-* Define how apps are supposed to communicate; can they/do they 'see' each other (a section in the apps perspective would help)?
-
-
 ## App Container Executor
 
-App Containers are a combination of a number of technologies which are not aware of each other.
-This specification attempts to define a reasonable subset of steps to accomplish a few goals:
-
-* Creating a filesystem hierarchy in which the app will execute
-* Running the app process inside of a combination of resource and namespace isolations
-* Executing the application inside of this environment
-
+The **App Container Executor** defines the process by which applications contained in ACIs are executed.
 There are two "perspectives" in this process.
-The "*executor*" perspective consists of the steps that the container executor must take to set up the containers. The "*app*" perspective is how the app processes inside the container see the environment.
+The "*executor*" perspective consists of the steps that the App Container Executor (ACE) must take to set up the environment for the pod and applications.
+The "*app*" perspective is how the app processes inside the pod see the environment.
+
+## Pods
+
+The deployable, executable unit in the App Container specification is the **pod**.
+A **pod** is a list of apps that should be launched together inside a shared context.
+The shared context is defined as the conjunction of the following Linux namespaces (or equivalents on other operating systems):
+- PID namespace
+- network namespace
+- mount namespace
+- IPC namespace
+- UTS namespace
+The context may also consist of one or more isolators.
+
+Each app in a pod will start chrooted into its own unique read-write rootfs before execution.
+
+The definition of the **pod** - namely, the list of constituent apps, and any isolators that should apply to the entire pod - is codified in a [Pod Manifest](#pod-manifest-schema).
+Pod Manifests can serve the role of both _deployable template_ and _runtime manifest_: a template can be a candidate for a series of transformations before execution.
+For example, a Pod Manifest might reference an app with a label requirement of `version=latest`, which another tool might subsequently resolve to a specific version.
+Another example would be that volumes are "late-bound" by the executor; alternatively, an executor might add annotations.
+
+A Pod Manifest must be fully resolved (_reified_) before execution.
+Specifically, a Pod Manifest must have all `mountPoint`s satisfied by `volume`s, and must reference all applications deterministically (by image ID).
+At runtime, the reified Pod manifest is exposed to applications through the metadata service.
+
+Pod TODO:
+* Define the garbage collection lifecycle of the pod filesystem including:
+    * Format of app exit code and signal
+    * The refcounting plan for resources consumed by the ACE such as volumes
+* Define the lifecycle of the apps within the pod including:
+    * All exit or first to exit
+    * Start and stop order
+* Define security requirements for a pod. In particular is any isolation of users required between pods? What user does each application run under and can this be root (i.e. "real" root in the host). #231
 
 ### Executor Perspective
 
+This example pod will use a set of three apps:
+
+| Name                               | Version | Image hash                                      |
+|------------------------------------|---------|-------------------------------------------------|
+| example.com/reduce-worker          | 1.0.0   | sha512-277205b3ae3eb3a8e042a62ae46934b470e43... |
+| example.com/worker-backup          | 1.0.0   | sha512-3e86b59982e49066c5d813af1c2e2579cbf57... |
+| example.com/reduce-worker-register | 1.0.0   | sha512-86298e1fdb95ec9a45b5935504e26ec29b8fe... |
+
+#### Pod UUID
+
+The executor must assign an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt) to each pod.
+This UUID is exposed to the pod through the [Metadata Service](#app-container-metadata-service).
+
 #### Filesystem Setup
 
-Every execution of an app container should start from a clean copy of the app image.
-The simplest implementation will take an application container image (ACI) and extract it into a new directory:
+Every execution of an app should start from a clean copy of its image (ACI).
+The simplest implementation will take an ACI with no dependencies and extract it into a new directory:
 
 ```
 cd $(mktemp -d -t temp.XXXX)
@@ -153,37 +186,24 @@ tar xzvf /var/lib/pce/hello.aci -C hello
 Other implementations could increase performance and de-duplicate data by building on top of overlay filesystems, copy-on-write block devices, or a content-addressed file store.
 These details are orthogonal to the runtime environment.
 
-#### Container Runtime Manifest
-
-A container executes one or more apps with shared PID namespace, network namespace, mount namespace, IPC namespace and UTS namespace.
-Each app will start chrooted into its own unique read-write rootfs before execution.
-The definition of the container is a list of apps that should be launched together, along with isolators that should apply to the entire container.
-This is codified in a [Container Runtime Manifest](#container-runtime-manifest-schema).
-
-This example container will use a set of three apps:
-
-| Name                               | Version | Image hash                                      |
-|------------------------------------|---------|-------------------------------------------------|
-| example.com/reduce-worker          | 1.0.0   | sha512-277205b3ae3eb3a8e042a62ae46934b470e43... |
-| example.com/worker-backup          | 1.0.0   | sha512-3e86b59982e49066c5d813af1c2e2579cbf57... |
-| example.com/reduce-worker-register | 1.0.0   | sha512-86298e1fdb95ec9a45b5935504e26ec29b8fe... |
 
 #### Volume Setup
 
-Volumes that are specified in the Container Runtime Manifest are mounted into each of the apps via a bind mount.
-For example say that the worker-backup and reduce-worker both have a MountPoint named "work".
-In this case, the container executor will bind mount the host's `/opt/tenant1/database` directory into the Path of each of the matching "work" MountPoints of the two containers.
+Volumes that are specified in the Pod Manifest are mounted into each of the apps via a bind mount (or equivalent).
+For example, say that the worker-backup and reduce-worker both have a `mountPoint` named "work".
+In this case, the executor will bind mount the host's `/opt/tenant1/work` directory into the `path` of each of the matching "work" `mountPoint`s of the two app filesystems.
 
 #### Network Setup
 
-An App Container must have a [layer 3](http://en.wikipedia.org/wiki/Network_layer) (commonly called the IP layer) network interface, which can be instantiated in any number of ways (e.g. veth, macvlan, ipvlan, device pass-through).
-The network interface should be configured with an IPv4/IPv6 address that is reachable from other containers.
+A Pod must have a [layer 3](http://en.wikipedia.org/wiki/Network_layer) (commonly called the IP layer) network interface, which can be instantiated in any number of ways (e.g. veth, macvlan, ipvlan, device pass-through).
+The network interface should be configured with an IPv4/IPv6 address that is reachable from other pods.
 
 #### Logging
 
-Apps should log to stdout and stderr. The container executor is responsible for capturing and persisting the output.
+Apps should log to stdout and stderr.
+The ACE is responsible for capturing and persisting the output.
 
-If the application detects other logging options, such as the /run/systemd/system/journal socket, it may optionally upgrade to using those mechanisms.
+If the application detects other logging options, such as the `/run/systemd/system/journal` socket, it may optionally upgrade to using those mechanisms.
 Note that logging mechanisms other than stdout and stderr are not required by this specification (or tested by the compliance tests).
 
 ### Apps Perspective
@@ -196,7 +216,7 @@ The following environment variables MUST be set for each application's main proc
 * **HOME** home directory of the user
 * **SHELL** login shell of the user
 * **AC_APP_NAME** name of the application, as defined in the image manifest
-* **AC_METADATA_URL** URL where the metadata service for this container can be found
+* **AC_METADATA_URL** URL where the metadata service for this pod can be found
 
 An executor MAY set additional environment variables for the application processes.
 
@@ -205,14 +225,16 @@ Additionally, processes must have their **working directory** set to the value o
 ### Isolators
 
 Isolators enforce resource constraints rather than namespacing.
-Isolators may be scoped to individual applications, to whole containers, or to both.
+Isolators may be scoped to individual applications, to whole pods, or to both.
+Any isolators applied to the pod will _bound_ any individual isolators applied to applications within the pod.
+
 Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
 An isolator is a JSON object with two required fields: "name" and "value".
 "name" is a string restricted to AC Name formatting. "value" can be an arbitrary JSON value.
 
-An executor MAY ignore isolators that it does not understand and run the container without them.
+An executor MAY ignore isolators that it does not understand and run the pod without them.
 But, an executor MUST make information about which isolators were ignored, enforced or modified available to the user.
 An executor MAY implement a "strict mode" where an image cannot run unless all isolators are in place.
 
@@ -256,15 +278,15 @@ The first example is "capabilities" but this will be expanded to include things 
 
 ### Resource Isolators
 
-A _resource_ is something that can be consumed by a container such as memory (RAM), CPU, and network bandwidth.
+A _resource_ is something that can be consumed by an application (app) or group of applications (pod), such as memory (RAM), CPU, and network bandwidth.
 Resource isolators have a *request* and *limit* quantity:
 
-- **request** is the minimum amount of a resource guaranteed to be available to the container.
-If the container attempts to consume a resource in excess of its request, it may be throttled or denied.
+- **request** is the minimum amount of a resource guaranteed to be available to the app/pod.
+If the app/pod attempts to consume a resource in excess of its request, it may be throttled or denied.
 If **request** is omitted, it defaults to the value of **limit**.
 
-- **limit** is the maximum amount of a resource available to the container.
-If the container consumes a resource in excess of its limit, it must be terminated or throttled to no more than the limit.
+- **limit** is the maximum amount of a resource available to the app/pod.
+If the app/pod consumes a resource in excess of its limit, it must be terminated or throttled to no more than the limit.
 
 Limit and request values will always be of a resource type's natural base units (e.g., bytes, not MB).
 These quantities may either be unsuffixed, have suffices (E, P, T, G, M, K, m) or power-of-two suffices (Ei, Pi, Ti, Gi, Mi, Ki).
@@ -273,7 +295,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 
 #### resource/block-bandwidth
 
-* Scope: app/container
+* Scope: app/pod
 
 **Parameters:**
 * **devicePaths** the block devices that this limit will be placed on
@@ -291,7 +313,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 
 #### resource/block-iops
 
-* Scope: app/container
+* Scope: app/pod
 
 **Parameters:**
 * **default** must be set to true and means that this bandwidth limit applies to all interfaces except localhost by default.
@@ -310,7 +332,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 
 #### resource/cpu
 
-* Scope: app/container
+* Scope: app/pod
 
 **Parameters:**
 * **request** milli-cores that are requested
@@ -324,15 +346,15 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 }
 ```
 
-**Note**: a milli-core is the milli-seconds/second that the app will be able to run. e.g. 1000 would represent full use of a single CPU core every second.
+**Note**: a milli-core is the milli-seconds/second that the app/pod will be able to run. e.g. 1000 would represent full use of a single CPU core every second.
 
 #### resource/memory
 
-* Scope: app/container
+* Scope: app/pod
 
 **Parameters:**
-* **request** bytes of memory that the app is requesting to use and allocations over this request will be reclaimed in case of contention
-* **limit** bytes of memory that the app can allocate before the kernel considers the container out of memory and stops allowing allocations.
+* **request** bytes of memory that the app/pod is requesting to use and allocations over this request will be reclaimed in case of contention
+* **limit** bytes of memory that the app can allocate before the kernel considers the app/pod out of memory and stops allowing allocations.
 
 ```
 "name": "resource/memory",
@@ -344,7 +366,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 
 #### resource/network-bandwidth
 
-* Scope: app/container
+* Scope: app/pod
 
 **Parameters:**
 * **default** must be set to true and means that this bandwidth limit applies to all interfaces except localhost by default.
@@ -358,13 +380,13 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 }
 ```
 
-**NOTE**: Limits SHOULD NOT apply to localhost communication between apps in a container.
+**NOTE**: Limits SHOULD NOT apply to localhost communication between apps in a pod.
 **TODO**: The default=true behvaior probably covers nearly 80% of all use cases but we need to define a network interface tagging spec for appc.
 
 ## App Container Image Discovery
 
 An app name has a URL-like structure, for example `example.com/reduce-worker`.
-However, there is no scheme on this app name, so it cannot be directly resolved to an app container image URL.
+However, there is no scheme on this app name, so it cannot be directly resolved to an App Container Image URL.
 Furthermore, attributes other than the name may be required to unambiguously identify an app (version, OS and architecture).
 App Container Image Discovery prescribes a discovery process to retrieve an image based on the app name and these attributes.
 Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
@@ -384,7 +406,7 @@ The simple discovery template is:
 
     https://{name}-{version}-{os}-{arch}.{ext}
 
-First, try to fetch the app container image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
+First, try to fetch the App Container Image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
 
 For example, given the app name `example.com/reduce-worker`, with version `1.0.0`, arch `amd64`, and os `linux`, try to retrieve:
 
@@ -395,7 +417,7 @@ If this succeeds, try fetching the signature using the same template but with `{
 
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci.asc
 
-Simple discovery doesn't provide a way to discover Public Keys.
+Simple discovery does not provide a way to discover Public Keys.
 
 ### Meta Discovery
 
@@ -428,7 +450,7 @@ The algorithm first ensures that the prefix of the AC Name matches the prefix-ma
 curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
-where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `aci.asc` for retrieving an app container image or signature respectively.
+where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `aci.asc` for retrieving an App Container Image or signature respectively.
 
 In our example above this would be:
 
@@ -457,36 +479,39 @@ Implementations must ensure that the name in the Image Manifest in the retrieved
 ### Authentication
 
 Authentication during the discovery process is optional.
-If an attempt at fetching any resource (the initial discovery URL, an app container image, or signature) returns a `401 Unauthorized`, implementations should enact the authentication policy set by the operator.
+If an attempt at fetching any resource (the initial discovery URL, an App Container Image, or signature) returns a `401 Unauthorized`, implementations should enact the authentication policy set by the operator.
 For example, some implementations might only perform HTTP basic authentication over HTTPS connections.
 
 ## App Container Metadata Service
 
-For a variety of reasons, it is desirable to not write files to the filesystem in order to run a container:
-* Secrets can be kept outside of the container (such as the identity endpoint specified below)
+For a variety of reasons, it is desirable to not write files to the filesystem in order to run an App Container:
+* Secrets can be kept outside of the app (such as the identity endpoint specified below)
 * Writing files leads to assumptions like a libc environment attempting parse `/etc/hosts`
-* The container can be run on top of a cryptographically secured read-only filesystem
+* The app can be run on top of a cryptographically secured read-only filesystem
 * Metadata is a proven system for virtual machines
 
-The app container specification defines an HTTP-based metadata service for providing metadata to containers.
+The App Container specification defines an HTTP-based metadata service for providing metadata to applications.
 
-### Metadata Server
+### Metadata Service
 
-The ACE must provide a Metadata server on the address given to the container via the `AC_METADATA_URL` environment variable.
+The ACE must provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` environment variable.
 
-Clients querying any of these endpoints must specify the `Metadata-Flavor: AppContainer` header.
+Clients querying any of these endpoints MUST specify the `Metadata-Flavor: AppContainer` header.
 
-### Container Metadata
+UUIDs assigned to pods MUST be unique for a given instance of a metadata service.
+Hence, implementations of a metadata service shared among executors SHOULD either provide centralized allocation of UUIDs or partition the UUID space between individual executors.
 
-Information about the container that this app is executing in.
+### Pod Metadata
 
-Retrievable at `$AC_METADATA_URL/acMetadata/v1/container`
+Information about the pod that this app is executing in.
+
+Retrievable at `$AC_METADATA_URL/acMetadata/v1/pod`
 
 | Entry       | Description |
 |-------------|-------------|
-|annotations/ | Top level annotations from container runtime manifest. |
-|manifest     | The container manifest JSON. |
-|uid          | The unique execution container uid. |
+|annotations/ | Top level annotations from Pod Manifest. |
+|manifest     | Fully-reified Pod Manifest JSON. |
+|uuid         | Pod UUID. |
 
 ### App Metadata
 
@@ -497,21 +522,21 @@ Retrievable at `$AC_METADATA_URL/acMetadata/v1/apps/$AC_APP_NAME/`
 
 | Entry         | Description |
 |---------------|-------------|
-|annotations/   | Annotations from image manifest merged with app annotations from container runtime manifest. |
-|image/manifest | The original manifest file of the app. |
+|annotations/   | Annotations from Image Manifest merged with app annotations from Pod Manifest. |
+|image/manifest | Original Image Manifest of the app. |
 |image/id       | Image ID (digest) this app is contained in. |
 
 ### Identity Endpoint
 
-As a basic building block for building a secure identity system, the metadata service must provide an HMAC (described in [RFC2104](https://www.ietf.org/rfc/rfc2104.txt)) endpoint for use by the apps in the container.
-This gives a cryptographically verifiable identity to the container based on its container unique ID and the container HMAC key, which is held securely by the ACE.
+As a basic building block for building a secure identity system, the metadata service must provide an HMAC (described in [RFC2104](https://www.ietf.org/rfc/rfc2104.txt)) endpoint for use by the apps in the pod.
+This gives a cryptographically verifiable identity to the pod based on its unique ID and the pod HMAC key, which is held securely by the ACE.
 
-Accessible at `$AC_METADATA_URL/acMetadata/v1/container/hmac`
+Accessible at `$AC_METADATA_URL/acMetadata/v1/pod/hmac`
 
 | Entry | Description |
 |-------|-------------|
-|sign   | POST a form with content=&lt;object to sign&gt; and retrieve a base64 hmac-sha512 signature as the response body. The metadata service holds onto the secret key as a sort of container TPM. |
-|verify | Verify a signature from another container. POST a form with content=&lt;object that was signed&gt;, uid=&lt;uid of the container that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
+|sign   | POST a form with content=&lt;object to sign&gt; and retrieve a base64 hmac-sha512 signature as the response body. The metadata service holds onto the secret key as a sort of pod TPM. |
+|verify | Verify a signature from another pod. POST a form with content=&lt;object that was signed&gt;, uid=&lt;uid of the pod that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
 
 
 ## AC Name Type
@@ -669,33 +694,33 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 
 * **acKind** (string, required) must be set to "ImageManifest"
 * **acVersion** (string, required) represents the version of the schema specification that the manifest implements (string, must be in [semver](http://semver.org/) format)
-* **name** (string, required) used as a human readable index to the container image. (string, restricted to the AC Name formatting)
+* **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the AC Name formatting)
 * **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
     * **os**, **arch** can together be considered to describe the syscall ABI this image requires. **arch** is meaningful only if **os** is provided. If one or both values are not provided, the image is assumed to be OS- and/or architecture-independent. Currently supported combinations are listed in the [`types.ValidOSArch`](schema/types/labels.go) variable, which can be updated by an implementation that supports other combinations. The combinations whitelisted by default are (in format `os/arch`): `linux/amd64`, `linux/i386`, `freebsd/amd64`, `freebsd/i386`, `freebsd/arm`, `darwin/x86_64`, `darwin/i386`. See the [Operating System spec](OS-SPEC.md) for the environment apps can expect to run in given a known **os** label.
 * **app** (object, optional) if present, defines the default parameters that can be used to execute this image as an application.
     * **exec** (list of strings, required) executable to launch and any flags (must be non-empty; the executable must be an absolute path within the app rootfs; ACE can append or override)
-    * **user**, **group** (string, required) indicates either the UID/GID or the username/group name the app should run as inside the container (freeform string). If the user or group field begins with a "/", the owner and group of the file found at that absolute path inside the rootfs is used as the UID/GID of the process.
+    * **user**, **group** (string, required) indicates either the UID/GID or the username/group name the app should run as (freeform string). If the user or group field begins with a "/", the owner and group of the file found at that absolute path inside the rootfs is used as the UID/GID of the process.
     * **eventHandlers** (list of objects, optional) allows the app to have several hooks based on lifecycle events. For example, you may want to execute a script before the main process starts up to download a dataset or backup onto the filesystem. An eventHandler is a simple object with two fields - an **exec** (array of strings, ACE can append or override), and a **name** (there may be only one eventHandler of a given name), which must be one of:
         * **pre-start** - executed and must exit before the long running main **exec** binary is launched
         * **post-stop** - executed if the main **exec** process is killed. This can be used to cleanup resources in the case of clean application shutdown, but cannot be relied upon in the face of machine failure.
     * **workingDirectory** (string, optional) working directory of the launched application, relative to the application image's root (must be an absolute path, defaults to "/", ACE can override). If the directory does not exist in the application's assembled rootfs (including any dependent images and mounted volumes), the ACE must fail execution.
     * **environment** (list of objects, optional) represents the app's environment variables (ACE can append). The listed objects must have two key-value pairs: **name** and **value**. The **name** must consist solely of letters, digits, and underscores '_' as outlined in [IEEE Std 1003.1-2001](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html). The **value** is an arbitrary string.
-    * **isolators** (optional) list of isolation steps that should be applied to the app.
+    * **isolators** (list of objects, optional) list of isolation steps that should be applied to the app.
         * **name** is restricted to the [AC Name](#ac-name-type) formatting
-    * **mountPoints** (list of objects, optional) locations where a container is expecting external data to be mounted. The listed objects should contain three key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. **readOnly** should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
-    * **ports** (list of objects, optional) are protocols and port numbers that the container will be listening on once started. All of the keys in the listed objects are restricted to the AC Name formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
-        * **socketActivated** (boolean, optional) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this container. If multiple apps in the same container are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
+    * **mountPoints** (list of objects, optional) locations where an app is expecting external data to be mounted. The listed objects should contain three key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. **readOnly** should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
+    * **ports** (list of objects, optional) are protocols and port numbers that the app will be listening on once started. All of the keys in the listed objects are restricted to the AC Name formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
+        * **socketActivated** (boolean, optional) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this app. If multiple apps in the same pod are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
 * **dependencies** (list of objects, optional) dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
-    * **app** (string, required) name of the dependent app container image.
+    * **app** (string, required) name of the dependent App Container Image.
     * **imageID** (string, optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels** (list of objects, optional) a list of the very same form as the aforementioned label objects in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
-* **pathWhitelist** (list of strings, optional) complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the container; an empty value means that all files in this image and any dependencies will be available in the rootfs.
+* **pathWhitelist** (list of strings, optional) complete whitelist of paths that should exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). Paths that end in slash will ensure the directory is present but empty. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the app; an empty value means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** (list of objects, optional) any extra metadata you wish to add to the image. Each object has two key-value pairs: the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string. Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
-    * **created** date on which this container was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
-    * **authors** contact details of the people or organization responsible for the containers (freeform string)
-    * **homepage** URL to find more information on the container (string, must be a URL with scheme HTTP or HTTPS)
-    * **documentation** URL to get documentation on this container (string, must be a URL with scheme HTTP or HTTPS)
+    * **created** date on which the image was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
+    * **authors** contact details of the people or organization responsible for the image (freeform string)
+    * **homepage** URL to find more information on the image (string, must be a URL with scheme HTTP or HTTPS)
+    * **documentation** URL to get documentation on the image (string, must be a URL with scheme HTTP or HTTPS)
 
 #### Dependency Matching
 
@@ -713,16 +738,15 @@ This facilitates "wildcard" matching and a variety of common usage patterns, lik
 For example, an AppImage containing a set of bash scripts might omit both "os" and "arch", and hence could be used as a dependency by a variety of different AppImages.
 Alternatively, an AppImage might specify a dependency with no image ID and no "version" label, and the image discovery mechanism could always retrieve the latest version of an AppImage
 
-### Container Runtime Manifest Schema
+### Pod Manifest Schema
 
-JSON Schema for the Container Runtime Manifest (container manifest), conforming to [RFC4627](https://tools.ietf.org/html/rfc4627)
+JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org/html/rfc4627)
 
 ```
 {
 
     "acVersion": "0.4.1",
-    "acKind": "ContainerRuntimeManifest",
-    "uuid": "6733C088-A507-4694-AABF-EDBE4FC5266F",
+    "acKind": "PodManifest",
     "apps": [
         {
             "name": "reduce-worker",
@@ -842,9 +866,8 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
 ```
 
 * **acVersion** (string, required) represents the version of the schema spec (must be in [semver](http://semver.org/) format)
-* **acKind** (string, required) must be set to "ContainerRuntimeManifest"
-* **uuid** (string, required) must be an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt) that represents this instance of the container (must be in [RFC4122](http://www.ietf.org/rfc/rfc4122.txt) format)
-* **apps** (list of objects, required) list of apps that will execute inside of this container. Each app object has the following set of key-value pairs:
+* **acKind** (string, required) must be set to "PodManifest"
+* **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
     * **name** (string, optional) name of the app (restricted to AC Name formatting)
     * **image** (object, required) identifiers of the image providing this app
         * **id** (string, required) content hash of the image that this app will execute inside of (must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
@@ -857,10 +880,10 @@ JSON Schema for the Container Runtime Manifest (container manifest), conforming 
     * **annotations** (list of objects, optional) arbitrary metadata appended to the app. The annotation objects must have a *name* key that has a value that is restricted to the [AC Name](#ac-name-type) formatting and *value* key that is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** (list of objects, optional) list of volumes which should be mounted into each application's filesystem
     * **name** (string, required) used to map the volume to an app's mountPoint at runtime. (restricted to the AC Name formatting)
-    * **kind** (string, required) either "empty" or "host". "empty" fulfills a mount point by ensuring the path exists (writes go to container). "host" fulfills a mount point with a bind mount from a **source**.
-    * **source** (string, required if **kind** is "host") absolute path on host to be bind mounted into the container under a mount point.
+    * **kind** (string, required) either "empty" or "host". "empty" fulfills a mount point by ensuring the path exists (i.e., writes go to the app's chroot). "host" fulfills a mount point with a bind mount from a **source**.
+    * **source** (string, required if **kind** is "host") absolute path on host to be bind mounted under a mount point in each app's chroot.
     * **readOnly** (boolean, optional if **kind** is "host") whether or not the volume should be mounted read only.
-* **isolators** (list of objects, optional) list of isolators that will apply to all apps in this container. Each object has two key value pairs: **name** is restricted to the AC Name formatting and **value** can be a freeform string)
+* **isolators** (list of objects, optional) list of isolators that will apply to all apps in this pod. Each object has two key value pairs: **name** is restricted to the AC Name formatting and **value** can be a freeform string)
 * **annotations** (list of objects, optional) arbitrary metadata the executor should make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
 * **ports** (list of objects, optional) list of ports that will be exposed on the host.
     * **name** (string, required) name the port in the image manifest that should be exposed on the host (restricted to the AC Name formatting).

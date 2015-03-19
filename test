@@ -51,8 +51,12 @@ go test -timeout 60s ${COVER} $@ ${TEST} --race
 echo "Validating image manifest..."
 bin/actool validate examples/image.json
 
-echo "Validating container runtime manifest..."
-bin/actool validate examples/container.json
+echo "Validating pod template manifest..."
+bin/actool validate examples/pod_template.json
+
+# TODO(jonboulle): add `actool validate --resolved-pod-manifest`
+echo "Validating pod runtime manifest..."
+bin/actool validate examples/pod_runtime.json
 
 echo "Checking gofmt..."
 fmtRes=$(gofmt -l $FMT)
