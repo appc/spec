@@ -3,6 +3,7 @@ package schema
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/appc/spec/schema/types"
 )
@@ -65,6 +66,40 @@ func (pm *PodManifest) assertValid() error {
 
 type AppList []RuntimeApp
 
+type appList AppList
+
+func (al *AppList) UnmarshalJSON(data []byte) error {
+	a := appList{}
+	err := json.Unmarshal(data, &a)
+	if err != nil {
+		return err
+	}
+	nal := AppList(a)
+	if err := nal.assertValid(); err != nil {
+		return err
+	}
+	*al = nal
+	return nil
+}
+
+func (al AppList) MarshalJSON() ([]byte, error) {
+	if err := al.assertValid(); err != nil {
+		return nil, err
+	}
+	return json.Marshal(appList(al))
+}
+
+func (al AppList) assertValid() error {
+	seen := map[types.ACName]bool{}
+	for _, a := range al {
+		if _, ok := seen[a.Name]; ok {
+			return fmt.Errorf(`duplicate apps of name %q`, a.Name)
+		}
+		seen[a.Name] = true
+	}
+	return nil
+}
+
 // Get retrieves an app by the specified name from the AppList; if there is
 // no such app, nil is returned. The returned *RuntimeApp MUST be considered
 // read-only.
@@ -100,13 +135,13 @@ type RuntimeApp struct {
 	Name        types.ACName      `json:"name"`
 	Image       RuntimeImage      `json:"image"`
 	App         *types.App        `json:"app,omitempty"`
-	Mounts      []Mount           `json:"mounts"`
-	Annotations types.Annotations `json:"annotations"`
+	Mounts      []Mount           `json:"mounts,omitempty"`
+	Annotations types.Annotations `json:"annotations,omitempty"`
 }
 
 // RuntimeImage describes an image referenced in a RuntimeApp
 type RuntimeImage struct {
-	Name   types.ACName `json:"name"`
-	ID     types.Hash   `json:"id"`
-	Labels types.Labels `json:"labels"`
+	Name   *types.ACName `json:"name,omitempty"`
+	ID     types.Hash    `json:"id"`
+	Labels types.Labels  `json:"labels,omitempty"`
 }
