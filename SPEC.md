@@ -868,7 +868,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 * **acVersion** (string, required) represents the version of the schema spec (must be in [semver](http://semver.org/) format)
 * **acKind** (string, required) must be set to "PodManifest"
 * **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
-    * **name** (string, optional) name of the app (restricted to AC Name formatting)
+    * **name** (string, required) name of the app (restricted to AC Name formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
     * **image** (object, required) identifiers of the image providing this app
         * **id** (string, required) content hash of the image that this app will execute inside of (must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
         * **name** (string, optional) name of the image (restricted to AC Name formatting)
