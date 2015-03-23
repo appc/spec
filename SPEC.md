@@ -565,7 +565,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 ```
 {
     "acKind": "ImageManifest",
-    "acVersion": "0.4.1",
+    "acVersion": "0.5.0",
     "name": "example.com/reduce-worker",
     "labels": [
         {
@@ -744,7 +744,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 
 ```
 {
-    "acVersion": "0.4.1",
+    "acVersion": "0.5.0",
     "acKind": "PodManifest",
     "apps": [
         {
