@@ -123,11 +123,13 @@ An optional *path whitelist* can be provided, in which case all non-specified fi
 The deployable, executable unit in the App Container specification is the **pod**.
 A **pod** is a list of apps that should be launched together inside a shared context.
 The shared context is defined as the conjunction of the following Linux namespaces (or equivalents on other operating systems):
+
 - PID namespace
 - network namespace
 - mount namespace
 - IPC namespace
 - UTS namespace
+
 The context may also consist of one or more isolators.
 
 The definition of the **pod** - namely, the list of constituent apps, and any isolators that should apply to the entire pod - is codified in a [Pod Manifest](#pod-manifest-schema).
@@ -742,7 +744,6 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 
 ```
 {
-
     "acVersion": "0.4.1",
     "acKind": "PodManifest",
     "apps": [
