@@ -267,7 +267,7 @@ func metadataPostForm(metadataURL, path string, data url.Values) ([]byte, error)
 	return metadataRequest(req)
 }
 
-func validateContainerAnnotations(metadataURL string, pm *schema.PodManifest) results {
+func validatePodAnnotations(metadataURL string, pm *schema.PodManifest) results {
 	r := results{}
 
 	var actualAnnots types.Annotations
@@ -303,18 +303,20 @@ func validateContainerAnnotations(metadataURL string, pm *schema.PodManifest) re
 	return r
 }
 
-func validateContainerMetadata(metadataURL string, pm *schema.PodManifest) results {
+func validatePodMetadata(metadataURL string, pm *schema.PodManifest) results {
 	r := results{}
 
-	uid, err := metadataGet(metadataURL, "/pod/uid")
+	uuid, err := metadataGet(metadataURL, "/pod/uuid")
 	if err != nil {
 		return append(r, err)
 	}
-	if strings.ToLower(string(uid)) != strings.ToLower(pm.UUID.String()) {
-		return append(r, fmt.Errorf("UUID mismatch: %v vs %v", string(uid), pm.UUID.String()))
+
+	_, err = types.NewUUID(string(uuid))
+	if err != nil {
+		return append(r, fmt.Errorf("malformed UUID returned (%v): %v", string(uuid), err))
 	}
 
-	return append(r, validateContainerAnnotations(metadataURL, pm)...)
+	return append(r, validatePodAnnotations(metadataURL, pm)...)
 }
 
 func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *schema.ImageManifest) results {
@@ -395,6 +397,12 @@ func validateAppMetadata(metadataURL string, pm *schema.PodManifest, a schema.Ru
 func validateSigning(metadataURL string, pm *schema.PodManifest) results {
 	r := results{}
 
+	// Get our UUID
+	uuid, err := metadataGet(metadataURL, "/pod/uuid")
+	if err != nil {
+		return append(r, err)
+	}
+
 	plaintext := "Old MacDonald Had A Farm"
 
 	// Sign
@@ -408,7 +416,7 @@ func validateSigning(metadataURL string, pm *schema.PodManifest) results {
 	// Verify
 	_, err = metadataPostForm(metadataURL, "/pod/hmac/verify", url.Values{
 		"content":   []string{plaintext},
-		"uid":       []string{pm.UUID.String()},
+		"uid":       []string{string(uuid)},
 		"signature": []string{string(sig)},
 	})
 
@@ -437,7 +445,7 @@ func ValidateMetadataSvc() results {
 		return append(r, fmt.Errorf("failed to JSON-decode pod manifest: %v", err))
 	}
 
-	r = append(r, validateContainerMetadata(metadataURL, pm)...)
+	r = append(r, validatePodMetadata(metadataURL, pm)...)
 
 	for _, app := range pm.Apps {
 		app := app
