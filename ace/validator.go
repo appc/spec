@@ -158,7 +158,7 @@ func ValidatePath(wp string) results {
 	r := results{}
 	gp := os.Getenv("PATH")
 	if wp != gp {
-		r = append(r, fmt.Errorf("PATH not set appropriately (need %q)", wp))
+		r = append(r, fmt.Errorf("PATH not set appropriately (need %q, got %q)", wp, gp))
 	}
 	return r
 }
@@ -166,13 +166,13 @@ func ValidatePath(wp string) results {
 // ValidateWorkingDirectory ensures that the process working directory is set
 // to the desired path.
 func ValidateWorkingDirectory(wwd string) (r results) {
-	wd, err := os.Getwd()
+	gwd, err := os.Getwd()
 	if err != nil {
-		r = append(r, fmt.Errorf("error getting working directory: %x", err))
+		r = append(r, fmt.Errorf("error getting working directory: %v", err))
 		return
 	}
-	if wd != wwd {
-		r = append(r, fmt.Errorf("working directory %q not set (need %q)", wwd, wd))
+	if gwd != wwd {
+		r = append(r, fmt.Errorf("working directory not set appropriately (need %q, got %v)", wwd, gwd))
 	}
 	return
 }
@@ -183,7 +183,7 @@ func ValidateEnvironment(wenv map[string]string) (r results) {
 	for wkey, wval := range wenv {
 		gval := os.Getenv(wkey)
 		if gval != wval {
-			err := fmt.Errorf("environment variable %q not set as expected (need %q)", wkey, wval)
+			err := fmt.Errorf("environment variable %q not set appropriately (need %q, got %q)", wkey, wval, gval)
 			r = append(r, err)
 		}
 	}
@@ -194,7 +194,7 @@ func ValidateEnvironment(wenv map[string]string) (r results) {
 // entrypoint of this process is set correctly.
 func ValidateAppNameEnv(want string) (r results) {
 	if got := os.Getenv(appNameEnv); got != want {
-		r = append(r, fmt.Errorf("%s not set appropriately", appNameEnv))
+		r = append(r, fmt.Errorf("%s not set appropriately (need %q, got %q)", appNameEnv, want, got))
 	}
 	return
 }
