@@ -142,15 +142,6 @@ A Pod Manifest must be fully resolved (_reified_) before execution.
 Specifically, a Pod Manifest must have all `mountPoint`s satisfied by `volume`s, and must reference all applications deterministically (by image ID).
 At runtime, the reified Pod Manifest is exposed to applications through the metadata service.
 
-Pod TODO:
-* Define the garbage collection lifecycle of the pod filesystem including:
-    * Format of app exit code and signal
-    * The refcounting plan for resources consumed by the ACE such as volumes
-* Define the lifecycle of the apps within the pod including:
-    * All exit or first to exit
-    * Start and stop order
-* Define security requirements for a pod. In particular is any isolation of users required between pods? What user does each application run under and can this be root (i.e. "real" root in the host). #231
-
 ## App Container Executor
 
 The **App Container Executor** defines the process by which applications contained in ACIs are executed.
@@ -309,14 +300,12 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 }
 ```
 
-**TODO**: The default=true behavior probably covers nearly 80% of all use cases but we need to define a way to target particular devices.
-
 #### resource/block-iops
 
 * Scope: app/pod
 
 **Parameters:**
-* **default** must be set to true and means that this bandwidth limit applies to all interfaces except localhost by default.
+* **devicePaths** the block devices that this limit will be placed on
 * **limit** read/write input/output operations per second
 
 ```
@@ -326,9 +315,6 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
   "limit": "1000"
 }
 ```
-
-**TODO**: The default=true behavior probably covers nearly 80% of all use cases but we need to define a way to target particular devices.
-
 
 #### resource/cpu
 
@@ -369,7 +355,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
-* **default** must be set to true and means that this bandwidth limit applies to all interfaces except localhost by default.
+* **default** must be set to true and means that this bandwidth limit applies to all interfaces (except localhost) by default.
 * **limit** read/write bytes per second
 
 ```
@@ -380,8 +366,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 }
 ```
 
-**NOTE**: Limits SHOULD NOT apply to localhost communication between apps in a pod.
-**TODO**: The default=true behavior probably covers nearly 80% of all use cases but we need to define a network interface tagging spec for appc.
+**NOTE**: Network limits SHOULD NOT apply to localhost communication between apps in a pod.
 
 ## App Container Image Discovery
 
