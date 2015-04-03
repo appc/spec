@@ -32,7 +32,7 @@ The App Container (appc) spec aims to have the following properties:
 By explicitly defining - separate of any particular implementation - how an app is packaged into an image, downloaded over a network, and executed as a container, we hope to enable a community of engineers to build tooling around the fundamental building block of a container.
 Some examples of build systems and tools that have been built so far include:
 
-- [goaci](https://github.com/jonboulle/goaci) - ACI builder for Go projects
+- [goaci](https://github.com/appc/goaci) - ACI builder for Go projects
 - [docker2aci](https://github.com/appc/docker2aci) - ACI builder from Docker images
 - [actool](https://github.com/appc/spec/tree/master/actool) - ACI builder from root filesystems
 - [baci](https://github.com/sgotti/baci) - A generic ACI build project
@@ -46,7 +46,13 @@ The most mature implementation of the spec today is [rkt](https://github.com/cor
 - [Nose Cone](https://github.com/cdaylward/nosecone) - Linux/C++
 - [rkt](https://github.com/coreos/rkt) - Linux/Go
 
-## Building ACIs
+## Who controls the spec?
+
+App Container is an open-source, community-driven project, developed under the [Apache 2.0 license](LICENSE). For information on governance and contribution policies, see [POLICY](POLICY.md)
+
+## Working with the spec
+
+### Building ACIs
 
 `actool` can be used to build an Application Container Image from an [Image Layout](SPEC.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs).
 
@@ -123,11 +129,11 @@ tar xf /tmp/my-app.aci manifest -O | python -m json.tool
 }
 ```
 
-## Validating App Container implementations
+### Validating App Container implementations
 
 `actool validate` can be used by implementations of the App Container Specification to check that files they produce conform to the expectations.
 
-### Validating Image Manifests and Pod Manifests
+#### Validating Image Manifests and Pod Manifests
 
 To validate one of the two manifest types in the specification, simply run `actool validate` against the file.
 
@@ -159,7 +165,7 @@ $ echo $?
 1
 ```
 
-### Validating ACIs and layouts
+#### Validating ACIs and layouts
 
 Validating ACIs or layouts is very similar to validating manifests: simply run the `actool validate` subcommmand directly against an image or directory, and it will determine the type automatically:
 ```
@@ -182,7 +188,7 @@ actool -debug validate -type appimage hello.aci
 hello.aci: valid app container image
 ```
 
-### Validating App Container Executors (ACEs)
+#### Validating App Container Executors (ACEs)
 
 The [`ace`](ace/) package contains a simple go application, the _ACE validator_, which can be used to validate app container executors by checking certain expectations about the environment in which it is run: for example, that the appropriate environment variables and mount points are set up as defined in the specification.
 
