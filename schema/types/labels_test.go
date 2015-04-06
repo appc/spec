@@ -25,7 +25,7 @@ func TestLabels(t *testing.T) {
 		},
 		{
 			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "arm"}]`,
-			`bad arch "arm" for linux`,
+			"",
 		},
 		{
 			`[{"name": "name"}]`,
