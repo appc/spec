@@ -11,8 +11,8 @@ ACIs that define the label `os=linux` can expect this environment by default.
 
 |     Path     |  Type  |  Notes  |
 | ------------ | ------ | ------- |
-| /proc        | [procfs](https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt)   | |
-| /sys         | [sysfs](https://www.kernel.org/doc/Documentation/filesystems/proc.txt)     | |
+| /proc        | [procfs](https://www.kernel.org/doc/Documentation/filesystems/proc.txt)   | |
+| /sys         | [sysfs](https://www.kernel.org/doc/Documentation/filesystems/sysfs.txt)     | |
 | /dev/null    | [device](http://man7.org/linux/man-pages/man4/null.4.html)                 | |
 | /dev/zero    | [device](http://man7.org/linux/man-pages/man4/zero.4.html)                 | |
 | /dev/full    | [device](http://man7.org/linux/man-pages/man4/full.4.html)                 | |
