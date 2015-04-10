@@ -24,9 +24,10 @@ func TestLabels(t *testing.T) {
 			`bad os "OS/360"`,
 		},
 		{
-			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "arm"}]`,
-			`bad arch "arm" for linux`,
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "pdp11"}]`,
+			`bad arch "pdp11" for linux`,
 		},
+
 		{
 			`[{"name": "name"}]`,
 			`invalid label name: "name"`,
