@@ -407,7 +407,8 @@ Simple discovery does not provide a way to discover Public Keys.
 ### Meta Discovery
 
 If simple discovery fails, then we use HTTPS+HTML meta tags retrieved from a "discovery URL" to resolve an app name to downloadable URLs.
-The template for the discovery URL is
+
+The template for the discovery URL is:
 
     https://{name}?ac-discovery=1
 
@@ -453,7 +454,7 @@ ACI: 		https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci
 Keys: 		https://example.com/pubkeys.gpg
 ```
 
-If the first attempt at fetching the initial discovery URL returns a status code other than `200 OK`, `3xx`, or does not contain any `ac-discovery` meta tags then the next higher path in the name should be tried.
+If the first attempt at fetching the initial discovery URL returns a `4xx` status code or does not contain any `ac-discovery` meta tags then the next higher path in the name should be tried.
 For example if the user has `example.com/project/subproject` and we first try `example.com/project/subproject` but don't find a meta tag then try `example.com/project` then try `example.com`.
 
 All HTTP redirects should be followed when the discovery URL returns a `3xx` status code.
