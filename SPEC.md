@@ -406,30 +406,35 @@ Simple discovery does not provide a way to discover Public Keys.
 
 ### Meta Discovery
 
-If simple discovery fails, then we use HTTPS+HTML meta tags to resolve an app name to a downloadable URL.
-For example, if the ACE is looking for `example.com/reduce-worker` it will request:
+If simple discovery fails, then we use HTTPS+HTML meta tags retrieved from a "discovery URL" to resolve an app name to downloadable URLs.
+
+The template for the discovery URL is:
+
+    https://{name}?ac-discovery=1
+
+For example, if the client is looking for `example.com/reduce-worker` it will request:
 
     https://example.com/reduce-worker?ac-discovery=1
 
-Then inspect the HTML returned for meta tags that have the following format:
+then inspect the HTML returned for meta tags that have the following format:
 
 ```
 <meta name="ac-discovery" content="prefix-match url-tmpl">
 <meta name="ac-discovery-pubkeys" content="prefix-match url">
 ```
 
-* `ac-discovery` should contain a URL template that can be rendered to retrieve the ACI or signature
-* `ac-discovery-pubkeys` should contain a URL that provides a set of public keys that can be used to verify the signature of the ACI
+* `ac-discovery` MUST contain a URL template that can be rendered to retrieve the ACI or associated signature
+* `ac-discovery-pubkeys` SHOULD contain a URL that provides a set of public keys that can be used to verify the signature of the ACI
 
 Some examples for different schemes and URLs:
 
 ```
-<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{version}.{ext}?torrent">
+<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{version}.{ext}">
 <meta name="ac-discovery" content="example.com hdfs://storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
 <meta name="ac-discovery-pubkeys" content="example.com https://example.com/pubkeys.gpg">
 ```
 
-The algorithm first ensures that the prefix of the AC Name matches the prefix-match and then if there is a match it will request the equivalent of:
+When evaluating `ac-discovery` tags, the client MUST first ensure that the prefix of the AC Name being discovered matches the prefix-match, and if so it should perform a simple template substitution to determine the URL at which the resource can be retrieved - the effective equivalent of:
 
 ```
 curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
@@ -437,17 +442,19 @@ curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" 
 
 where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `aci.asc` for retrieving an App Container Image or signature respectively.
 
-In our example above this would be:
+Note that multiple `ac-discovery` tags MAY be returned for a given prefix-match (for example, with different scheme names representing different transport mechanisms).
+In this case, the client implementation MAY choose which to use at its own discretion.
+Public discovery implementations SHOULD always provide at least one HTTPS URL template.
+
+In our example above, using the HTTPS URL template, the client would attempt to retrieve the following URLs:
 
 ```
-sig: https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci.asc
-aci: https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci
-keys: https://example.com/pubkeys.gpg
+Signature: 	https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci.asc
+ACI: 		https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci
+Keys: 		https://example.com/pubkeys.gpg
 ```
 
-This mechanism is only used for discovery of contents URLs.
-
-If the first attempt at fetching the discovery URL returns a status code other than `200 OK`, `3xx`, or does not contain any `ac-discovery` meta tags then the next higher path in the name should be tried.
+If the first attempt at fetching the initial discovery URL returns a `4xx` status code or does not contain any `ac-discovery` meta tags then the next higher path in the name should be tried.
 For example if the user has `example.com/project/subproject` and we first try `example.com/project/subproject` but don't find a meta tag then try `example.com/project` then try `example.com`.
 
 All HTTP redirects should be followed when the discovery URL returns a `3xx` status code.
