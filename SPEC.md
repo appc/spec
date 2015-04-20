@@ -455,8 +455,8 @@ ACI: 		https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci
 Keys: 		https://example.com/pubkeys.gpg
 ```
 
-If the first attempt at fetching the initial discovery URL returns a `4xx` status code or does not contain any `ac-discovery` meta tags then the next higher path in the name should be tried.
-For example if the user has `example.com/project/subproject` and we first try `example.com/project/subproject` but don't find a meta tag then try `example.com/project` then try `example.com`.
+If the first attempt at fetching the initial discovery URL returns a `4xx` status code or does not contain any `ac-discovery` meta tags then attempt the parent path in the `name`.
+For example if the user has `example.com/project/subproject` and we first try `example.com/project/subproject` but do not discover a `meta` tag then try `example.com/project` and then try `example.com`.
 
 All HTTP redirects should be followed when the discovery URL returns a `3xx` status code.
 
