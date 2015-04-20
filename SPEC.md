@@ -393,7 +393,7 @@ The simple discovery template is:
 
 First, try to fetch the App Container Image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
 
-For example, given the app name `example.com/reduce-worker`, with version `1.0.0`, arch `amd64`, and os `linux`, try to retrieve:
+For example, given the app `{name}`: `example.com/reduce-worker`, with `{version}`: `1.0.0`, `{arch}`: `amd64`, and `{os}`: `linux`, try to retrieve:
 
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci
 
