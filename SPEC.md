@@ -406,7 +406,7 @@ Simple discovery does not provide a way to discover Public Keys.
 
 ### Meta Discovery
 
-If simple discovery fails, then we use HTTPS+HTML meta tags retrieved from a "discovery URL" to resolve an app name to downloadable URLs.
+If simple discovery fails, then we use HTTPS+HTML `meta` tags retrieved from a "discovery URL" to resolve an app name to downloadable URLs.
 
 The template for the discovery URL is:
 
@@ -416,9 +416,9 @@ For example, if the client is looking for `example.com/reduce-worker` it will re
 
     https://example.com/reduce-worker?ac-discovery=1
 
-then inspect the HTML returned for meta tags that have the following format:
+then inspect the HTML returned for `meta` tags that have the following format:
 
-```
+```html
 <meta name="ac-discovery" content="prefix-match url-tmpl">
 <meta name="ac-discovery-pubkeys" content="prefix-match url">
 ```
@@ -428,7 +428,7 @@ then inspect the HTML returned for meta tags that have the following format:
 
 Some examples for different schemes and URLs:
 
-```
+```html
 <meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{version}.{ext}">
 <meta name="ac-discovery" content="example.com hdfs://storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
 <meta name="ac-discovery-pubkeys" content="example.com https://example.com/pubkeys.gpg">
@@ -436,7 +436,8 @@ Some examples for different schemes and URLs:
 
 When evaluating `ac-discovery` tags, the client MUST first ensure that the prefix of the AC Name being discovered matches the prefix-match, and if so it should perform a simple template substitution to determine the URL at which the resource can be retrieved - the effective equivalent of:
 
-```
+```bash
+urltmpl="https://{name}-{version}-{os}-{arch}.{ext}"
 curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
