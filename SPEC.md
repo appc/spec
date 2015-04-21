@@ -487,7 +487,7 @@ The App Container specification defines an HTTP-based metadata service for provi
 
 ### Metadata Service
 
-The ACE must provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` environment variable.
+The ACE must provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` [environment variable](#execution-environment).
 
 Clients querying any of these endpoints MUST specify the `Metadata-Flavor: AppContainer` header.
 
