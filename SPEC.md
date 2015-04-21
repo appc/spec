@@ -212,6 +212,7 @@ The following environment variables MUST be set for each application's main proc
 * **SHELL** login shell of the user
 * **AC_APP_NAME** name of the application, as defined in the image manifest
 * **AC_METADATA_URL** URL where the [metadata service](#app-container-metadata-service) for this pod can be found.
+* **container** name of the [App Container Executor](#app-container-executor) as a concise indicator the environment is in a container (free-form string)
 
 An executor MAY set additional environment variables for the application processes.
 
