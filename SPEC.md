@@ -207,7 +207,7 @@ The following environment variables MUST be set for each application's main proc
 * **HOME** home directory of the user
 * **SHELL** login shell of the user
 * **AC_APP_NAME** name of the application, as defined in the image manifest
-* **AC_METADATA_URL** URL where the metadata service for this pod can be found
+* **AC_METADATA_URL** URL where the [metadata service](#app-container-metadata-service) for this pod can be found.
 
 An executor MAY set additional environment variables for the application processes.
 
@@ -487,11 +487,11 @@ The App Container specification defines an HTTP-based metadata service for provi
 
 ### Metadata Service
 
-The ACE must provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` environment variable.
+The ACE must provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` [environment variable](#execution-environment).
 
 Clients querying any of these endpoints MUST specify the `Metadata-Flavor: AppContainer` header.
 
-UUIDs assigned to pods MUST be unique for a given instance of a metadata service.
+[UUIDs](#pod-uuid) assigned to pods MUST be unique for a given instance of a metadata service.
 Hence, implementations of a metadata service shared among executors SHOULD either provide centralized allocation of UUIDs or partition the UUID space between individual executors.
 
 ### Pod Metadata
