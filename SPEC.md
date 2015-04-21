@@ -491,7 +491,7 @@ The ACE must provide a Metadata service on the address given to the applications
 
 Clients querying any of these endpoints MUST specify the `Metadata-Flavor: AppContainer` header.
 
-UUIDs assigned to pods MUST be unique for a given instance of a metadata service.
+[UUIDs](#pod-uuid) assigned to pods MUST be unique for a given instance of a metadata service.
 Hence, implementations of a metadata service shared among executors SHOULD either provide centralized allocation of UUIDs or partition the UUID space between individual executors.
 
 ### Pod Metadata
