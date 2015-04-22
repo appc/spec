@@ -2,7 +2,6 @@
 
 This document defines the current policies around governance and contributions for the App Container Specification (appc) project.
 This is written from the perspective that there is a group of people who cooperatively support and manage the project (the _maintainers_, hereafter "we").
-At this time, a simple majority of maintainers (two out of three) work for CoreOS, but this will change over time.
 We will move towards an open governance model where multiple parties have commit access, roll-back rights, and can provide explicit support for features.
 
 ## Contributions
@@ -37,4 +36,4 @@ Changes to the rules in this document follow the same process as removing mainta
 
 ## Credits
 
-This document was inspired by and modelled on the [initial governance policy for Google's Blaze project](https://github.com/google/bazel/blob/efbcf00220a95c5ea1dfa7e3a5bff8311b52727d/site/governance.md)
+This document was inspired by and modelled on the [initial governance policy for Google's Bazel project](https://github.com/google/bazel/blob/efbcf00220a95c5ea1dfa7e3a5bff8311b52727d/site/governance.md)
