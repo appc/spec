@@ -605,7 +605,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         ],
         "isolators": [
             {
-                "name": "resources/cpu",
+                "name": "resource/cpu",
                 "value": {
                     "request": "250",
                     "limit": "500"
