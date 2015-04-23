@@ -721,7 +721,7 @@ Dependency matching is based on a combination of the three different fields of t
 First, the image discovery mechanism is used to locate a dependency.
 If any labels are specified in the dependency, they are passed to the image discovery mechanism, and should be used when locating the image.
 
-If the image discovery process successfully returns an image, it will be compared as follows
+If the image discovery process successfully returns an image, it will be compared as follows.
 If the dependency specification has an image ID, it will be compared against the hash of image returned, and must match.
 Otherwise, the labels in the dependency specification are compared against the labels in the retrieved ACI (i.e. in its ImageManifest), and must match.
 A label is considered to match if it meets one of three criteria:
