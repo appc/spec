@@ -696,7 +696,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 ```
 
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "ImageManifest"
-* **acVersion** (string, required) represents the version of the schema specification that the manifest implements (string, must be in [semver](http://semver.org/) format)
+* **acVersion** (string, required) represents the version of the [schema specification](https://github.com/appc/spec/blob/master/VERSION) that the manifest implements (string, must be in [semver](http://semver.org/) format)
 * **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the AC Name formatting)
 * **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
