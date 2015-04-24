@@ -16,6 +16,12 @@ my_minor(dev_t dev)
 {
   return minor(dev);
 }
+
+dev_t
+my_makedev(unsigned int maj, unsigned int min)
+{
+       return makedev(maj, min);
+}
 */
 import "C"
 
@@ -27,4 +33,9 @@ func Major(rdev uint64) uint {
 func Minor(rdev uint64) uint {
 	minor := C.my_minor(C.dev_t(rdev))
 	return uint(minor)
+}
+
+func Makedev(maj uint, min uint) uint64 {
+	dev := C.my_makedev(C.uint(maj), C.uint(min))
+	return uint64(dev)
 }
