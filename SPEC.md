@@ -570,7 +570,8 @@ For example, if an implementation is compliant against version 1.0.1 of the spec
 The version of the App Container specification and associated tooling is recorded in [VERSION](https://github.com/appc/spec/blob/master/VERSION), and is otherwise denoted in the [release version](https://github.com/appc/spec/releases) or git version control tag. 
 
 An AC Version (`acVersion`) must reference a tagged version of the App Container specification, not exceeding the version of its greatest compliance.
-
+An AC Version (`acVersion`) for [Image Manifest](#image-manifest-schema) and [Pod Manifest](#pod-manifest-schema) schemas must be compatible on major AC version series.
+An AC Version (`acVersion`) cannot be an empty string and must be in [semver](http://semver.org/) format.
 
 ## Manifest Schemas
 
@@ -709,7 +710,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 ```
 
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "ImageManifest"
-* **acVersion** (string, required) represents the version of the [schema specification](#ac-version-type) that the manifest implements (string, must be in [semver](http://semver.org/) format)
+* **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
 * **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the AC Name formatting)
 * **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
@@ -880,7 +881,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 }
 ```
 
-* **acVersion** (string, required) represents the version of the [schema specification](#ac-version-type) (must be in [semver](http://semver.org/) format)
+* **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "PodManifest"
 * **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
     * **name** (string, required) name of the app (restricted to AC Name formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
