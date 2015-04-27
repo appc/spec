@@ -46,6 +46,12 @@ func runBuild(args []string) (exit int) {
 		return 1
 	}
 
+	// TODO(jonboulle): stream the validation so we don't have to walk the rootfs twice
+	if err := aci.ValidateLayout(root); err != nil {
+		stderr("build: Layout failed validation: %v", err)
+		return 1
+	}
+
 	mode := os.O_CREATE | os.O_WRONLY
 	if buildOverwrite {
 		mode |= os.O_TRUNC
@@ -81,11 +87,6 @@ func runBuild(args []string) (exit int) {
 		}
 	}()
 
-	// TODO(jonboulle): stream the validation so we don't have to walk the rootfs twice
-	if err := aci.ValidateLayout(root); err != nil {
-		stderr("build: Layout failed validation: %v", err)
-		return 1
-	}
 	mpath := filepath.Join(root, aci.ManifestFile)
 	b, err := ioutil.ReadFile(mpath)
 	if err != nil {
