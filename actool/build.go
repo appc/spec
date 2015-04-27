@@ -48,8 +48,12 @@ func runBuild(args []string) (exit int) {
 
 	// TODO(jonboulle): stream the validation so we don't have to walk the rootfs twice
 	if err := aci.ValidateLayout(root); err != nil {
-		stderr("build: Layout failed validation: %v", err)
-		return 1
+		if e, ok := err.(aci.ErrOldVersion); ok {
+			stderr("build: Warning: %v. Please update your manifest.", e)
+		} else {
+			stderr("build: Layout failed validation: %v", err)
+			return 1
+		}
 	}
 
 	mode := os.O_CREATE | os.O_WRONLY

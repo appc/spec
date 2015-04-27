@@ -102,8 +102,12 @@ func runValidate(args []string) (exit int) {
 			err = aci.ValidateArchive(tr)
 			fh.Close()
 			if err != nil {
-				stderr("%s: error validating: %v", path, err)
-				exit = 1
+				if e, ok := err.(aci.ErrOldVersion); ok {
+					stderr("%s: warning: %v", path, e)
+				} else {
+					stderr("%s: error validating: %v", path, err)
+					exit = 1
+				}
 			} else if globalFlags.Debug {
 				stderr("%s: valid app container image", path)
 			}
