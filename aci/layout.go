@@ -26,6 +26,7 @@ import (
 	"strings"
 
 	"github.com/appc/spec/schema"
+	"github.com/appc/spec/schema/types"
 )
 
 const (
@@ -34,6 +35,14 @@ const (
 	// Path to rootfs directory inside the layout
 	RootfsDir = "rootfs"
 )
+
+type ErrOldVersion struct {
+	version types.SemVer
+}
+
+func (e ErrOldVersion) Error() string {
+	return fmt.Sprintf("ACVersion too old. Found major version %v, expected %v", e.version.Major, schema.AppContainerVersion.Major)
+}
 
 var (
 	ErrNoRootFS   = errors.New("no rootfs found in layout")
@@ -149,6 +158,11 @@ func validate(imOK bool, im io.Reader, rfsOK bool, files []string) error {
 	var a schema.ImageManifest
 	if err := a.UnmarshalJSON(b); err != nil {
 		return fmt.Errorf("image manifest validation failed: %v", err)
+	}
+	if a.ACVersion.LessThanMajor(schema.AppContainerVersion) {
+		return ErrOldVersion{
+			version: a.ACVersion,
+		}
 	}
 	for _, f := range files {
 		if !strings.HasPrefix(f, "rootfs") {
