@@ -553,7 +553,7 @@ The schema validator will ensure that the keys conform to these constraints.
 
 An AC Kind cannot be an empty string and must be alphanumeric characters.
 An AC Kind value matching defined kinds, will have defined compatibility.
-Undefined kinds will have undefined compatibility.
+There is no expected compatibility with undefined AC Kinds.
 
 Defined Kinds:
 * `ImageManifest`
