@@ -549,6 +549,16 @@ The AC Name Type is used as the primary key for a number of fields in the schema
 The schema validator will ensure that the keys conform to these constraints.
 
 
+## AC Kind Type
+
+An AC Kind cannot be an empty string and must be alphanumeric characters.
+An AC Kind value matching defined kinds, will have defined compatibility.
+There is no expected compatibility with undefined AC Kinds.
+
+Defined Kinds:
+* `ImageManifest`
+* `PodManifest`
+
 ## Manifest Schemas
 
 ### Image Manifest Schema
@@ -685,7 +695,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 }
 ```
 
-* **acKind** (string, required) must be set to "ImageManifest"
+* **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "ImageManifest"
 * **acVersion** (string, required) represents the version of the schema specification that the manifest implements (string, must be in [semver](http://semver.org/) format)
 * **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the AC Name formatting)
 * **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
@@ -858,7 +868,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 ```
 
 * **acVersion** (string, required) represents the version of the schema spec (must be in [semver](http://semver.org/) format)
-* **acKind** (string, required) must be set to "PodManifest"
+* **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "PodManifest"
 * **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
     * **name** (string, required) name of the app (restricted to AC Name formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
     * **image** (object, required) identifiers of the image providing this app
