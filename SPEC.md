@@ -495,6 +495,10 @@ The ACE must provide a Metadata service on the address given to the applications
 
 Clients querying any of these endpoints MUST specify the `Metadata-Flavor: AppContainer` header.
 
+**NOTE**: Implementations can insert an authorization token into AC_METADATA_URL.
+For example, AC_METADATA_URL can be set to `https://10.0.0.1:8888/Y4vFeVZzKM2T9rwkpWHfqXuGsNjS6O5c` with the path portion acting as a token to uniquely and securely identify a pod.
+Such a token SHOULD have no fewer than 128 bits of entropy (i.e. size of UUID).
+
 [UUIDs](#pod-uuid) assigned to pods MUST be unique for the administrative domain of the metadata service.
 
 ### Pod Metadata
