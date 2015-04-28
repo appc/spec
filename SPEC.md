@@ -289,7 +289,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
-* **devicePaths** the block devices that this limit will be placed on
+* **default** must be set to true and means that this limit applies to all block devices by default
 * **limit** read/write bytes per second
 
 ```
@@ -305,7 +305,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
-* **devicePaths** the block devices that this limit will be placed on
+* **default** must be set to true and means that this limit applies to all block devices by default
 * **limit** read/write input/output operations per second
 
 ```
