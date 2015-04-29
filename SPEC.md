@@ -648,6 +648,12 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
                 "port": 4000,
                 "protocol": "tcp",
                 "socketActivated": true
+            },
+            {
+                "name": "ftp-data",
+                "port": 20000,
+                "count": 1000,
+                "protocol": "tcp"
             }
         ]
     },
@@ -713,6 +719,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         * **name** is restricted to the [AC Name](#ac-name-type) formatting
     * **mountPoints** (list of objects, optional) locations where an app is expecting external data to be mounted. The listed objects should contain three key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. **readOnly** should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
     * **ports** (list of objects, optional) are protocols and port numbers that the app will be listening on once started. All of the keys in the listed objects are restricted to the AC Name formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
+        * **count** (integer, optional, defaults to 1) specifies a range of ports, starting with "port" and ending with "port" + "count" - 1.
         * **socketActivated** (boolean, optional, defaults to "false" if unsupplied) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this app. If multiple apps in the same pod are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
 * **dependencies** (list of objects, optional) dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
     * **app** (string, required) name of the dependent App Container Image.
