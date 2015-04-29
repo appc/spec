@@ -159,7 +159,10 @@ This example pod will use a set of three apps:
 
 #### Pod UUID
 
-The executor must assign an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt) to each pod.
+Each pod much be assigned an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt). 
+The UUID serves as a canonical reference to a pod within a given administrative domain.
+In this context, an administrative domain is linked to the scope of the associated metadata service.
+For example, given a metadata service that is federated across a geographical cluster of systems, the pod UUID is uniquely scoped to the same cluster.
 This UUID is exposed to the pod through the [Metadata Service](#app-container-metadata-service).
 
 #### Filesystem Setup
@@ -491,8 +494,7 @@ The ACE must provide a Metadata service on the address given to the applications
 
 Clients querying any of these endpoints MUST specify the `Metadata-Flavor: AppContainer` header.
 
-[UUIDs](#pod-uuid) assigned to pods MUST be unique for a given instance of a metadata service.
-Hence, implementations of a metadata service shared among executors SHOULD either provide centralized allocation of UUIDs or partition the UUID space between individual executors.
+[UUIDs](#pod-uuid) assigned to pods MUST be unique for the administrative domain of the metadata service.
 
 ### Pod Metadata
 
