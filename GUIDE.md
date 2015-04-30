@@ -33,10 +33,10 @@ Storing exploded ACIs not only prevents the need to regularly tar and untar imag
 
 The specification stipulates that each execution of an application must start from a clean copy of its image.
 The most basic implementation of this would involve a complete copy (e.g. `cp -arv`) of the image's root filesystem into a new directory for the application to use.
-To make more efficient use of disk space, and improve performance, implementations should consider use of technologies like [device mapper copy-on-write block devices](cow), [OverlayFS](overlayfs), or [ZFS](ZFS).
+To make more efficient use of disk space, and improve performance, implementations should consider use of technologies like [device mapper copy-on-write block devices] [dm], [OverlayFS] [overlay], or [ZFS] [zfs].
 
-[cow]: https://www.kernel.org/doc/Documentation/device-mapper/snapshot.txt
-[overlayfs]: https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt
+[dm]: https://www.kernel.org/doc/Documentation/device-mapper/snapshot.txt
+[overlay]: https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/filesystems/overlayfs.txt
 [zfs]: http://en.wikipedia.org/wiki/ZFS
 
 ## Transporting ACIs
