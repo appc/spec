@@ -75,18 +75,19 @@ This set of formats makes it easy to build, host and secure an ACI using technol
 - Image archives MUST have only two top-level pathnames, `manifest` (a regular file) and `rootfs` (a directory). Image archives with additional files outside of `rootfs` are not valid.
 - All files in the image MUST maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
 - Image archives MAY be compressed with `gzip`, `bzip2`, or `xz`.
-- Image archives MAY be encrypted with AES symmetric encryption, after (optional) compression.
+- Image archives MAY be encrypted with AES symmetric encryption, after (optional) compression/encryption.
 - Image archives SHOULD be signed using PGP, the format MUST be ascii-armored detached signature mode.
 - Image signatures MUST be named with the suffix `.aci.asc`.
 
 The following example demonstrates the creation of a simple ACI using common command-line tools.
-In this case, the ACI is both compressed and encrypted.
+In this case, the ACI is compressed, encrypted, and signed.
 
 ```
 tar cvf reduce-worker.tar manifest rootfs
 gzip reduce-worker.tar -c > reduce-worker.aci
+gpg --output reduce-worker.aci.out --digest-algo sha256 --cipher-algo AES256 --passphrase sekr3t --symmetric reduce-worker.aci
+mv reduce-worker.aci.out reduce-worker.aci
 gpg --armor --output reduce-worker.aci.asc --detach-sig reduce-worker.aci
-gpg --output reduce-worker.aci --digest-algo sha256 --cipher-algo AES256 --symmetric reduce-worker.aci
 ```
 
 **Note**: the key distribution mechanism to facilitate image signature validation is not defined here.
