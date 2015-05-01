@@ -535,7 +535,9 @@ Accessible at `$AC_METADATA_URL/acMetadata/v1/pod/hmac`
 |verify | Verify a signature from another pod. POST a form with content=&lt;object that was signed&gt;, uid=&lt;uid of the pod that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
 
 
-## AC Name Type
+## Types
+
+### AC Name Type
 
 An AC Name Type is restricted to lowercase characters accepted by the DNS [RFC1123](http://tools.ietf.org/html/rfc1123#page-13) and "/".
 An AC Name Type cannot be an empty string and must begin and end with an alphanumeric character.
@@ -552,7 +554,7 @@ The AC Name Type is used as the primary key for a number of fields in the schema
 The schema validator will ensure that the keys conform to these constraints.
 
 
-## AC Kind Type
+### AC Kind Type
 
 An AC Kind cannot be an empty string and must be alphanumeric characters.
 An AC Kind value matching defined kinds, will have defined compatibility.
@@ -561,6 +563,18 @@ There is no expected compatibility with undefined AC Kinds.
 Defined Kinds:
 * `ImageManifest`
 * `PodManifest`
+
+
+### AC Version Type
+
+The App Container specification aims to follow semantic versioning and retain forward and backwards compatibility within major versions.
+For example, if an implementation is compliant against version 1.0.1 of the spec, it is compatible with the complete 1.x series.
+
+The version of the App Container specification and associated tooling is recorded in [VERSION](https://github.com/appc/spec/blob/master/VERSION), and is otherwise denoted in the [release version](https://github.com/appc/spec/releases) or git version control tag. 
+
+An AC Version (`acVersion`) must reference a tagged version of the App Container specification, not exceeding the version of its greatest compliance.
+An AC Version (`acVersion`) for [Image Manifest](#image-manifest-schema) and [Pod Manifest](#pod-manifest-schema) schemas must be compatible on major AC version series.
+An AC Version (`acVersion`) cannot be an empty string and must be in [semver](http://semver.org/) format.
 
 ## Manifest Schemas
 
@@ -705,7 +719,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 ```
 
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "ImageManifest"
-* **acVersion** (string, required) represents the version of the schema specification that the manifest implements (string, must be in [semver](http://semver.org/) format)
+* **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
 * **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the AC Name formatting)
 * **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
@@ -877,7 +891,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 }
 ```
 
-* **acVersion** (string, required) represents the version of the schema spec (must be in [semver](http://semver.org/) format)
+* **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "PodManifest"
 * **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
     * **name** (string, required) name of the app (restricted to AC Name formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
