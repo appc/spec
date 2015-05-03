@@ -56,7 +56,7 @@ In some ways an ACI can be thought of as equivalent to a static binary.
 ### Image Layout
 
 The on-disk layout of an App Container Image is straightforward.
-It includes a *rootfs* with all of the files that will exist in the root of the app, and an *app image manifest* describing the contents of the image and how to execute the app.
+It includes a *rootfs* directory with all of the files that will exist in the root of the app, and an *app image manifest* file describing the contents of the image and how to execute the app.
 
 ```
 /manifest
