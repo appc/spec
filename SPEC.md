@@ -228,7 +228,7 @@ Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
 An isolator is a JSON object with two required fields: "name" and "value".
-"name" is a string restricted to AC Name formatting. "value" can be an arbitrary JSON value.
+"name" is a string restricted to [AC Name](#ac-name-type) formatting. "value" can be an arbitrary JSON value.
 
 An executor MAY ignore isolators that it does not understand and run the pod without them.
 But, an executor MUST make information about which isolators were ignored, enforced or modified available to the user.
@@ -447,7 +447,7 @@ Some examples for different schemes and URLs:
 <meta name="ac-discovery-pubkeys" content="example.com https://example.com/pubkeys.gpg">
 ```
 
-When evaluating `ac-discovery` tags, the client MUST first ensure that the prefix of the AC Name being discovered matches the prefix-match, and if so it should perform a simple template substitution to determine the URL at which the resource can be retrieved - the effective equivalent of:
+When evaluating `ac-discovery` tags, the client MUST first ensure that the prefix of the [AC Name](#ac-name-type) being discovered matches the prefix-match, and if so it should perform a simple template substitution to determine the URL at which the resource can be retrieved - the effective equivalent of:
 
 ```bash
 urltmpl="https://{name}-{version}-{os}-{arch}.{ext}"
@@ -733,8 +733,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "ImageManifest"
 * **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
-* **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the AC Name formatting)
-* **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
+* **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the [AC Name](#ac-name-type) formatting)
+* **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
     * **os**, **arch** can together be considered to describe the syscall ABI this image requires. **arch** is meaningful only if **os** is provided. If one or both values are not provided, the image is assumed to be OS- and/or architecture-independent. Currently supported combinations are listed in the [`types.ValidOSArch`](schema/types/labels.go) variable, which can be updated by an implementation that supports other combinations. The combinations whitelisted by default are (in format `os/arch`): `linux/amd64`, `linux/i386`, `freebsd/amd64`, `freebsd/i386`, `freebsd/arm`, `darwin/x86_64`, `darwin/i386`. See the [Operating System spec](OS-SPEC.md) for the environment apps can expect to run in given a known **os** label.
 * **app** (object, optional) if present, defines the default parameters that can be used to execute this image as an application.
@@ -747,8 +747,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
     * **environment** (list of objects, optional) represents the app's environment variables (ACE can append). The listed objects must have two key-value pairs: **name** and **value**. The **name** must consist solely of letters, digits, and underscores '_' as outlined in [IEEE Std 1003.1-2001](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html). The **value** is an arbitrary string.
     * **isolators** (list of objects, optional) list of isolation steps that should be applied to the app.
         * **name** is restricted to the [AC Name](#ac-name-type) formatting
-    * **mountPoints** (list of objects, optional) locations where an app is expecting external data to be mounted. The listed objects should contain three key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it should actually be mounted inside the rootfs. The name is restricted to the AC Name Type formatting. **readOnly** should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
-    * **ports** (list of objects, optional) are protocols and port numbers that the app will be listening on once started. All of the keys in the listed objects are restricted to the AC Name formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
+    * **mountPoints** (list of objects, optional) locations where an app is expecting external data to be mounted. The listed objects should contain three key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it should actually be mounted inside the rootfs. The name is restricted to the [AC Name](#ac-name-type) Type formatting. **readOnly** should be a boolean indicating whether or not the mount point should be read-only (defaults to "false" if unsupplied).
+    * **ports** (list of objects, optional) are protocols and port numbers that the app will be listening on once started. All of the keys in the listed objects are restricted to the [AC Name](#ac-name-type) formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **count** (integer, optional, defaults to 1) specifies a range of ports, starting with "port" and ending with "port" + "count" - 1.
         * **socketActivated** (boolean, optional, defaults to "false" if unsupplied) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this app. If multiple apps in the same pod are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
 * **dependencies** (list of objects, optional) dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies should be retrieved.
@@ -907,23 +907,23 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 * **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "PodManifest"
 * **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
-    * **name** (string, required) name of the app (restricted to AC Name formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
+    * **name** (string, required) name of the app (restricted to [AC Name](#ac-name-type) formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
     * **image** (object, required) identifiers of the image providing this app
         * **id** (string, required) content hash of the image that this app will execute inside of (must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
-        * **name** (string, optional) name of the image (restricted to AC Name formatting)
+        * **name** (string, optional) name of the image (restricted to [AC Name](#ac-name-type) formatting)
         * **labels** (list of objects, optional) additional labels characterizing the image
     * **app** (object, optional) substitute for the app object of the referred image's ImageManifest. See [Image Manifest Schema](#image-manifest-schema) for what the app object contains.
     * **mounts** (list of objects, optional) list of mounts mapping an app mountPoint to a volume. Each mount has the following set of key-value pairs:
-      * **volume** (string, required) name of the volume that will fulfill this mount (restricted to the AC Name formatting)
-      * **mountPoint** (string, required) name of the app mount point to place the volume on (restricted to the AC Name formatting)
+      * **volume** (string, required) name of the volume that will fulfill this mount (restricted to the [AC Name](#ac-name-type) formatting)
+      * **mountPoint** (string, required) name of the app mount point to place the volume on (restricted to the [AC Name](#ac-name-type) formatting)
     * **annotations** (list of objects, optional) arbitrary metadata appended to the app. The annotation objects must have a *name* key that has a value that is restricted to the [AC Name](#ac-name-type) formatting and *value* key that is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** (list of objects, optional) list of volumes which should be mounted into each application's filesystem
-    * **name** (string, required) used to map the volume to an app's mountPoint at runtime. (restricted to the AC Name formatting)
+    * **name** (string, required) used to map the volume to an app's mountPoint at runtime. (restricted to the [AC Name](#ac-name-type) formatting)
     * **kind** (string, required) either "empty" or "host". "empty" fulfills a mount point by ensuring the path exists (i.e., writes go to the app's chroot). "host" fulfills a mount point with a bind mount from a **source**.
     * **source** (string, required if **kind** is "host") absolute path on host to be bind mounted under a mount point in each app's chroot.
     * **readOnly** (boolean, optional if **kind** is "host", defaults to "false" if unsupplied) whether or not the volume should be mounted read only.
-* **isolators** (list of objects, optional) list of isolators that will apply to all apps in this pod. Each object has two key value pairs: **name** is restricted to the AC Name formatting and **value** can be a freeform string)
+* **isolators** (list of objects, optional) list of isolators that will apply to all apps in this pod. Each object has two key value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** can be a freeform string)
 * **annotations** (list of objects, optional) arbitrary metadata the executor should make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
 * **ports** (list of objects, optional) list of ports that will be exposed on the host.
-    * **name** (string, required) name of the port in the image manifest that should be exposed on the host (restricted to the AC Name formatting).
+    * **name** (string, required) name of the port in the image manifest that should be exposed on the host (restricted to the [AC Name](#ac-name-type) formatting).
     * **hostPort** (integer, required) port number on the host that will be mapped to the container port.
