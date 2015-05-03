@@ -141,7 +141,7 @@ Pod Manifests also provide the ability to override application execution paramet
 
 A Pod Manifest must be fully resolved (_reified_) before execution.
 Specifically, a Pod Manifest must have all `mountPoint`s satisfied by `volume`s, and must reference all applications deterministically (by image ID).
-At runtime, the reified Pod Manifest is exposed to applications through the metadata service.
+At runtime, the reified Pod Manifest is exposed to applications through the [Metadata Service](#app-container-metadata-service).
 
 ## App Container Executor
 
@@ -162,7 +162,7 @@ This example pod will use a set of three apps:
 
 Each pod much be assigned an [RFC4122 UUID](http://www.ietf.org/rfc/rfc4122.txt). 
 The UUID serves as a canonical reference to a pod within a given administrative domain.
-In this context, an administrative domain is linked to the scope of the associated metadata service.
+In this context, an administrative domain is linked to the scope of the associated [Metadata Service](#app-container-metadata-service).
 For example, given a metadata service that is federated across a geographical cluster of systems, the pod UUID is uniquely scoped to the same cluster.
 This UUID is exposed to the pod through the [Metadata Service](#app-container-metadata-service).
 
