@@ -378,7 +378,7 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 }
 ```
 
-**NOTE**: Network limits SHOULD NOT apply to localhost communication between apps in a pod.
+**NOTE**: Network limits MUST NOT apply to localhost communication between apps in a pod.
 
 ## App Container Image Discovery
 
