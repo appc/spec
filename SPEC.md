@@ -82,7 +82,7 @@ This set of formats makes it easy to build, host and secure an ACI using technol
 The following example demonstrates the creation of a simple ACI using common command-line tools.
 In this case, the ACI is compressed, encrypted, and signed.
 
-```
+```bash
 tar cvf reduce-worker.tar manifest rootfs
 gzip reduce-worker.tar -c > reduce-worker.aci
 gpg --output reduce-worker.aci.out --digest-algo sha256 --cipher-algo AES256 --passphrase sekr3t --symmetric reduce-worker.aci
@@ -101,7 +101,7 @@ An image is addressed and verified against the hash of its uncompressed tar file
 The image ID provides a way to uniquely and globally reference an image, and verify its integrity at any point.
 The default digest format is sha512, but all hash IDs in this format are prefixed by the algorithm used (e.g. sha512-a83...).
 
-```
+```bash
 echo sha512-$(sha512sum reduce-worker.tar | awk '{print $1}')
 ```
 
@@ -171,7 +171,7 @@ This UUID is exposed to the pod through the [Metadata Service](#app-container-me
 Every execution of an app should start from a clean copy of its image (ACI).
 The simplest implementation will take an ACI with no dependencies and extract it into a new directory:
 
-```
+```bash
 cd $(mktemp -d -t temp.XXXX)
 mkdir hello
 tar xzvf /var/lib/pce/hello.aci -C hello
@@ -206,6 +206,7 @@ Note that logging mechanisms other than stdout and stderr are not required by th
 #### Execution Environment
 
 The following environment variables MUST be set for each application's main process and any lifecycle processes:
+
 * **PATH** `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`
 * **USER, LOGNAME** username of the user executing this app
 * **HOME** home directory of the user
@@ -243,9 +244,10 @@ The first example is "capabilities" but this will be expanded to include things 
 * Scope: app
 
 **Parameters:**
+
 * **set** list of capabilities that will be removed from the process's capabilities bounding set
 
-```
+```json
 "name": "os/linux/capabilities-remove-set",
 "value": {
   "set": [
@@ -259,9 +261,10 @@ The first example is "capabilities" but this will be expanded to include things 
 * Scope: app
 
 **Parameters:**
+
 * **set** list of capabilities that will be retained in the process's capabilities bounding set
 
-```
+```json
 "name": "os/linux/capabilities-retain-set",
 "value": {
   "set": [
@@ -293,10 +296,11 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
+
 * **default** must be set to true and means that this limit applies to all block devices by default
 * **limit** read/write bytes per second
 
-```
+```json
 "name": "resource/block-bandwidth",
 "value": {
   "default": true,
@@ -309,10 +313,11 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
+
 * **default** must be set to true and means that this limit applies to all block devices by default
 * **limit** read/write input/output operations per second
 
-```
+```json
 "name": "resource/block-iops",
 "value": {
   "default": true,
@@ -325,10 +330,11 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
+
 * **request** milli-cores that are requested
 * **limit** milli-cores that can be consumed before the kernel temporarily throttles the process
 
-```
+```json
 "name": "resource/cpu",
 "value": {
   "request": "250",
@@ -343,10 +349,11 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
+
 * **request** bytes of memory that the app/pod is requesting to use and allocations over this request will be reclaimed in case of contention
 * **limit** bytes of memory that the app can allocate before the kernel considers the app/pod out of memory and stops allowing allocations.
 
-```
+```json
 "name": "resource/memory",
 "value": {
   "request": "1G",
@@ -359,10 +366,11 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 * Scope: app/pod
 
 **Parameters:**
+
 * **default** must be set to true and means that this bandwidth limit applies to all interfaces (except localhost) by default.
 * **limit** read/write bytes per second
 
-```
+```json
 "name": "resource/network-bandwidth",
 "value": {
   "default": true,
@@ -381,6 +389,7 @@ App Container Image Discovery prescribes a discovery process to retrieve an imag
 Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
 There are three URLs types:
+
 * Image URLs
 * Signature URLs
 * Public key URLs
@@ -565,6 +574,7 @@ An AC Kind value matching defined kinds, will have defined compatibility.
 There is no expected compatibility with undefined AC Kinds.
 
 Defined Kinds:
+
 * `ImageManifest`
 * `PodManifest`
 
@@ -586,7 +596,7 @@ An AC Version (`acVersion`) cannot be an empty string and must be in [semver](ht
 
 JSON Schema for the Image Manifest (app image manifest, ACI manifest), conforming to [RFC4627](https://tools.ietf.org/html/rfc4627)
 
-```
+```json
 {
     "acKind": "ImageManifest",
     "acVersion": "0.5.1",
@@ -773,7 +783,7 @@ Alternatively, an AppImage might specify a dependency with no image ID and no "v
 
 JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org/html/rfc4627)
 
-```
+```json
 {
     "acVersion": "0.5.1",
     "acKind": "PodManifest",
