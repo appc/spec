@@ -131,7 +131,7 @@ The shared context is defined as the conjunction of the following Linux namespac
 - IPC namespace
 - UTS namespace
 
-The context may also consist of one or more isolators.
+The context MAY also consist of one or more isolators.
 
 The definition of the **pod** - namely, the list of constituent apps, and any isolators that should apply to the entire pod - is codified in a [Pod Manifest](#pod-manifest-schema).
 Pod Manifests can serve the role of both _deployable template_ and _runtime manifest_: a template can be a candidate for a series of transformations before execution.
@@ -141,7 +141,7 @@ Pod Manifests also provide the ability to override application execution paramet
 
 A Pod Manifest must be fully resolved (_reified_) before execution.
 Specifically, a Pod Manifest must have all `mountPoint`s satisfied by `volume`s, and must reference all applications deterministically (by image ID).
-At runtime, the reified Pod Manifest is exposed to applications through the metadata service.
+At runtime, the reified Pod Manifest is exposed to applications through the [Metadata Service](#app-container-metadata-service).
 
 ## App Container Executor
 
@@ -199,7 +199,7 @@ Apps should log to stdout and stderr.
 The ACE is responsible for capturing and persisting the output.
 
 If the application detects other logging options, such as the `/run/systemd/system/journal` socket, it may optionally upgrade to using those mechanisms.
-Note that logging mechanisms other than stdout and stderr are not required by this specification (or tested by the compliance tests).
+Note that logging mechanisms other than stdout and stderr are not required by this specification (and are not tested during compliancy verifications).
 
 ### Apps Perspective
 
@@ -215,6 +215,7 @@ The following environment variables MUST be set for each application's main proc
 * **AC_METADATA_URL** URL where the [metadata service](#app-container-metadata-service) for this pod can be found.
 
 An executor MAY set additional environment variables for the application processes.
+`$PATH` MAY contain more directories than the ones listed.
 
 Additionally, processes must have their **working directory** set to the value of the application's **workingDirectory** option, if specified, or the root of the application image by default.
 
@@ -831,7 +832,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
                     }
                 ]
             },
-            "app:" {
+            "app": {
                 "exec": [
                     "/bin/reduce-backup"
                 ],
