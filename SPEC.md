@@ -97,9 +97,9 @@ An example App Container Image builder is [actool](https://github.com/appc/spec/
 
 ### Image ID
 
-An image is addressed and verified against the hash of its uncompressed tar file, the _image ID_.
+An image is addressed and verified against the hash of its uncompressed tar file, known as its _image ID_.
 The image ID provides a way to uniquely and globally reference an image, and verify its integrity at any point.
-The default digest format is sha512, but all hash IDs in this format are prefixed by the algorithm used (e.g. sha512-a83...).
+An image ID is canonically represented as a string prefixed by the algorithm used (e.g. sha512-a83...): this format and the allowed hash algorithms are defined by the [Image ID Type](#image-id-type).
 
 ```bash
 echo sha512-$(sha512sum reduce-worker.tar | awk '{print $1}')
@@ -587,7 +587,13 @@ An AC Version (`acVersion`) for [Image Manifest](#image-manifest-schema) and [Po
 An AC Version (`acVersion`) cannot be an empty string and must be in [semver](http://semver.org/) format.
 
 
-#### Isolator Type
+### Image ID Type
+
+An Image ID Type must be a string of the format "hash-value", where "hash" is the hash algorithm used and "value" is the hex encoded string of the digest.
+Currently the only permitted hash algorithm is `sha512`.
+
+
+### Isolator Type
 
 An Isolator Type must be a JSON object with two required fields: "name" and "value".
 "name" must be a string restricted to [AC Name](#ac-name-type) formatting.
@@ -757,7 +763,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         * **socketActivated** (boolean, optional, defaults to "false" if unsupplied) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this app. If multiple apps in the same pod are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
 * **dependencies** (list of objects, optional) dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies are retrieved.
     * **app** (string, required) name of the dependent App Container Image.
-    * **imageID** (string, optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
+    * **imageID** (string of type [Image ID](#image-id-type), optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels** (list of objects, optional) a list of the very same form as the aforementioned label objects in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (list of strings, optional) complete whitelist of paths that may exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). If a path ends in a slash, then the ACE must ensure that the directory is empty; if the image or a dependency contains files beneath this path, they will not be present in the rendered filesystem. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the app. An empty list is equivalent to an absent value and means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** (list of objects, optional) any extra metadata you wish to add to the image. Each object has two key-value pairs: the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string. Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
@@ -913,7 +919,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 * **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
     * **name** (string, required) name of the app (restricted to [AC Name](#ac-name-type) formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
     * **image** (object, required) identifiers of the image providing this app
-        * **id** (string, required) content hash of the image that this app will execute inside of (must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
+        * **id** (string of type [Image ID](#image-id-type), required) content hash of the image that this app will execute inside of
         * **name** (string, optional) name of the image (restricted to [AC Name](#ac-name-type) formatting)
         * **labels** (list of objects, optional) additional labels characterizing the image
     * **app** (object, optional) substitute for the app object of the referred image's ImageManifest. See [Image Manifest Schema](#image-manifest-schema) for what the app object contains.
