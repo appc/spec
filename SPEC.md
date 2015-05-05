@@ -190,8 +190,8 @@ In this case, the executor will bind mount the host's `/opt/tenant1/work` direct
 
 #### Network Setup
 
-A Pod must have a [layer 3](http://en.wikipedia.org/wiki/Network_layer) (commonly called the IP layer) network interface, which can be instantiated in any number of ways (e.g. veth, macvlan, ipvlan, device pass-through).
-The network interface MUST be configured with an IPv4/IPv6 address that is reachable from other pods.
+A Pod must have a loopback network interface and zero or more [layer 3](http://en.wikipedia.org/wiki/Network_layer) (commonly called the IP layer) network interfaces, which can be instantiated in any number of ways (e.g. veth, macvlan, ipvlan, device pass-through).
+Each network interface MUST be configured with one or more IPv4 and/or IPv6 addresses.
 
 #### Logging
 
