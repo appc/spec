@@ -491,12 +491,11 @@ For example, some implementations might only perform HTTP basic authentication o
 ## App Container Metadata Service
 
 For a variety of reasons, it is desirable to not write files to the filesystem in order to run an App Container:
-* Secrets can be kept outside of the app (such as the identity endpoint specified below)
-* Writing files leads to assumptions like a libc environment attempting parse `/etc/hosts`
+* Secrets can be kept outside of the app
 * The app can be run on top of a cryptographically secured read-only filesystem
 * Metadata is a proven system for virtual machines
 
-The App Container specification defines an HTTP-based metadata service for providing metadata to applications.
+The App Container specification defines an HTTP-based metadata service for providing metadata to applications, as well as an [identity endpoint](#identity-endpoint).
 
 ### Metadata Service
 
