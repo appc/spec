@@ -921,7 +921,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
     * **kind** (string, required) either "empty" or "host". "empty" fulfills a mount point by ensuring the path exists (i.e., writes go to the app's chroot). "host" fulfills a mount point with a bind mount from a **source**.
     * **source** (string, required if **kind** is "host") absolute path on host to be bind mounted under a mount point in each app's chroot.
     * **readOnly** (boolean, optional if **kind** is "host", defaults to "false" if unsupplied) whether or not the volume will be mounted read only.
-* **isolators** (list of objects, optional) list of isolators that will apply to all apps in this pod. Each object has two key value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** can be a freeform string)
+* **isolators** (list of objects, optional) list of isolators that will apply to this pod. Each object has two key value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** can be a freeform string)
 * **annotations** (list of objects, optional) arbitrary metadata the executor will make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
 * **ports** (list of objects, optional) list of ports that will be exposed on the host.
     * **name** (string, required) name of the port in the image manifest that will be exposed on the host (restricted to the [AC Name](#ac-name-type) formatting).
