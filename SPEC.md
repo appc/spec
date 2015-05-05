@@ -831,7 +831,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
                     }
                 ]
             },
-            "app:" {
+            "app": {
                 "exec": [
                     "/bin/reduce-backup"
                 ],
@@ -879,7 +879,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
             "name": "work",
             "kind": "host",
             "source": "/opt/tenant1/work",
-            "readOnly": true,
+            "readOnly": true
         }
     ],
     "isolators": [
@@ -888,7 +888,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
             "value": {
                 "limit": "4G"
             }
-        },
+        }
     ],
     "annotations": [
         {
