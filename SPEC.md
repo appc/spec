@@ -282,10 +282,10 @@ If **request** is omitted, it defaults to the value of **limit**.
 - **limit** is the maximum amount of a resource available to the app/pod.
 If the app/pod consumes a resource in excess of its limit, it must be terminated or throttled to no more than the limit.
 
-Limit and request values will always be of a resource type's natural base units (e.g., bytes, not MB).
-These quantities may either be unsuffixed, have suffices (E, P, T, G, M, K, m) or power-of-two suffices (Ei, Pi, Ti, Gi, Mi, Ki).
-For example, the following represent roughly the same value: 128974848, "129e6", "129M" , "123Mi".
-Small quantities can be represented directly as decimals (e.g., 0.3), or using milli-units (e.g., "300m").
+Limit and request quantities must always be represented internally (i.e. for encoding and any processing) as an integer value (i.e. NOT floating point) in a resource type's natural base units (e.g., bytes, not megabytes or gigabytes).
+For convenience, when specified by users quantities may either be unsuffixed, have metric suffices (E, P, T, G, M, K) or binary (power-of-two) suffices (Ei, Pi, Ti, Gi, Mi, Ki).
+For example, the following strings represent the same value: "128974848", "125952Ki", "123Mi".
+Sub-units (e.g. decimals, "0.3", or milli-units, "300m") are NOT permissible.
 
 #### resource/block-bandwidth
 
