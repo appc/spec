@@ -226,9 +226,6 @@ Any isolators applied to the pod will _bound_ any individual isolators applied t
 Some well known isolators can be verified by the specification.
 Additional isolators will be added to this specification over time.
 
-An isolator is a JSON object with two required fields: "name" and "value".
-"name" is a string restricted to [AC Name](#ac-name-type) formatting. "value" can be an arbitrary JSON value.
-
 An executor MAY ignore isolators that it does not understand and run the pod without them.
 But, an executor MUST make information about which isolators were ignored, enforced or modified available to the user.
 An executor MAY implement a "strict mode" where an image cannot run unless all isolators are in place.
@@ -589,6 +586,14 @@ An AC Version (`acVersion`) must reference a tagged version of the App Container
 An AC Version (`acVersion`) for [Image Manifest](#image-manifest-schema) and [Pod Manifest](#pod-manifest-schema) schemas must be compatible on major AC version series.
 An AC Version (`acVersion`) cannot be an empty string and must be in [semver](http://semver.org/) format.
 
+
+#### Isolator Type
+
+An Isolator Type must be a JSON object with two required fields: "name" and "value".
+"name" must be a string restricted to [AC Name](#ac-name-type) formatting.
+"value" may be an arbitrary JSON value.
+
+
 ## Manifest Schemas
 
 ### Image Manifest Schema
@@ -745,8 +750,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         * **post-stop** - executed if the main **exec** process is killed. This can be used to cleanup resources in the case of clean application shutdown, but cannot be relied upon in the face of machine failure.
     * **workingDirectory** (string, optional) working directory of the launched application, relative to the application image's root (must be an absolute path, defaults to "/", ACE can override). If the directory does not exist in the application's assembled rootfs (including any dependent images and mounted volumes), the ACE must fail execution.
     * **environment** (list of objects, optional) represents the app's environment variables (ACE can append). The listed objects must have two key-value pairs: **name** and **value**. The **name** must consist solely of letters, digits, and underscores '_' as outlined in [IEEE Std 1003.1-2001](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html). The **value** is an arbitrary string.  These values are not evaluated in any way, and no substitutions are made.
-    * **isolators** (list of objects, optional) list of isolation steps that SHOULD be applied to the app.
-        * **name** is restricted to the [AC Name](#ac-name-type) formatting
+    * **isolators** (list of objects of type [Isolator](#isolator-type), optional) list of isolation steps that SHOULD be applied to the app.
     * **mountPoints** (list of objects, optional) locations where an app is expecting external data to be mounted. The listed objects contain the following key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it is to be mounted inside the rootfs. The name is restricted to the [AC Name](#ac-name-type) Type formatting. **readOnly** is a boolean indicating whether or not the mount point will be read-only (defaults to "false" if unsupplied).
     * **ports** (list of objects, optional) are protocols and port numbers that the app will be listening on once started. All of the keys in the listed objects are restricted to the [AC Name](#ac-name-type) formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
         * **count** (integer, optional, defaults to 1) specifies a range of ports, starting with "port" and ending with "port" + "count" - 1.
@@ -922,7 +926,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
     * **kind** (string, required) either "empty" or "host". "empty" fulfills a mount point by ensuring the path exists (i.e., writes go to the app's chroot). "host" fulfills a mount point with a bind mount from a **source**.
     * **source** (string, required if **kind** is "host") absolute path on host to be bind mounted under a mount point in each app's chroot.
     * **readOnly** (boolean, optional if **kind** is "host", defaults to "false" if unsupplied) whether or not the volume will be mounted read only.
-* **isolators** (list of objects, optional) list of isolators that will apply to this pod. Each object has two key value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** can be a freeform string)
+* **isolators** (list of objects of type [Isolator](#isolator-type), optional) list of isolation steps that will apply to this pod.
 * **annotations** (list of objects, optional) arbitrary metadata the executor will make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
 * **ports** (list of objects, optional) list of ports that will be exposed on the host.
     * **name** (string, required) name of the port in the image manifest that will be exposed on the host (restricted to the [AC Name](#ac-name-type) formatting).
