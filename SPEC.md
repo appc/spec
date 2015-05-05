@@ -552,6 +552,8 @@ Accessible at `$AC_METADATA_URL/acMetadata/v1/pod/hmac`
 
 ### AC Name Type
 
+Abbreviated reference as `acName`.
+
 An AC Name Type is restricted to lowercase characters accepted by the DNS [RFC1123](http://tools.ietf.org/html/rfc1123#page-13) and "/".
 An AC Name Type cannot be an empty string and must begin and end with an alphanumeric character.
 An AC Name Type will match the following [RE2](https://code.google.com/p/re2/wiki/Syntax) regular expression: `^[a-z0-9]+([-./][a-z0-9]+)*$`
@@ -569,6 +571,8 @@ The schema validator will ensure that the keys conform to these constraints.
 
 ### AC Kind Type
 
+Abbreviated reference as `acKind`.
+
 An AC Kind cannot be an empty string and must be alphanumeric characters.
 An AC Kind value matching defined kinds, will have defined compatibility.
 There is no expected compatibility with undefined AC Kinds.
@@ -581,14 +585,16 @@ Defined Kinds:
 
 ### AC Version Type
 
+Abbreviated reference as `acVersion`.
+
 The App Container specification aims to follow semantic versioning and retain forward and backwards compatibility within major versions.
 For example, if an implementation is compliant against version 1.0.1 of the spec, it is compatible with the complete 1.x series.
 
 The version of the App Container specification and associated tooling is recorded in [VERSION](https://github.com/appc/spec/blob/master/VERSION), and is otherwise denoted in the [release version](https://github.com/appc/spec/releases) or git version control tag. 
 
-An AC Version (`acVersion`) must reference a tagged version of the App Container specification, not exceeding the version of its greatest compliance.
-An AC Version (`acVersion`) for [Image Manifest](#image-manifest-schema) and [Pod Manifest](#pod-manifest-schema) schemas must be compatible on major AC version series.
-An AC Version (`acVersion`) cannot be an empty string and must be in [semver](http://semver.org/) format.
+An AC Version must reference a tagged version of the App Container specification, not exceeding the version of its greatest compliance.
+An AC Version for [Image Manifest](#image-manifest-schema) and [Pod Manifest](#pod-manifest-schema) schemas must be compatible on major AC version series.
+An AC Version cannot be an empty string and must be in [semver](http://semver.org/) format.
 
 ## Manifest Schemas
 
@@ -734,7 +740,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "ImageManifest"
 * **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
-* **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the AC Name formatting)
+* **name** (string, required) used as a human readable index to the App Container Image. (string, restricted to the [AC Name formatting](#ac-name-type))
 * **labels** (list of objects, optional) used during image discovery and dependency resolution. The listed objects must have two key-value pairs: *name* is restricted to the AC Name formatting and *value* is an arbitrary string. Label names must be unique within the list, and (to avoid confusion with the image's name) cannot be "name". Several well-known labels are defined:
     * **version** when combined with "name", this should be unique for every build of an app (on a given "os"/"arch" combination).
     * **os**, **arch** can together be considered to describe the syscall ABI this image requires. **arch** is meaningful only if **os** is provided. If one or both values are not provided, the image is assumed to be OS- and/or architecture-independent. Currently supported combinations are listed in the [`types.ValidOSArch`](schema/types/labels.go) variable, which can be updated by an implementation that supports other combinations. The combinations whitelisted by default are (in format `os/arch`): `linux/amd64`, `linux/i386`, `freebsd/amd64`, `freebsd/i386`, `freebsd/arm`, `darwin/x86_64`, `darwin/i386`. See the [Operating System spec](OS-SPEC.md) for the environment apps can expect to run in given a known **os** label.
@@ -908,7 +914,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 * **acVersion** (string, required) represents the version of the schema specification [AC Version Type](#ac-version-type)
 * **acKind** (string, required) must be an [AC Kind](#ac-kind-type) of value "PodManifest"
 * **apps** (list of objects, required) list of apps that will execute inside of this pod. Each app object has the following set of key-value pairs:
-    * **name** (string, required) name of the app (restricted to AC Name formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
+    * **name** (string, required) name of the app (restricted to [AC Name formatting](#ac-name-type)). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
     * **image** (object, required) identifiers of the image providing this app
         * **id** (string, required) content hash of the image that this app will execute inside of (must be of the format "type-value", where "type" is "sha512" and value is the hex encoded string of the hash)
         * **name** (string, optional) name of the image (restricted to AC Name formatting)
