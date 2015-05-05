@@ -125,7 +125,7 @@ The deployable, executable unit in the App Container specification is the **pod*
 A **pod** is a list of apps that will be launched together inside a shared execution context.
 The execution context can be defined as the conjunction of several Linux namespaces (or equivalents on other operating systems):
 
-- PID namespace (apps within the pod can see each other's processes)
+- PID namespace (apps within the pod can see and signal each other's processes)
 - network namespace (apps within the pod have access to the same IP and port space)
 - IPC namespace (apps within the pod can use SystemV IPC or POSIX message queues to communicate)
 - UTS namespace (apps within the pod share a hostname)
