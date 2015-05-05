@@ -771,7 +771,7 @@ If any labels are specified in the dependency, they are passed to the image disc
 If the image discovery process successfully returns an image, it will be compared as follows.
 If the dependency specification has an image ID, it will be compared against the hash of image returned, and must match.
 Otherwise, the labels in the dependency specification are compared against the labels in the retrieved ACI (i.e. in its ImageManifest), and must match.
-A label is considered to match if it meets one of three criteria:
+A label is considered to match if it meets one of two criteria:
 - It is present in the dependency specification and present in the dependency's ImageManifest with the same value.
 - It is absent from the dependency specification and present in the dependency's ImageManifest, with any value.
 This facilitates "wildcard" matching and a variety of common usage patterns, like "noarch" or "latest" dependencies.
