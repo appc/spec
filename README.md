@@ -97,7 +97,7 @@ drwxrwxr-x 1000/1000         0 2014-12-10 10:36 rootfs/bin
 
 and verify that the manifest was embedded appropriately
 ```
-tar xf /tmp/my-app.aci manifest -O | python -m json.tool
+$ tar xf /tmp/my-app.aci manifest -O | python -m json.tool
 {
     "acKind": "ImageManifest",
     "acVersion": "0.5.1",
@@ -185,7 +185,7 @@ app_layout/: valid image layout
 To override the type detection and force `actool validate` to validate as a particular type (image, layout or manifest), use the `--type` flag:
 
 ```
-actool -debug validate -type appimage hello.aci
+$ actool -debug validate -type appimage hello.aci
 hello.aci: valid app container image
 ```
 
