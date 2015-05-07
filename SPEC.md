@@ -210,6 +210,7 @@ The following environment variables MUST be set for each application's main proc
 * **USER, LOGNAME** username of the user executing this app
 * **HOME** home directory of the user
 * **SHELL** login shell of the user
+* **TERM** terminal type if app is started on a tty/pty device; if application inherits stdio from host and it is a terminal, `$TERM` is copied from host environment.
 * **AC_APP_NAME** name of the application, as defined in the image manifest
 * **AC_METADATA_URL** URL where the [metadata service](#app-container-metadata-service) for this pod can be found.
 
