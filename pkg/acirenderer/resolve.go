@@ -52,7 +52,7 @@ func createDepList(key string, ap ACIRegistry) (Images, error) {
 				}
 			} else {
 				var err error
-				depKey, err = ap.GetACI(d.App, d.Labels)
+				depKey, err = ap.GetACI(d.ImageName, d.Labels)
 				if err != nil {
 					return nil, err
 				}

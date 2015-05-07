@@ -383,10 +383,12 @@ Sub-units (e.g. decimals, "0.3", or milli-units, "300m") are NOT permissible.
 
 ## App Container Image Discovery
 
-An app name has a URL-like structure, for example `example.com/reduce-worker`.
-However, there is no scheme on this app name, so it cannot be directly resolved to an App Container Image URL.
-Furthermore, attributes other than the name may be required to unambiguously identify an app (version, OS and architecture).
-App Container Image Discovery prescribes a discovery process to retrieve an image based on the app name and these attributes.
+An App Container Image name has a URL-like structure, for example `example.com/reduce-worker`.
+However, there is no scheme on this name, so it cannot be directly resolved to an App Container Image URL.
+Furthermore, attributes other than the name may be required to unambiguously identify an image (version, OS and architecture).
+These attributes are expressed in the **labels** field of the [Image Manifest](#image-manifest-schema).
+App Container Image Discovery prescribes a discovery process to retrieve an image based on the name and these attributes.
+
 Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
 There are three URLs types:
@@ -407,7 +409,7 @@ The simple discovery template is:
 
 First, try to fetch the App Container Image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
 
-For example, given the app `{name}`: `example.com/reduce-worker`, with `{version}`: `1.0.0`, `{arch}`: `amd64`, and `{os}`: `linux`, try to retrieve:
+For example, given the image `{name}`: `example.com/reduce-worker`, with `{version}`: `1.0.0`, `{arch}`: `amd64`, and `{os}`: `linux`, try to retrieve:
 
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci
 
@@ -420,7 +422,7 @@ Simple discovery does not provide a way to discover Public Keys.
 
 ### Meta Discovery
 
-If simple discovery fails, then we use HTTPS+HTML `meta` tags retrieved from a "discovery URL" to resolve an app name to downloadable URLs.
+If simple discovery fails, then we use HTTPS+HTML `meta` tags retrieved from a "discovery URL" to resolve an image name to downloadable URLs.
 
 The template for the discovery URL is:
 
@@ -452,10 +454,10 @@ When evaluating `ac-discovery` tags, the client MUST first ensure that the prefi
 
 ```bash
 urltmpl="https://{name}-{version}-{os}-{arch}.{ext}"
-curl $(echo "$urltmpl" | sed -e "s/{name}/$appname/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
+curl $(echo "$urltmpl" | sed -e "s/{name}/$name/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
-where _appname_, _version_, _os_, and _arch_ are set to their respective values for the application, and _ext_ is either `aci` or `aci.asc` for retrieving an App Container Image or signature respectively.
+where _name_, _version_, _os_, and _arch_ are set to their respective values for the image, and _ext_ is either `aci` or `aci.asc` for retrieving an App Container Image or signature respectively.
 
 Note that multiple `ac-discovery` tags MAY be returned for a given prefix-match (for example, with different scheme names representing different transport mechanisms).
 In this case, the client implementation MAY choose which to use at its own discretion.
@@ -703,7 +705,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
     },
     "dependencies": [
         {
-            "app": "example.com/reduce-worker-base",
+            "imageName": "example.com/reduce-worker-base",
             "imageID": "sha512-...",
             "labels": [
                 {
@@ -765,8 +767,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         * **count** (integer, optional, defaults to 1) specifies a range of ports, starting with "port" and ending with "port" + "count" - 1.
         * **socketActivated** (boolean, optional, defaults to "false" if unsupplied) if set to true, the application expects to be [socket activated](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) on these ports. The ACE must pass file descriptors using the [socket activation protocol](http://www.freedesktop.org/software/systemd/man/sd_listen_fds.html) that are listening on these ports when starting this app. If multiple apps in the same pod are using socket activation then the ACE must match the sockets to the correct apps using getsockopt() and getsockname().
 * **dependencies** (list of objects, optional) dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies are retrieved.
-    * **app** (string, required) name of the dependent App Container Image.
-    * **imageID** (string of type [Image ID](#image-id-type), optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
+    * **imageName** (string of type [AC Name](#ac-name-type), required) name of the dependent App Container Image.
+    * **imageID** (string of type [Image ID](#image-id-type), optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Container Image that has dependencies.
     * **labels** (list of objects, optional) a list of the very same form as the aforementioned label objects in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (list of strings, optional) whitelist of absolute paths that will exist in the app's rootfs after rendering. This must be a complete and absolute set. An empty list is equivalent to an absent value and means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** (list of objects, optional) any extra metadata you wish to add to the image. Each object has two key-value pairs: the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string. Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
@@ -777,8 +779,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 
 #### Dependency Matching
 
-Dependency matching is based on a combination of the three different fields of the dependency - **app**, **imageID**, and **labels**.
-First, the image discovery mechanism is used to locate a dependency.
+Dependency matching is based on a combination of the three different fields of the dependency - **imageName**, **imageID**, and **labels**.
+First, the image discovery mechanism is used to locate a dependency based on the **imageName**.
 If any labels are specified in the dependency, they are passed to the image discovery mechanism, and will be used when locating the image.
 
 If the image discovery process successfully returns an image, it will be compared as follows.
@@ -788,8 +790,8 @@ A label is considered to match if it meets one of two criteria:
 - It is present in the dependency specification and present in the dependency's ImageManifest with the same value.
 - It is absent from the dependency specification and present in the dependency's ImageManifest, with any value.
 This facilitates "wildcard" matching and a variety of common usage patterns, like "noarch" or "latest" dependencies.
-For example, an AppImage containing a set of bash scripts might omit both "os" and "arch", and hence could be used as a dependency by a variety of different AppImages.
-Alternatively, an AppImage might specify a dependency with no image ID and no "version" label, and the image discovery mechanism could always retrieve the latest version of an AppImage
+For example, an ACI containing a set of bash scripts might omit both "os" and "arch", and hence could be used as a dependency by a variety of different ACIs.
+Alternatively, an ACI might specify a dependency with no image ID and no "version" label, and the image discovery mechanism could always retrieve the latest version of an ACI.
 
 ### Pod Manifest Schema
 
