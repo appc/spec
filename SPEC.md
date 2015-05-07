@@ -168,8 +168,16 @@ This UUID is exposed to the pod through the [Metadata Service](#app-container-me
 
 #### Filesystem Setup
 
-Every execution of an app MUST start from a clean copy of its image (ACI).
-The simplest implementation will take an ACI with no dependencies and extract it into a new directory:
+Each app in a pod will start chrooted into its own unique read-write filesystem before execution.
+
+An app's filesystem must be *rendered* in an empty directory by the following process (or equivalent):
+- The `rootfs` contained in the ACI is extracted
+- If the ACI contains a non-empty `dependencies` field in its `ImageManifest`, the `rootfs` of each dependent image is extracted, in the order in which they are listed
+- If the ACI contains a non-empty `pathWhitelist` field in its `ImageManifest`, *all* paths not in the whitelist must be removed
+
+Every execution of an app MUST start from a clean copy of this rendered filesystem.
+
+The simplest implementation will take an ACI (with no dependencies) and extract it into a new directory:
 
 ```bash
 cd $(mktemp -d -t temp.XXXX)
@@ -179,8 +187,6 @@ tar xzvf /var/lib/pce/hello.aci -C hello
 
 Other implementations could increase performance and de-duplicate data by building on top of overlay filesystems, copy-on-write block devices, or a content-addressed file store.
 These details are orthogonal to the runtime environment.
-
-Each app in a pod will start chrooted into its own unique read-write rootfs before execution.
 
 #### Volume Setup
 
@@ -755,7 +761,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         * **pre-start** - executed and must exit before the long running main **exec** binary is launched
         * **post-stop** - executed if the main **exec** process is killed. This can be used to cleanup resources in the case of clean application shutdown, but cannot be relied upon in the face of machine failure.
     * **workingDirectory** (string, optional) working directory of the launched application, relative to the application image's root (must be an absolute path, defaults to "/", ACE can override). If the directory does not exist in the application's assembled rootfs (including any dependent images and mounted volumes), the ACE must fail execution.
-    * **environment** (list of objects, optional) represents the app's environment variables (ACE can append). The listed objects must have two key-value pairs: **name** and **value**. The **name** must consist solely of letters, digits, and underscores '_' as outlined in [IEEE Std 1003.1-2001](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html). The **value** is an arbitrary string.  These values are not evaluated in any way, and no substitutions are made.
+    * **environment** (list of objects, optional) represents the app's environment variables (ACE can append). The listed objects must have two key-value pairs: **name** and **value**. The **name** must consist solely of letters, digits, and underscores '_' as outlined in [IEEE Std 1003.1-2001](http://pubs.opengroup.org/onlinepubs/009695399/basedefs/xbd_chap08.html). The **value** is an arbitrary string. These values are not evaluated in any way, and no substitutions are made.
     * **isolators** (list of objects of type [Isolator](#isolator-type), optional) list of isolation steps that SHOULD be applied to the app.
     * **mountPoints** (list of objects, optional) locations where an app is expecting external data to be mounted. The listed objects contain the following key-value pairs: the **name** indicates an executor-defined label to look up a mount point, and the **path** stipulates where it is to be mounted inside the rootfs. The name is restricted to the [AC Name](#ac-name-type) Type formatting. **readOnly** is a boolean indicating whether or not the mount point will be read-only (defaults to "false" if unsupplied).
     * **ports** (list of objects, optional) are protocols and port numbers that the app will be listening on once started. All of the keys in the listed objects are restricted to the [AC Name](#ac-name-type) formatting. This information is to help the user discover the listening ports of the application and to specify the ports that can be exposed on the host. It could also optionally be used to limit the inbound connections to the container via firewall rules to only ports that are explicitly exposed.
@@ -765,7 +771,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
     * **app** (string, required) name of the dependent App Container Image.
     * **imageID** (string of type [Image ID](#image-id-type), optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Image that has dependencies.
     * **labels** (list of objects, optional) a list of the very same form as the aforementioned label objects in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
-* **pathWhitelist** (list of strings, optional) complete whitelist of paths that may exist in the rootfs after assembly (i.e. unpacking the files in this image and overlaying its dependencies, in order). If a path ends in a slash, then the ACE must ensure that the directory is empty; if the image or a dependency contains files beneath this path, they will not be present in the rendered filesystem. This field is only required if the app has dependencies and you wish to remove files from the rootfs before running the app. An empty list is equivalent to an absent value and means that all files in this image and any dependencies will be available in the rootfs.
+* **pathWhitelist** (list of strings, optional) whitelist of absolute paths that will exist in the app's rootfs after rendering. This must be a complete and absolute set. An empty list is equivalent to an absent value and means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** (list of objects, optional) any extra metadata you wish to add to the image. Each object has two key-value pairs: the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string. Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
     * **created** date on which the image was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
     * **authors** contact details of the people or organization responsible for the image (freeform string)
