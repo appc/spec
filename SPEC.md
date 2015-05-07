@@ -122,16 +122,16 @@ An optional *path whitelist* can be provided, in which case all non-specified fi
 ## App Container Pods (pods)
 
 The deployable, executable unit in the App Container specification is the **pod**.
-A **pod** is a list of apps that will be launched together inside a shared context.
-The shared context is defined as the conjunction of the following Linux namespaces (or equivalents on other operating systems):
+A **pod** is a list of apps that will be launched together inside a shared execution context.
+The execution context can be defined as the conjunction of several Linux namespaces (or equivalents on other operating systems):
 
-- PID namespace
-- network namespace
-- mount namespace
-- IPC namespace
-- UTS namespace
+- PID namespace (apps within the pod can see and signal each other's processes)
+- network namespace (apps within the pod have access to the same IP and port space)
+- IPC namespace (apps within the pod can use SystemV IPC or POSIX message queues to communicate)
+- UTS namespace (apps within the pod share a hostname)
 
-The context may also consist of one or more isolators.
+The context may include shared volumes, which are defined at the pod level and must be made available in each app's filesystem.
+The context may additionally consist of one or more [isolators](#isolators).
 
 The definition of the **pod** - namely, the list of constituent apps, and any isolators that apply to the entire pod - is codified in a [Pod Manifest](#pod-manifest-schema).
 Pod Manifests can serve the role of both _deployable template_ and _runtime manifest_: a template can be a candidate for a series of transformations before execution.
