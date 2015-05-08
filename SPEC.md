@@ -244,7 +244,7 @@ The first example is "capabilities" but this will be expanded to include things 
 
 **Parameters:**
 
-* **set** list of capabilities that will be removed from the process's capabilities bounding set
+* **set** list of capabilities that will be removed from the process's capabilities bounding set, all others will be included.
 
 ```json
 "name": "os/linux/capabilities-remove-set",
@@ -261,7 +261,7 @@ The first example is "capabilities" but this will be expanded to include things 
 
 **Parameters:**
 
-* **set** list of capabilities that will be retained in the process's capabilities bounding set
+* **set** list of capabilities that will be retained in the process's capabilities bounding set, all others will be removed
 
 ```json
 "name": "os/linux/capabilities-retain-set",
