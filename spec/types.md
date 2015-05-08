@@ -2,18 +2,34 @@
 
 Several schema types are shared between the different parts of the specification and are defined below.
 
-### AC Name Type
+### AC Identifier Type
 
-An AC Name Type is restricted to lowercase characters accepted by the DNS [RFC1123](http://tools.ietf.org/html/rfc1123#page-13) and "/".
-An AC Name Type cannot be an empty string and must begin and end with an alphanumeric character.
-An AC Name Type will match the following [RE2](https://code.google.com/p/re2/wiki/Syntax) regular expression: `^[a-z0-9]+([-./][a-z0-9]+)*$`
+An AC Identifier Type is restricted to lowercase URI unreserved characters defined in [RFC3986](http://tools.ietf.org/html/rfc3986#section-2.3)
+An AC Identifier Type cannot be an empty string and must begin and end with an alphanumeric character.
+An AC Identifier Type will match the following [RE2](https://code.google.com/p/re2/wiki/Syntax) regular expression: `^[a-z0-9]+([-._~/][a-z0-9]+)*$`
 
 Examples:
 
 * database
 * example.com/database
 * example.com/ourapp
+* example.com/~user/app_v1
 * sub-domain.example.com/org/product/release
+
+The AC Identifier Type is used as the primary key for a number of fields in the schemas that are in the global namespace, such as image names, image label keys and isolator names.
+The schema validator will ensure that the keys conform to these constraints.
+
+### AC Name Type
+
+An AC Name Type is restricted to numeric and lowercase characters accepted by the DNS [RFC1123](http://tools.ietf.org/html/rfc1123#page-13) plus "-".
+An AC Name Type cannot be an empty string and must begin and end with an alphanumeric character.
+An AC Name Type will match the following [RE2](https://code.google.com/p/re2/wiki/Syntax) regular expression: `^[a-z0-9]+([-][a-z0-9]+)*$`
+
+Examples:
+
+* database
+* product-database
+* product-database-release
 
 The AC Name Type is used as the primary key for a number of fields in the schemas below.
 The schema validator will ensure that the keys conform to these constraints.
@@ -52,7 +68,7 @@ Currently the only permitted hash algorithm is `sha512`.
 ### Isolator Type
 
 An Isolator Type must be a JSON object with two required fields: "name" and "value".
-"name" must be a string restricted to [AC Name](#ac-name-type) formatting.
+"name" must be a string restricted to [AC Identifier](#ac-identifier-type) formatting.
 "value" may be an arbitrary JSON value.
 
 
