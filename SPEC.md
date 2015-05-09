@@ -544,7 +544,7 @@ Accessible at `$AC_METADATA_URL/acMetadata/v1/pod/hmac`
 | Entry | Description |
 |-------|-------------|
 |sign   | POST a form with content=&lt;object to sign&gt; and retrieve a base64 hmac-sha512 signature as the response body. The metadata service holds onto the secret key as a sort of pod TPM. |
-|verify | Verify a signature from another pod. POST a form with content=&lt;object that was signed&gt;, uid=&lt;uid of the pod that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
+|verify | Verify a signature from another pod. POST a form with content=&lt;object that was signed&gt;, uuid=&lt;uuid of the pod that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
 
 
 ## Types
