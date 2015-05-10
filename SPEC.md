@@ -75,7 +75,7 @@ This set of formats makes it easy to build, host and secure an ACI using technol
 - Image archives MUST have only two top-level pathnames, `manifest` (a regular file) and `rootfs` (a directory). Image archives with additional files outside of `rootfs` are not valid.
 - All files in the image MUST maintain all of their original properties, including timestamps, Unix modes, and extended attributes (xattrs).
 - Image archives MAY be compressed with `gzip`, `bzip2`, or `xz`.
-- Image archives MAY be encrypted with AES symmetric encryption, after (optional) compression/encryption.
+- Image archives MAY be encrypted using PGP symmetric encryption with AES cipher, after optional compression.
 - Image archives SHOULD be signed using PGP, the format MUST be ascii-armored detached signature mode.
 - Image signatures MUST be named with the suffix `.aci.asc`.
 
