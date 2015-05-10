@@ -79,6 +79,8 @@ This set of formats makes it easy to build, host and secure an ACI using technol
 - Image archives SHOULD be signed using PGP, the format MUST be ascii-armored detached signature mode.
 - Image signatures MUST be named with the suffix `.aci.asc`.
 
+**Security Note**: Compressing the image will often change the image size significantly. When encryption is applied after compression, it could lead to information leakage, that would not have been revealed without compression, due to such observable difference. Implementations supporting compression SHOULD include an option to disable compression.
+
 The following example demonstrates the creation of a simple ACI using common command-line tools.
 In this case, the ACI is compressed, encrypted, and signed.
 
