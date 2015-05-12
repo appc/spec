@@ -168,6 +168,6 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
     * **readOnly** (boolean, optional if **kind** is "host", defaults to "false" if unsupplied) whether or not the volume will be mounted read only.
 * **isolators** (list of objects of type [Isolator](types.md#isolator-type), optional) list of isolation steps that will apply to this pod.
 * **annotations** (list of objects, optional) arbitrary metadata the executor will make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](types.md#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
-* **ports** (list of objects, optional) list of ports that will be exposed on the host.
-    * **name** (string, required) name of the port in the image manifest that will be exposed on the host (restricted to the [AC Name](types.md#ac-name-type) formatting).
-    * **hostPort** (integer, required) port number on the host that will be mapped to the container port.
+* **ports** (list of objects, optional) list of ports that SHOULD be exposed on the host.
+    * **name** (string, required, restricted to the [AC Name](#ac-name-type) formatting) name of the port to be exposed on the host. This field is a key referencing by name ports specified in the Image Manifest(s) of the app(s) within this Pod Manifest; consequently, port names MUST be unique among apps within a pod.
+    * **hostPort** (integer, required) port number on the host that will be mapped to the application port.
