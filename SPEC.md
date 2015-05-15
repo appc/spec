@@ -675,7 +675,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
             {
                 "name": "os/linux/capabilities-retain-set",
                 "value": {
-                    "set": ["CAP_NET_BIND_SERVICE", "CAP_SYS_ADMIN"]
+                    "set": ["CAP_NET_BIND_SERVICE"]
                 }
             }
         ],
