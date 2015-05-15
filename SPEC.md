@@ -132,8 +132,8 @@ The execution context can be defined as the conjunction of several Linux namespa
 - IPC namespace (apps within the pod can use SystemV IPC or POSIX message queues to communicate)
 - UTS namespace (apps within the pod share a hostname)
 
-The context may include shared volumes, which are defined at the pod level and must be made available in each app's filesystem.
-The context may additionally consist of one or more [isolators](#isolators).
+The context MAY include shared volumes, which are defined at the pod level and must be made available in each app's filesystem.
+The context MAY additionally consist of one or more [isolators](#isolators).
 
 The definition of the **pod** - namely, the list of constituent apps, and any isolators that apply to the entire pod - is codified in a [Pod Manifest](#pod-manifest-schema).
 Pod Manifests can serve the role of both _deployable template_ and _runtime manifest_: a template can be a candidate for a series of transformations before execution.
@@ -206,7 +206,7 @@ Each network interface MUST be configured with one or more IPv4 and/or IPv6 addr
 Apps SHOULD log to stdout and stderr.  The ACE is responsible for capturing and persisting this output.
 
 If the application detects other logging options, such as the `/run/systemd/system/journal` socket, it may optionally upgrade to using those mechanisms.
-Note that logging mechanisms other than stdout and stderr are not required by this specification (or tested by the compliance tests).
+Note that logging mechanisms other than stdout and stderr are not required by this specification (and are not tested during compliancy verifications).
 
 ### Apps Perspective
 
