@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -32,13 +33,16 @@ func init() {
 	httpGet = c.Get
 }
 
-func httpsOrHTTP(name string, insecure bool) (urlStr string, body io.ReadCloser, err error) {
-	fetch := func(scheme string) (urlStr string, res *http.Response, err error) {
+func httpsOrHTTP(name string, httpPort uint, httpsPort uint, insecure bool) (urlStr string, body io.ReadCloser, err error) {
+	fetch := func(scheme string, port uint) (urlStr string, res *http.Response, err error) {
 		u, err := url.Parse(scheme + "://" + name)
 		if err != nil {
 			return "", nil, err
 		}
 		u.RawQuery = "ac-discovery=1"
+		if port != 0 {
+			u.Host += ":" + strconv.FormatUint(uint64(port), 10)
+		}
 		urlStr = u.String()
 		res, err = httpGet(urlStr)
 		return
@@ -48,11 +52,11 @@ func httpsOrHTTP(name string, insecure bool) (urlStr string, body io.ReadCloser,
 			res.Body.Close()
 		}
 	}
-	urlStr, res, err := fetch("https")
+	urlStr, res, err := fetch("https", httpsPort)
 	if err != nil || res.StatusCode != http.StatusOK {
 		if insecure {
 			closeBody(res)
-			urlStr, res, err = fetch("http")
+			urlStr, res, err = fetch("http", httpPort)
 		}
 	}
 

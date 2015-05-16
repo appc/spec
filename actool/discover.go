@@ -13,14 +13,20 @@ var (
 		Name:        "discover",
 		Description: "Discover the download URLs for an app",
 		Summary:     "Discover the download URLs for one or more app container images",
-		Usage:       "APP...",
+		Usage:       "[--http-port PORT] [--https-port PORT] [--insecure] APP...",
 		Run:         runDiscover,
 	}
+	flagHttpPort  uint
+	flagHttpsPort uint
 )
 
 func init() {
 	cmdDiscover.Flags.BoolVar(&transportFlags.Insecure, "insecure", false,
 		"Allow insecure non-TLS downloads over http")
+	cmdDiscover.Flags.UintVar(&flagHttpPort, "http-port", 0,
+		"Port to connect when performing discovery using HTTP. If unset or set to 0, defaults to 80. Sets insecure.")
+	cmdDiscover.Flags.UintVar(&flagHttpsPort, "https-port", 0,
+		"Port to connect when performing discovery HTTPS. If unset or set to 0, defaults to 443.")
 }
 
 func runDiscover(args []string) (exit int) {
@@ -40,7 +46,10 @@ func runDiscover(args []string) (exit int) {
 			stderr("%s: %s", name, err)
 			return 1
 		}
-		eps, attempts, err := discovery.DiscoverEndpoints(*app, transportFlags.Insecure)
+		if flagHttpPort != 0 {
+			transportFlags.Insecure = true
+		}
+		eps, attempts, err := discovery.DiscoverEndpoints(*app, flagHttpPort, flagHttpsPort, transportFlags.Insecure)
 		if err != nil {
 			stderr("error fetching %s: %s", name, err)
 			return 1

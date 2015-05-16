@@ -109,12 +109,12 @@ func createTemplateVars(app App) []string {
 	return tplVars
 }
 
-func doDiscover(pre string, app App, insecure bool) (*Endpoints, error) {
+func doDiscover(pre string, httpPort uint, httpsPort uint, app App, insecure bool) (*Endpoints, error) {
 	if app.Labels["version"] == "" {
 		app.Labels["version"] = defaultVersion
 	}
 
-	_, body, err := httpsOrHTTP(pre, insecure)
+	_, body, err := httpsOrHTTP(pre, httpPort, httpsPort, insecure)
 	if err != nil {
 		return nil, err
 	}
@@ -154,9 +154,11 @@ func doDiscover(pre string, app App, insecure bool) (*Endpoints, error) {
 }
 
 // DiscoverWalk will make HTTPS requests to find discovery meta tags and
-// optionally will use HTTP if insecure is set. Based on the response of the
-// discoverFn it will continue to recurse up the tree.
-func DiscoverWalk(app App, insecure bool, discoverFn DiscoverWalkFunc) (err error) {
+// optionally will use HTTP if insecure is set. httpPort and httpsPort are the
+// ports to be used for the corresponding requests, if set to 0, the default
+// ports will be tried. Based on the response of the discoverFn it will continue
+// to recurse up the tree.
+func DiscoverWalk(app App, httpPort uint, httpsPort uint, insecure bool, discoverFn DiscoverWalkFunc) (err error) {
 	var (
 		eps *Endpoints
 	)
@@ -166,7 +168,7 @@ func DiscoverWalk(app App, insecure bool, discoverFn DiscoverWalkFunc) (err erro
 		end := len(parts) - i
 		pre := strings.Join(parts[:end], "/")
 
-		eps, err = doDiscover(pre, app, insecure)
+		eps, err = doDiscover(pre, httpPort, httpsPort, app, insecure)
 		derr := discoverFn(pre, eps, err)
 		if derr != nil {
 			return err
@@ -201,9 +203,11 @@ func walker(out *Endpoints, attempts *[]FailedAttempt, testFn DiscoverWalkFunc) 
 }
 
 // DiscoverEndpoints will make HTTPS requests to find the ac-discovery meta
-// tags and optionally will use HTTP if insecure is set. It will not give up
-// until it has exhausted the path or found an image discovery.
-func DiscoverEndpoints(app App, insecure bool) (out *Endpoints, attempts []FailedAttempt, err error) {
+// tags and optionally will use HTTP if insecure is set. httpPort and httpsPort
+// are the ports to be used for the corresponding requests, if set to 0, the
+// default ports will be tried. It will not give up until it has exhausted the
+// path or found an image discovery.
+func DiscoverEndpoints(app App, httpPort uint, httpsPort uint, insecure bool) (out *Endpoints, attempts []FailedAttempt, err error) {
 	out = &Endpoints{}
 	testFn := func(pre string, eps *Endpoints, err error) error {
 		if len(out.ACIEndpoints) != 0 {
@@ -212,7 +216,7 @@ func DiscoverEndpoints(app App, insecure bool) (out *Endpoints, attempts []Faile
 		return nil
 	}
 
-	err = DiscoverWalk(app, insecure, walker(out, &attempts, testFn))
+	err = DiscoverWalk(app, httpPort, httpsPort, insecure, walker(out, &attempts, testFn))
 	if err != nil && err != errEnough {
 		return nil, attempts, err
 	}
@@ -221,9 +225,11 @@ func DiscoverEndpoints(app App, insecure bool) (out *Endpoints, attempts []Faile
 }
 
 // DiscoverPublicKey will make HTTPS requests to find the ac-public-keys meta
-// tags and optionally will use HTTP if insecure is set. It will not give up
-// until it has exhausted the path or found an public key.
-func DiscoverPublicKeys(app App, insecure bool) (out *Endpoints, attempts []FailedAttempt, err error) {
+// tags and optionally will use HTTP if insecure is set. httpPort and httpsPort
+// are the ports to be used for the corresponding requests, if set to 0, the
+// default ports will be tried. It will not give up until it has exhausted the
+// path or found an public key.
+func DiscoverPublicKeys(app App, httpPort uint, httpsPort uint, insecure bool) (out *Endpoints, attempts []FailedAttempt, err error) {
 	out = &Endpoints{}
 	testFn := func(pre string, eps *Endpoints, err error) error {
 		if len(out.Keys) != 0 {
@@ -232,7 +238,7 @@ func DiscoverPublicKeys(app App, insecure bool) (out *Endpoints, attempts []Fail
 		return nil
 	}
 
-	err = DiscoverWalk(app, insecure, walker(out, &attempts, testFn))
+	err = DiscoverWalk(app, httpPort, httpsPort, insecure, walker(out, &attempts, testFn))
 	if err != nil && err != errEnough {
 		return nil, attempts, err
 	}
