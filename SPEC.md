@@ -602,9 +602,19 @@ An Isolator Type must be a JSON object with two required fields: "name" and "val
 "name" must be a string restricted to [AC Name](#ac-name-type) formatting.
 "value" may be an arbitrary JSON value.
 
+
 ### Timestamps Type
 
-Timestamps will be formatted to [RFC3339](https://tools.ietf.org/html/rfc3339)
+Timestamps will be formatted to [RFC3339](https://tools.ietf.org/html/rfc3339).
+
+Specifically including the "T" between the date and time components, per the `date-time` format of [RFC3339 Section 5.6](https://tools.ietf.org/html/rfc3339#section-5.6).
+An example of this with shell script is:
+
+```bash
+$ date --rfc-3339=ns | tr " " "T"
+2015-05-18T13:49:28.351729952-04:00
+```
+
 
 ## Manifest Schemas
 
