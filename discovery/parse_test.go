@@ -119,3 +119,43 @@ func TestAppString(t *testing.T) {
 		}
 	}
 }
+
+func TestAppCopy(t *testing.T) {
+	tests := []struct {
+		a   *App
+		out string
+	}{
+		{
+			&App{
+				Name:   "example.com/reduce-worker",
+				Labels: map[types.ACName]string{},
+			},
+			"example.com/reduce-worker",
+		},
+		{
+			&App{
+				Name: "example.com/reduce-worker",
+				Labels: map[types.ACName]string{
+					"version": "1.0.0",
+				},
+			},
+			"example.com/reduce-worker:1.0.0",
+		},
+		{
+			&App{
+				Name: "example.com/reduce-worker",
+				Labels: map[types.ACName]string{
+					"channel": "alpha",
+					"label":   "value",
+				},
+			},
+			"example.com/reduce-worker,channel=alpha,label=value",
+		},
+	}
+	for i, tt := range tests {
+		appCopy := tt.a.Copy()
+		if !reflect.DeepEqual(appCopy, tt.a) {
+			t.Errorf("#%d: got %#v, want %#v", i, appCopy, tt.a)
+		}
+	}
+}

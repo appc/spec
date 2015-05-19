@@ -66,6 +66,17 @@ func NewAppFromString(app string) (*App, error) {
 	return a, nil
 }
 
+func (a *App) Copy() *App {
+	ac := &App{
+		Name:   a.Name,
+		Labels: make(map[types.ACName]string, 0),
+	}
+	for k, v := range a.Labels {
+		ac.Labels[k] = v
+	}
+	return ac
+}
+
 // String returns the URL-like image name
 func (a *App) String() string {
 	img := a.Name.String()
