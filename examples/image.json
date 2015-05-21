@@ -76,7 +76,7 @@
     },
     "dependencies": [
         {
-            "app": "example.com/reduce-worker-base",
+            "imageName": "example.com/reduce-worker-base",
             "imageID": "sha512-...",
             "labels": [
                 {
