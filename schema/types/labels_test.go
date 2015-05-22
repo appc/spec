@@ -20,6 +20,10 @@ func TestLabels(t *testing.T) {
 			"",
 		},
 		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "aarch64_be"}]`,
+			"",
+		},
+		{
 			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "armv7l"}]`,
 			"",
 		},
