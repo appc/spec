@@ -605,6 +605,19 @@ An Isolator Type must be a JSON object with two required fields: "name" and "val
 "value" may be an arbitrary JSON value.
 
 
+### Timestamps Type
+
+Timestamps will be formatted to [RFC3339](https://tools.ietf.org/html/rfc3339).
+
+Specifically including the "T" between the date and time components, per the `date-time` format of [RFC3339 Section 5.6](https://tools.ietf.org/html/rfc3339#section-5.6).
+An example of this with shell script is:
+
+```bash
+$ date --rfc-3339=ns | tr " " "T"
+2015-05-18T13:49:28.351729952-04:00
+```
+
+
 ## Manifest Schemas
 
 ### Image Manifest Schema
@@ -772,7 +785,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
     * **labels** (list of objects, optional) a list of the very same form as the aforementioned label objects in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
 * **pathWhitelist** (list of strings, optional) whitelist of absolute paths that will exist in the app's rootfs after rendering. This must be a complete and absolute set. An empty list is equivalent to an absent value and means that all files in this image and any dependencies will be available in the rootfs.
 * **annotations** (list of objects, optional) any extra metadata you wish to add to the image. Each object has two key-value pairs: the *name* is restricted to the [AC Name](#ac-name-type) formatting and *value* is an arbitrary string. Annotation names must be unique within the list. Annotations can be used by systems outside of the ACE (ACE can override). If you are defining new annotations, please consider submitting them to the specification. If you intend for your field to remain special to your application please be a good citizen and prefix an appropriate namespace to your key names. Recognized annotations include:
-    * **created** date on which the image was built (string, must be in [RFC3339](https://www.ietf.org/rfc/rfc3339.txt) format)
+    * **created** date on which the image was built (string, [timestamps type](#timestamps-type))
     * **authors** contact details of the people or organization responsible for the image (freeform string)
     * **homepage** URL to find more information on the image (string, must be a URL with scheme HTTP or HTTPS)
     * **documentation** URL to get documentation on the image (string, must be a URL with scheme HTTP or HTTPS)
