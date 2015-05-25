@@ -10,7 +10,11 @@ For information on the packages in the repository, see their respective [godocs]
 
 ## What is the App Container spec?
 
-App Container (appc) is a well-specified and community developed specification that defines an image format, runtime environment and discovery mechanism for application containers.
+App Container (appc) is a well-specified and community developed specification for application containers.
+appc defines several independent but composable aspects involved in running application containers, including an image format, runtime environment, and discovery mechanism for application containers.
+
+#### What is an application container?
+
 An _application container_ is a way of packaging and executing processes on a computer system that isolates the application from the underlying host operating system.
 For example, a Python web app packaged as a container would bring its own copy of a Python runtime, shared libraries, and application code, and would not share those packages with the host.
 
