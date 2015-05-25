@@ -43,8 +43,8 @@ Then the executor extracts three fresh copies of the images to create instances 
 Based on user input, the executor now sets up the necessary cgroups, network interfaces, etc. and runs the `pre-start` event handlers for each app.
 Next, it forks the `reduce-worker`, `worker-backup`, and `register` processes in their shared namespaces, chrooted into their respective root filesystems.
 
-At some point, the App Container will get some notification that it needs to stop (for example, upon host shutdown).
-The executor will send `SIGTERM` to the processes and after they have exited the `post-stop` event handlers for each app will run.
+At some point, the App Container gets some notification that it needs to stop (for example, upon host shutdown).
+The executor sends `SIGTERM` to the processes. After they have exited, the executor runs the `post-stop` event handlers for each app.
 
 Now, let's dive into the pieces that took us from three URLs to a running App Container on our system.
 
