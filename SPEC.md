@@ -219,7 +219,7 @@ The following environment variables MUST be set for each application's main proc
 * **AC_METADATA_URL** URL where the [metadata service](#app-container-metadata-service) for this pod can be found.
 * **container** name of the [App Container Executor](#app-container-executor) as a concise indicator the environment is in a container (free-form string)
 
-An executor MAY set additional environment variables for the application processes.
+An executor MAY set additional environment variables for the application processes. Also the executor may add additional directories to $PATH of the main process and its descendants, prepended and/or appended to the default directories listed.
 
 Additionally, processes must have their **working directory** set to the value of the application's **workingDirectory** option, if specified, or the root of the application image by default.
 
