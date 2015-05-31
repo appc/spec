@@ -479,6 +479,65 @@ All HTTP redirects MUST be followed when the discovery URL returns a `3xx` statu
 
 Discovery URLs that require interpolation are [RFC6570](https://tools.ietf.org/html/rfc6570) URI templates.
 
+### Extensible Discovery
+
+The above methods (simple discovery & meta discovery) must be supported by a
+conformant ACI implementation.  Some advanced use cases, such as private image
+repositories, or maintaining mirrors of image repositories, may require
+different mappings of image names to storage locations.  A conformant
+implementation may support different mappings. However, so that the public ACI
+namespace remains homogenous, thus must only be done in response to some form of
+operator configuration.
+
+For example, it is often convenient to store a private repository on Amazon S3.
+This does not map directly to https, because while S3 does offer SSL it does by
+default only over a different endpoint (e.g.
+`https://s3.amazonaws.com/bucketname/...`); further the authentication
+mechanism is also specific to S3.  A natural implementation is for an
+implementation to recognize the "s3://" prefix, and allow downloading of files
+from it, authenticating according to the normal S3 credential rules.  Thus
+public keys, ACIs and signatures could be download from `s3://` URLs.  For
+security, this would be restricted to a specific prefix by configuration.  The
+implementation would require configuration so that for a given ACI namespace prefix, an
+alternative discovery mechanism backed by S3 is used.
+
+If possible, an implementation SHOULD reuse the Meta-Discovery mechanism to
+implement alternative discovery mechanisms.  For example, to allow ACI images
+with the `aci.example.com/private/` prefix to be stored in a private S3 bucket
+`aci.example.com`, an HTML file would be created at
+`s3://aci.example.com/private`, containing
+
+```html
+<meta name="ac-discovery" content="aci.example.com/private s3://aci.example.com/private/{os}/{arch}/{name}-{version}.{ext}">
+<meta name="ac-discovery-pubkeys" content="aci.example.com/private s3://aci.example.com/private/pubkeys.gpg">
+```
+
+In response to the required opt-in command, a comparable mechanism to
+Meta-Discovery would now take place.  If the command was `aci_impl trust
+s3://aci.example.com/private`, then the above meta-file would be downloaded from `s3://aci.example.com/private`,
+then the key would be downloaded from
+`s3://aci.example.com/private/pubkeys.gpg`, and images from the prefix
+`aci.example.com/private` would be downloaded after evaluating the template
+`s3://aci.example.com/private/{os}/{arch}/{name}-{version}.{ext}`, as specified in the meta-file.
+
+As a second example, consider maintaining a private mirror of all images on an
+NFS store.  An implementation could recognize the NFS prefix, and allow keys,
+ACIs and signatures to be downloaded from that store, according to a template.
+Security-sensitive installations might want to prevent downloading from public
+discovery mechanisms altogether; a conformant implementation may support that
+as long as this done in response to operator configuration or action.  For
+example, the operator might configure downloading of keys according to evaluation
+of the template `nfs://key_mirror/aci/{name}.gpg` and downloading of ACIs
+according to `nfs://data_mirror/aci/{os}/{arch}/{name}-{version}.{ext}`.  These
+storage locations would be populated by a separate process, perhaps automatically
+mirroring public repositories, or perhaps requiring manual review first.
+
+The default Meta-Discovery can even be seen as an instance of Extensible
+Discovery, and it may be expedient to implement it in that way, particularly as
+this then allows an operator to remove the default mechanism for totally
+private operation.  However, a conformant implementation MUST support the
+default Simple & Meta Discovery mechanisms unless operator action is taken. 
+
 ### Validation
 
 Implementations of the spec are responsible for enforcing any signature validation rules set in place by the operator.
