@@ -19,7 +19,7 @@ import (
 type ACIRegistry interface {
 	ACIProvider
 	GetImageManifest(key string) (*schema.ImageManifest, error)
-	GetACI(name types.ACName, labels types.Labels) (string, error)
+	GetACI(name types.ACIdentifier, labels types.Labels) (string, error)
 }
 
 // An ACIProvider provides functions to get an ACI contents, to convert an
@@ -75,7 +75,7 @@ func GetRenderedACIWithImageID(imageID types.Hash, ap ACIRegistry) (RenderedACI,
 // GetRenderedACI, given an image app name and optional labels, starts with the
 // best matching image available in the store, creates the dependencies list
 // and returns the RenderedACI list.
-func GetRenderedACI(name types.ACName, labels types.Labels, ap ACIRegistry) (RenderedACI, error) {
+func GetRenderedACI(name types.ACIdentifier, labels types.Labels, ap ACIRegistry) (RenderedACI, error) {
 	imgs, err := CreateDepListFromNameLabels(name, labels, ap)
 	if err != nil {
 		return nil, err

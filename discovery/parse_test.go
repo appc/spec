@@ -19,7 +19,7 @@ func TestNewAppFromString(t *testing.T) {
 
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACName]string{
+				Labels: map[types.ACIdentifier]string{
 					"version": "1.0.0",
 				},
 			},
@@ -30,7 +30,7 @@ func TestNewAppFromString(t *testing.T) {
 
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACName]string{
+				Labels: map[types.ACIdentifier]string{
 					"channel": "alpha",
 					"label":   "value",
 				},
@@ -83,14 +83,14 @@ func TestAppString(t *testing.T) {
 		{
 			&App{
 				Name:   "example.com/reduce-worker",
-				Labels: map[types.ACName]string{},
+				Labels: map[types.ACIdentifier]string{},
 			},
 			"example.com/reduce-worker",
 		},
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACName]string{
+				Labels: map[types.ACIdentifier]string{
 					"version": "1.0.0",
 				},
 			},
@@ -99,7 +99,7 @@ func TestAppString(t *testing.T) {
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACName]string{
+				Labels: map[types.ACIdentifier]string{
 					"channel": "alpha",
 					"label":   "value",
 				},
@@ -128,14 +128,14 @@ func TestAppCopy(t *testing.T) {
 		{
 			&App{
 				Name:   "example.com/reduce-worker",
-				Labels: map[types.ACName]string{},
+				Labels: map[types.ACIdentifier]string{},
 			},
 			"example.com/reduce-worker",
 		},
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACName]string{
+				Labels: map[types.ACIdentifier]string{
 					"version": "1.0.0",
 				},
 			},
@@ -144,7 +144,7 @@ func TestAppCopy(t *testing.T) {
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACName]string{
+				Labels: map[types.ACIdentifier]string{
 					"channel": "alpha",
 					"label":   "value",
 				},
