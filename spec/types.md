@@ -39,7 +39,7 @@ For example, if an implementation is compliant against version 1.0.1 of the spec
 The version of the App Container specification and associated tooling is recorded in [VERSION](https://github.com/appc/spec/blob/master/VERSION), and is otherwise denoted in the [release version](https://github.com/appc/spec/releases) or git version control tag. 
 
 An AC Version must reference a tagged version of the App Container specification, not exceeding the version of its greatest compliance.
-An AC Version for [Image Manifest](#image-manifest-schema) and [Pod Manifest](#pod-manifest-schema) schemas must be compatible on major AC version series.
+An AC Version for [Image Manifest](aci.md#image-manifest-schema) and [Pod Manifest](pods.md#pod-manifest-schema) schemas must be compatible on major AC version series.
 An AC Version cannot be an empty string and must be in [SemVer v2.0.0](http://semver.org/spec/v2.0.0.html) format.
 
 

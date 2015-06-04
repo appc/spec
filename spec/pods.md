@@ -10,7 +10,7 @@ The execution context can be defined as the conjunction of several Linux namespa
 - UTS namespace (apps within the pod share a hostname)
 
 The context MAY include shared volumes, which are defined at the pod level and must be made available in each app's filesystem.
-The context MAY additionally consist of one or more [isolators](#isolators).
+The context MAY additionally consist of one or more [isolators](ace.md#isolators).
 
 The definition of the **pod** - namely, the list of constituent apps, and any isolators that apply to the entire pod - is codified in a [Pod Manifest](#pod-manifest-schema).
 Pod Manifests can serve the role of both _deployable template_ and _runtime manifest_: a template can be a candidate for a series of transformations before execution.
