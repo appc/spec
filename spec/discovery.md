@@ -3,7 +3,7 @@
 An App Container Image name has a URL-like structure, for example `example.com/reduce-worker`.
 However, there is no scheme on this name, so it cannot be directly resolved to an App Container Image URL.
 Furthermore, attributes other than the name may be required to unambiguously identify an image (version, OS and architecture).
-These attributes are expressed in the **labels** field of the [Image Manifest](#image-manifest-schema).
+These attributes are expressed in the **labels** field of the [Image Manifest](aci.md#image-manifest-schema).
 App Container Image Discovery prescribes a discovery process to retrieve an image based on the name and these attributes.
 
 Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
@@ -67,7 +67,7 @@ Some examples for different schemes and URLs:
 <meta name="ac-discovery-pubkeys" content="example.com https://example.com/pubkeys.gpg">
 ```
 
-When evaluating `ac-discovery` tags, the client MUST first ensure that the prefix of the [AC Name](#ac-name-type) being discovered matches the prefix-match, and if so it MUST perform a simple template substitution to determine the URL at which the resource can be retrieved - the effective equivalent of:
+When evaluating `ac-discovery` tags, the client MUST first ensure that the prefix of the [AC Name](types.md#ac-name-type) being discovered matches the prefix-match, and if so it MUST perform a simple template substitution to determine the URL at which the resource can be retrieved - the effective equivalent of:
 
 ```bash
 urltmpl="https://{name}-{version}-{os}-{arch}.{ext}"
