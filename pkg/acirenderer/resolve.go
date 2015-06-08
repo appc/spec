@@ -18,7 +18,7 @@ func CreateDepListFromImageID(imageID types.Hash, ap ACIRegistry) (Images, error
 
 // CreateDepListFromNameLabels returns the flat dependency tree of the image
 // with the provided app name and optional labels.
-func CreateDepListFromNameLabels(name types.ACName, labels types.Labels, ap ACIRegistry) (Images, error) {
+func CreateDepListFromNameLabels(name types.ACIdentifier, labels types.Labels, ap ACIRegistry) (Images, error) {
 	key, err := ap.GetACI(name, labels)
 	if err != nil {
 		return nil, err

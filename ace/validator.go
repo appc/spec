@@ -319,7 +319,7 @@ func validatePodMetadata(metadataURL string, pm *schema.PodManifest) results {
 	return append(r, validatePodAnnotations(metadataURL, pm)...)
 }
 
-func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *schema.ImageManifest) results {
+func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *schema.RuntimeApp, img *schema.ImageManifest) results {
 	r := results{}
 
 	// build a map of expected annotations by merging app.Annotations
@@ -367,31 +367,30 @@ func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *sch
 	return r
 }
 
-func validateAppMetadata(metadataURL string, pm *schema.PodManifest, a schema.RuntimeApp) results {
-	appName := a.Name
+func validateAppMetadata(metadataURL string, pm *schema.PodManifest, app *schema.RuntimeApp) results {
 	r := results{}
 
-	am, err := metadataGet(metadataURL, "/apps/"+string(appName)+"/image/manifest")
+	am, err := metadataGet(metadataURL, "/apps/"+app.Name.String()+"/image/manifest")
 	if err != nil {
 		return append(r, err)
 	}
 
-	app := &schema.ImageManifest{}
-	if err = json.Unmarshal(am, app); err != nil {
-		return append(r, fmt.Errorf("failed to JSON-decode %q manifest: %v", string(appName), err))
+	img := &schema.ImageManifest{}
+	if err = json.Unmarshal(am, img); err != nil {
+		return append(r, fmt.Errorf("failed to JSON-decode %q manifest: %v", app.Name.String(), err))
 	}
 
-	id, err := metadataGet(metadataURL, "/apps/"+string(appName)+"/image/id")
+	id, err := metadataGet(metadataURL, "/apps/"+app.Name.String()+"/image/id")
 	if err != nil {
 		r = append(r, err)
 	}
 
-	if string(id) != a.Image.ID.String() {
-		err = fmt.Errorf("%q's image id mismatch: %v vs %v", string(appName), id, a.Image.ID)
+	if string(id) != app.Image.ID.String() {
+		err = fmt.Errorf("%q's image id mismatch: %v vs %v", app.Name.String(), id, app.Image.ID)
 		r = append(r, err)
 	}
 
-	return append(r, validateAppAnnotations(metadataURL, pm, app)...)
+	return append(r, validateAppAnnotations(metadataURL, pm, app, img)...)
 }
 
 func validateSigning(metadataURL string, pm *schema.PodManifest) results {
@@ -449,7 +448,7 @@ func ValidateMetadataSvc() results {
 
 	for _, app := range pm.Apps {
 		app := app
-		r = append(r, validateAppMetadata(metadataURL, pm, app)...)
+		r = append(r, validateAppMetadata(metadataURL, pm, &app)...)
 	}
 
 	return append(r, validateSigning(metadataURL, pm)...)

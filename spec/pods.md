@@ -154,7 +154,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
     * **name** (string, required) name of the app (restricted to [AC Name](types.md#ac-name-type) formatting). This is used to identify an app within a pod, and hence MUST be unique within the list of apps. This may be different from the name of the referenced image (see below); in this way, a pod can have multiple apps using the same underlying image.
     * **image** (object, required) identifiers of the image providing this app
         * **id** (string of type [Image ID](types.md#image-id-type), required) content hash of the image that this app will execute inside of
-        * **name** (string, optional) name of the image (restricted to [AC Name](types.md#ac-name-type) formatting)
+        * **name** (string, optional) name of the image (restricted to [AC Identifier](types.md#ac-identifier-type) formatting)
         * **labels** (list of objects, optional) additional labels characterizing the image
     * **app** (object, optional) substitute for the app object of the referred image's ImageManifest. See [Image Manifest Schema](aci.md#image-manifest-schema) for what the app object contains.
     * **mounts** (list of objects, optional) list of mounts mapping an app mountPoint to a volume. Each mount has the following set of key-value pairs:

@@ -8,9 +8,9 @@ import (
 type Dependencies []Dependency
 
 type Dependency struct {
-	ImageName ACName `json:"imageName"`
-	ImageID   *Hash  `json:"imageID,omitempty"`
-	Labels    Labels `json:"labels,omitempty"`
+	ImageName ACIdentifier `json:"imageName"`
+	ImageID   *Hash        `json:"imageID,omitempty"`
+	Labels    Labels       `json:"labels,omitempty"`
 }
 
 type dependency Dependency
