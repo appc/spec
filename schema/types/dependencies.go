@@ -11,6 +11,7 @@ type Dependency struct {
 	ImageName ACIdentifier `json:"imageName"`
 	ImageID   *Hash        `json:"imageID,omitempty"`
 	Labels    Labels       `json:"labels,omitempty"`
+	Size      uint         `json:"size,omitempty"`
 }
 
 type dependency Dependency
