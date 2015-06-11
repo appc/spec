@@ -26,11 +26,12 @@ This UUID is exposed to the pod through the [Metadata Service](#app-container-me
 Each app in a pod will start chrooted into its own unique read-write filesystem before execution.
 
 An app's filesystem must be *rendered* in an empty directory by the following process (or equivalent):
-1. If the ACI contains a non-empty `dependencies` field in its `ImageManifest`, the `rootfs` of each dependent image is extracted into the app's filesystem, in the order in which they are listed.
-2. The `rootfs` contained in the ACI is extracted into the app's filesystem
-3. If the ACI contains a non-empty `pathWhitelist` field in its `ImageManifest`, *all* paths not in the whitelist must be removed
 
-If during rootfs extraction a target path is already present in app's filesystem from an earlier dependency, the previously extracted path MUST be overwritten. If the existing path is a symbolic link to a directory, the link MUST NOT be followed and it MUST be removed and replaced with the new path.
+1. If the ACI contains a non-empty `dependencies` field in its `ImageManifest`, the `rootfs` of each dependent image is extracted into the target directory, in the order in which they are listed.
+2. The `rootfs` contained in the ACI is extracted into the target directory
+3. If the ACI contains a non-empty `pathWhitelist` field in its `ImageManifest`, *all* paths not in the whitelist must be removed from the target directory
+
+If during rootfs extraction a path is already present in the target directory from an earlier dependency, the previously extracted path MUST be overwritten. If the existing path is a symbolic link to a directory, the link MUST NOT be followed and it MUST be removed and replaced with the new path.
 
 Every execution of an app MUST start from a clean copy of this rendered filesystem.
 
