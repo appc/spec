@@ -1,4 +1,4 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
 #
 # Run all appc tests
 # ./test
@@ -8,6 +8,8 @@
 #
 # PKG=./discovery ./test
 # PKG=schema/types ./test
+
+set -e
 
 # Invoke ./cover for HTML output
 COVER=${COVER:-"-cover"}
