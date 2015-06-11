@@ -43,13 +43,14 @@ Some examples of build systems and tools that have been built so far include:
 
 ## What are some implementations of the spec?
 
-The most mature implementation of the spec today is [rkt](https://github.com/coreos/rkt), but several other implementations are being actively worked on:
-
-- [Jet Pack](https://github.com/3ofcoins/jetpack) - FreeBSD/Go
+The most mature implementations of the spec are under active development:
+- [Jetpack](https://github.com/3ofcoins/jetpack) - FreeBSD/Go
 - [Kurma](https://github.com/apcera/kurma) - Linux/Go
+- [rkt](https://github.com/coreos/rkt) - Linux/Go
+
+There are several other partial implementations of the spec at different stages of development:
 - [libappc](https://github.com/cdaylward/libappc) - C++ library
 - [Nose Cone](https://github.com/cdaylward/nosecone) - Linux/C++
-- [rkt](https://github.com/coreos/rkt) - Linux/Go
 
 ## Who controls the spec?
 
