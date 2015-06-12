@@ -145,7 +145,14 @@ func getACIFiles(img Image, ap ACIProvider, allFiles map[string]byte, pwlm map[s
 		name := hdr.Name
 		cleanName := filepath.Clean(name)
 
-		// Ignore files outside /rootfs/ (at the moment only "manifest")
+		// Add the rootfs directory.
+		if cleanName == "rootfs" && hdr.Typeflag == tar.TypeDir {
+			ra.FileMap[cleanName] = struct{}{}
+			allFiles[cleanName] = hdr.Typeflag
+			return nil
+		}
+
+		// Ignore files outside /rootfs/ (at the moment only "manifest").
 		if !strings.HasPrefix(cleanName, "rootfs/") {
 			return nil
 		}

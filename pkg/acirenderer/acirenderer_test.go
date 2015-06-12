@@ -2113,3 +2113,91 @@ func FISliceToMap(slice []*fileInfo) map[string]*fileInfo {
 	}
 	return fim
 }
+
+func TestEmptyRootFsDir(t *testing.T) {
+	dir, err := ioutil.TempDir("", tstprefix)
+	if err != nil {
+		t.Fatalf("error creating tempdir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+
+	ds := NewTestStore()
+
+	tests := []struct {
+		name          types.ACIdentifier
+		imj           string
+		entries       []*testTarEntry
+		expectedFiles []*fileInfo
+	}{
+		// Image with an empty rootfs dir.
+		{
+			"example.com/test_empty_rootfs",
+			`
+		            {
+		                "acKind": "ImageManifest",
+		                "acVersion": "0.6.0",
+		                "name": "example.com/test_empty_rootfs"
+		            }
+                        `,
+			[]*testTarEntry{
+				// Empty rootfs directory.
+				{
+					header: &tar.Header{
+						Name:     "rootfs",
+						Typeflag: tar.TypeDir,
+						Mode:     0700,
+					},
+				},
+			},
+			[]*fileInfo{
+				{path: "manifest", typeflag: tar.TypeReg},
+				{path: "rootfs", typeflag: tar.TypeDir, mode: 0700},
+			},
+		},
+
+		// Image with an empty rootfs dir and pathWhitelist.
+		{
+			"example.com/test_empty_rootfs_pwl",
+			`
+		            {
+		                "acKind": "ImageManifest",
+		                "acVersion": "0.6.0",
+		                "name": "example.com/test_empty_rootfs_pwl",
+                                "pathWhitelist": ["foo"]
+		            }
+                        `,
+			[]*testTarEntry{
+				// Empty rootfs directory.
+				{
+					header: &tar.Header{
+						Name:     "rootfs",
+						Typeflag: tar.TypeDir,
+						Mode:     0700,
+					},
+				},
+			},
+			[]*fileInfo{
+				{path: "manifest", typeflag: tar.TypeReg},
+				{path: "rootfs", typeflag: tar.TypeDir, mode: 0700},
+			},
+		},
+	}
+
+	for i, tt := range tests {
+		tt.entries = append(tt.entries, &testTarEntry{
+			contents: tt.imj,
+			header: &tar.Header{
+				Name: "manifest",
+				Size: int64(len(tt.imj)),
+			},
+		})
+
+		if _, err := newTestACI(tt.entries, dir, ds); err != nil {
+			t.Fatalf("%d: unexpected error: %v", i, err)
+		}
+
+		if err := checkRenderACI(tt.name, tt.expectedFiles, ds); err != nil {
+			t.Fatalf("%d: unexpected error: %v", i, err)
+		}
+	}
+}
