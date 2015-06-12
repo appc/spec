@@ -66,11 +66,11 @@
         },
         {
             "name": "homepage",
-            "value": "https://github.com/containers/standard"
+            "value": "https://github.com/appc/spec"
         },
         {
             "name": "documentation",
-            "value": "https://github.com/containers/standard/blob/master/README.md"
+            "value": "https://github.com/appc/spec/blob/master/README.md"
         },
         {
             "name": "lorem",
