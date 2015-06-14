@@ -32,6 +32,14 @@ func TestLabels(t *testing.T) {
 			`bad arch "arm64_be" for linux`,
 		},
 		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "arm"}]`,
+			`bad arch "arm" for linux`,
+		},
+		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "armv6l"}]`,
+			"",
+		},
+		{
 			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "armv7l"}]`,
 			"",
 		},
@@ -50,10 +58,6 @@ func TestLabels(t *testing.T) {
 		{
 			`[{"name": "os", "value": "freebsd"}, {"name": "arch", "value": "armv7b"}]`,
 			`bad arch "armv7b" for freebsd`,
-		},
-		{
-			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "arm"}]`,
-			`bad arch "arm" for linux`,
 		},
 		{
 			`[{"name": "name"}]`,
