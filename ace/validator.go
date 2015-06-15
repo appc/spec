@@ -287,9 +287,9 @@ func validatePodAnnotations(metadataURL string, pm *schema.PodManifest) results 
 			r = append(r, err)
 		}
 
-		name, err := types.NewACName(key)
+		name, err := types.NewACIdentifier(key)
 		if err != nil {
-			r = append(r, fmt.Errorf("invalid annotation label: %v", err))
+			r = append(r, fmt.Errorf("invalid annotation name: %v", err))
 			continue
 		}
 
@@ -350,9 +350,9 @@ func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *sch
 			r = append(r, err)
 		}
 
-		lbl, err := types.NewACName(key)
+		lbl, err := types.NewACIdentifier(key)
 		if err != nil {
-			r = append(r, fmt.Errorf("invalid annotation label: %v", err))
+			r = append(r, fmt.Errorf("invalid annotation name: %v", err))
 			continue
 		}
 
