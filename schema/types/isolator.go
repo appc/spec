@@ -18,6 +18,10 @@ func AddIsolatorValueConstructor(n ACIdentifier, i IsolatorValueConstructor) {
 	isolatorMap[n] = i
 }
 
+func AddIsolatorName(n ACIdentifier, ns map[ACIdentifier]struct{}) {
+	ns[n] = struct{}{}
+}
+
 type Isolators []Isolator
 
 // GetByName returns the last isolator in the list by the given name.
