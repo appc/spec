@@ -1,5 +1,5 @@
 {
-    "acVersion": "0.6.0",
+    "acVersion": "0.6.1",
     "acKind": "PodManifest",
     "apps": [
         {
