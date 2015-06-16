@@ -112,6 +112,19 @@ func (al AppList) Get(name types.ACName) *RuntimeApp {
 	return nil
 }
 
+// GetAppByImageName retrieves an app from the AppList whose image has the
+// specified name; if there is no such app, nil is returned. The returned
+// *RuntimeApp MUST be considered read-only.
+func (al AppList) GetAppByImageName(name types.ACIdentifier) *RuntimeApp {
+	for _, a := range al {
+		if name.Equals(*a.Image.Name) {
+			aa := a
+			return &aa
+		}
+	}
+	return nil
+}
+
 // Mount describes the mapping between a volume and an apps
 // MountPoint that will be fulfilled at runtime.
 type Mount struct {
