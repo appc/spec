@@ -94,7 +94,7 @@ var (
 		},
 	}
 	// "Name"
-	an = "coreos.com/ace-validator-main"
+	an = "ace-validator-main"
 )
 
 type results []error
