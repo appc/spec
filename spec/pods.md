@@ -163,9 +163,11 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
     * **annotations** (list of objects, optional) arbitrary metadata appended to the app. The annotation objects must have a *name* key that has a value that is restricted to the [AC Name](types.md#ac-name-type) formatting and *value* key that is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** (list of objects, optional) list of volumes which will be mounted into each application's filesystem
     * **name** (string, required) used to map the volume to an app's mountPoint at runtime. (restricted to the [AC Name](types.md#ac-name-type) formatting)
-    * **kind** (string, required) either "empty" or "host". "empty" fulfills a mount point by ensuring the path exists (i.e., writes go to the app's chroot). "host" fulfills a mount point with a bind mount from a **source**.
+    * **readOnly** (boolean, optional, defaults to "false" if unsupplied) whether or not the volume will be mounted read only.
+    * **kind** (string, required) either:
+        * **empty** - creates an empty directory on the host and bind mounts it into the container. All containers in the pod share the mount, and the lifetime of the volume is equal to the lifetime of the pod (i.e. the directory on the host machine is removed when the pod's filesystem is garbage collected)
+        * **host** - fulfills a mount point with a bind mount from a **source** directory on the host.
     * **source** (string, required if **kind** is "host") absolute path on host to be bind mounted under a mount point in each app's chroot.
-    * **readOnly** (boolean, optional if **kind** is "host", defaults to "false" if unsupplied) whether or not the volume will be mounted read only.
 * **isolators** (list of objects of type [Isolator](types.md#isolator-type), optional) list of isolation steps that will apply to this pod.
 * **annotations** (list of objects, optional) arbitrary metadata the executor will make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](types.md#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
 * **ports** (list of objects, optional) list of ports that SHOULD be exposed on the host.
