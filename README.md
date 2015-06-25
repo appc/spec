@@ -60,7 +60,7 @@ App Container is an open-source, community-driven project, developed under the [
 
 ### Building ACIs
 
-`actool` can be used to build an Application Container Image from an [Image Layout](SPEC.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs).
+`actool` can be used to build an Application Container Image from an [Image Layout](spec/aci.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs).
 
 For example, to build a simple ACI (in this case consisting of a single binary), one could do the following:
 ```
