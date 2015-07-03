@@ -270,11 +270,13 @@ The App Container specification defines an HTTP-based metadata service for provi
 ### Metadata Service
 
 The ACE SHOULD provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` [environment variable](#execution-environment).
+This URL must reference an endpoint which conforms to the HTTP protocol with TLS optionally enabled.
 
 ACE implementations SHOULD embed an authorization token in `AC_METADATA_URL`, which provides a means for the metadata service to uniquely and securely identify a pod.
 For example, `AC_METADATA_URL` passed to a pod could be set to `https://10.0.0.1:8888/Y4vFeVZzKM2T9rwkpWHfqXuGsNjS6O5c` with the path portion acting as a token.
 Since the token is used by the Metadata Service to authenticate the pod's identity, it SHOULD have no fewer than 128 bits of entropy (i.e. size of UUID), and SHOULD NOT be easily guessable (e.g. the pod UUID should not be used).
 
+For the following endpoints, unless otherwise specified, the media type of `application/json` must be specified and the body must conform to [RFC4627](http://www.ietf.org/rfc/rfc4627.txt).
 
 [UUIDs](#pod-uuid) assigned to pods MUST be unique for the administrative domain of the metadata service.
 
@@ -286,9 +288,9 @@ Retrievable at `$AC_METADATA_URL/acMetadata/v1/pod`
 
 | Entry       | Description |
 |-------------|-------------|
-|annotations/ | Top level annotations from Pod Manifest. |
+|annotations | Top level annotations from Pod Manifest. Response body should conform to the sub-schema of the annotations property from the Pod specification (e.g. ```[ { "name": "ip-address", "value": "10.1.2.3" } ]```). |
 |manifest     | Fully-reified Pod Manifest JSON. |
-|uuid         | Pod UUID. |
+|uuid         | Pod UUID. The metadata service must return the `Content-Type` of `text/plain; charset=us-ascii` and the body of the response must be the pod UUID in canonical form. |
 
 ### App Metadata
 
@@ -299,9 +301,9 @@ Retrievable at `$AC_METADATA_URL/acMetadata/v1/apps/$AC_APP_NAME/`
 
 | Entry         | Description |
 |---------------|-------------|
-|annotations/   | Annotations from Image Manifest merged with app annotations from Pod Manifest. |
+|annotations   | Annotations from Image Manifest merged with app annotations from Pod Manifest. Response body should conform to the sub-schema of the annotations property from the ACE and Pod specifications (e.g. ```[ { "name": "ip-address", "value": "10.1.2.3" } ]```). |
 |image/manifest | Original Image Manifest of the app. |
-|image/id       | Image ID (digest) this app is contained in. |
+|image/id       | Image ID (digest) this app is contained in. The metadata service must return the `Content-Type` of `text/plain; charset=us-ascii` and the body of the response must be the image ID as described in the ACI specification.|
 
 ### Identity Endpoint
 
@@ -312,5 +314,5 @@ Accessible at `$AC_METADATA_URL/acMetadata/v1/pod/hmac`
 
 | Entry | Description |
 |-------|-------------|
-|sign   | POST a form with content=&lt;object to sign&gt; and retrieve a base64 hmac-sha512 signature as the response body. The metadata service holds onto the secret key as a sort of pod TPM. |
+|sign   | Client applications must POST a form with content=&lt;object to sign&gt;. The response must specify a `Content-Type` header of `text/plain; charset=us-ascii` and the body must be a base64 encoded hmac-sha512 signature based on an HMAC key maintained by the Metadata Service. |
 |verify | Verify a signature from another pod. POST a form with content=&lt;object that was signed&gt;, uuid=&lt;uuid of the pod that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
