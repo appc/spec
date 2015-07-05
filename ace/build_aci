@@ -5,6 +5,7 @@
 set -eu
 
 PREFIX="ace"
+: ${NO_SIGNATURE=}
 
 if ! [[ $0 =~ "${PREFIX}/build_aci" ]]; then 
 	echo "invoke from repository root" 1>&2
