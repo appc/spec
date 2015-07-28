@@ -38,7 +38,9 @@ Some examples of build systems and tools that have been built so far include:
 
 - [goaci](https://github.com/appc/goaci) - ACI builder for Go projects
 - [docker2aci](https://github.com/appc/docker2aci) - ACI builder from Docker images
-- [actool](https://github.com/appc/spec/tree/master/actool) - ACI builder from root filesystems
+- [deb2aci](https://github.com/klizhentas/deb2aci) - ACI builder from Debian packages
+- [actool](https://github.com/appc/spec/tree/master/actool) - Simple tool to assemble ACIs from root filesystems
+- [acbuild](https://github.com/appc/acbuild) - A versatile tool for building and manipulating ACIs
 - [baci](https://github.com/sgotti/baci) - A generic ACI build project
 
 ## What are some implementations of the spec?
