@@ -32,7 +32,7 @@ for typ in main sidekick; do
 		# TODO(jonboulle): create uncompressed instead, then gzip?
 		HASH=sha512-$(gzip -d -f ../ace-validator-${typ}.aci -c | openssl dgst -sha512 -hex -r | awk '{print $1}')
 		if [ -z "$NO_SIGNATURE" ] ; then
-			gpg --cipher-algo AES256 --output ace-validator-${typ}.aci.asc --detach-sig ../ace-validator-${typ}.aci
+			gpg --cipher-algo AES256 --armor --output ace-validator-${typ}.aci.asc --detach-sig ../ace-validator-${typ}.aci
 			mv ace-validator-${typ}.aci.asc ../
 		fi
 	popd >/dev/null
