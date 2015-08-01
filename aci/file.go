@@ -103,25 +103,43 @@ func DetectFileType(r io.Reader) (FileType, error) {
 	}
 }
 
-// XzReader shells out to a command line xz executable (if
+// XzReader is an io.ReadCloser which decompresses xz compressed data.
+type XzReader struct {
+	io.ReadCloser
+	cmd     *exec.Cmd
+	closech chan error
+}
+
+// NewXzReader shells out to a command line xz executable (if
 // available) to decompress the given io.Reader using the xz
-// compression format
-func XzReader(r io.Reader) io.ReadCloser {
+// compression format and returns an *XzReader.
+// It is the caller's responsibility to call Close on the XzReader when done.
+func NewXzReader(r io.Reader) (*XzReader, error) {
 	rpipe, wpipe := io.Pipe()
 	ex, err := exec.LookPath("xz")
 	if err != nil {
 		log.Fatalf("couldn't find xz executable: %v", err)
 	}
 	cmd := exec.Command(ex, "--decompress", "--stdout")
+
+	closech := make(chan error)
+
 	cmd.Stdin = r
 	cmd.Stdout = wpipe
 
 	go func() {
 		err := cmd.Run()
 		wpipe.CloseWithError(err)
+		closech <- err
 	}()
 
-	return rpipe
+	return &XzReader{rpipe, cmd, closech}, nil
+}
+
+func (r *XzReader) Close() error {
+	r.ReadCloser.Close()
+	r.cmd.Process.Kill()
+	return <-r.closech
 }
 
 // ManifestFromImage extracts a new schema.ImageManifest from the given ACI image.
@@ -213,7 +231,10 @@ func NewCompressedReader(rs io.ReadSeeker) (io.ReadCloser, error) {
 	case TypeBzip2:
 		dr = ioutil.NopCloser(bzip2.NewReader(rs))
 	case TypeXz:
-		dr = ioutil.NopCloser(XzReader(rs))
+		dr, err = NewXzReader(rs)
+		if err != nil {
+			return nil, err
+		}
 	case TypeTar:
 		dr = ioutil.NopCloser(rs)
 	case TypeUnknown:
