@@ -132,6 +132,7 @@ func ManifestFromImage(rs io.ReadSeeker) (*schema.ImageManifest, error) {
 	if err != nil {
 		return nil, err
 	}
+	defer tr.Close()
 
 	for {
 		hdr, err := tr.Next()
@@ -155,20 +156,36 @@ func ManifestFromImage(rs io.ReadSeeker) (*schema.ImageManifest, error) {
 	}
 }
 
-// NewCompressedTarReader creates a new tar.Reader reading from the given ACI image.
-func NewCompressedTarReader(rs io.ReadSeeker) (*tar.Reader, error) {
+// TarReadCloser embeds a *tar.Reader and the related io.Closer
+// It is the caller's responsibility to call Close on TarReadCloser when
+// done.
+type TarReadCloser struct {
+	*tar.Reader
+	io.Closer
+}
+
+func (r *TarReadCloser) Close() error {
+	return r.Closer.Close()
+}
+
+// NewCompressedTarReader creates a new TarReadCloser reading from the
+// given ACI image.
+// It is the caller's responsibility to call Close on the TarReadCloser
+// when done.
+func NewCompressedTarReader(rs io.ReadSeeker) (*TarReadCloser, error) {
 	cr, err := NewCompressedReader(rs)
 	if err != nil {
 		return nil, err
 	}
-	return tar.NewReader(cr), nil
+	return &TarReadCloser{tar.NewReader(cr), cr}, nil
 }
 
-// NewCompressedReader creates a new io.Reader from the given ACI image.
-func NewCompressedReader(rs io.ReadSeeker) (io.Reader, error) {
+// NewCompressedReader creates a new io.ReaderCloser from the given ACI image.
+// It is the caller's responsibility to call Close on the Reader when done.
+func NewCompressedReader(rs io.ReadSeeker) (io.ReadCloser, error) {
 
 	var (
-		dr  io.Reader
+		dr  io.ReadCloser
 		err error
 	)
 
@@ -194,11 +211,11 @@ func NewCompressedReader(rs io.ReadSeeker) (io.Reader, error) {
 			return nil, err
 		}
 	case TypeBzip2:
-		dr = bzip2.NewReader(rs)
+		dr = ioutil.NopCloser(bzip2.NewReader(rs))
 	case TypeXz:
-		dr = XzReader(rs)
+		dr = ioutil.NopCloser(XzReader(rs))
 	case TypeTar:
-		dr = rs
+		dr = ioutil.NopCloser(rs)
 	case TypeUnknown:
 		return nil, errors.New("error: unknown image filetype")
 	default:
