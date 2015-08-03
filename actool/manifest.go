@@ -63,7 +63,7 @@ var (
 		  [--capability=CAP_SYS_ADMIN,CAP_NET_ADMIN]
 		  [--mounts=work,path=/opt,readOnly=true[:work2,...]]
 		  [--ports=query,protocol=tcp,port=8080[:query2,...]]
-		  [--isolators=resource/cpu,request=50,limit=100[:resource/memory,...]]
+		  [--isolators=resource/cpu,request=50m,limit=100m[:resource/memory,...]]
 		  [--replace]
 		  INPUT_ACI_FILE
 		  [OUTPUT_ACI_FILE]`,

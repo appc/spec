@@ -144,7 +144,7 @@ If the app/pod consumes a resource in excess of its limit, it must be terminated
 Limit and request quantities must always be represented internally (i.e. for encoding and any processing) as an integer value (i.e. NOT floating point) in a resource type's natural base units (e.g., bytes, not megabytes or gigabytes).
 For convenience, when specified by users quantities may either be unsuffixed, have metric suffices (E, P, T, G, M, K) or binary (power-of-two) suffices (Ei, Pi, Ti, Gi, Mi, Ki).
 For example, the following strings represent the same value: "128974848", "125952Ki", "123Mi".
-Sub-units (e.g. decimals, "0.3", or milli-units, "300m") are NOT permissible.
+Small quantities can be represented directly as decimals (e.g., 0.3), or using milli-units (e.g., "300m").
 
 #### resource/block-bandwidth
 
@@ -186,18 +186,18 @@ Sub-units (e.g. decimals, "0.3", or milli-units, "300m") are NOT permissible.
 
 **Parameters:**
 
-* **request** milli-cores that are requested
-* **limit** milli-cores that can be consumed before the kernel temporarily throttles the process
+* **request** cores that are requested
+* **limit** cores that can be consumed before the kernel temporarily throttles the process
 
 ```json
 "name": "resource/cpu",
 "value": {
-  "request": "250",
-  "limit": "500"
+  "request": "250m",
+  "limit": "500m"
 }
 ```
 
-**Note**: a milli-core is the milli-seconds/second that the app/pod will be able to run. e.g. 1000 would represent full use of a single CPU core every second.
+**Note**: a core is the seconds/second that the app/pod will be able to run. e.g. 1 (or 1000m for 1000 milli-seconds) would represent full use of a single CPU core every second.
 
 #### resource/memory
 
