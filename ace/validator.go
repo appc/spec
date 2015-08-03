@@ -42,17 +42,17 @@ TODO(jonboulle):
 */
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/appc/spec/schema"
@@ -471,24 +471,44 @@ func ValidateMetadataSvc() results {
 // checkMount checks that the given string is a mount point, and that it is
 // mounted appropriately read-only or not according to the given bool
 func checkMount(d string, readonly bool) error {
-	// or....
-	// os.Stat(path).Sys().(*syscall.Stat_t).Dev
-	sfs1 := &syscall.Statfs_t{}
-	if err := syscall.Statfs(d, sfs1); err != nil {
-		return fmt.Errorf("error calling statfs on %q: %v", d, err)
+	return checkMountImpl(d, readonly)
+}
+
+// parseMountinfo parses a Reader representing a /proc/PID/mountinfo file and
+// returns whether dir is mounted and if so, whether it is read-only or not
+func parseMountinfo(mountinfo io.Reader, dir string) (isMounted bool, readOnly bool, err error) {
+	sc := bufio.NewScanner(mountinfo)
+	for sc.Scan() {
+		var (
+			mountID      int
+			parentID     int
+			majorMinor   string
+			root         string
+			mountPoint   string
+			mountOptions string
+		)
+
+		_, err := fmt.Sscanf(sc.Text(), "%d %d %s %s %s %s",
+			&mountID, &parentID, &majorMinor, &root, &mountPoint, &mountOptions)
+		if err != nil {
+			return false, false, err
+		}
+
+		if mountPoint == dir {
+			isMounted = true
+			optionsParts := strings.Split(mountOptions, ",")
+			for _, o := range optionsParts {
+				switch o {
+				case "ro":
+					readOnly = true
+				case "rw":
+					readOnly = false
+				}
+			}
+		}
 	}
-	sfs2 := &syscall.Statfs_t{}
-	if err := syscall.Statfs(filepath.Dir(d), sfs2); err != nil {
-		return fmt.Errorf("error calling statfs on %q: %v", d, err)
-	}
-	if sfs1.Fsid == sfs2.Fsid {
-		return fmt.Errorf("%q is not a mount point", d)
-	}
-	ro := sfs1.Flags&syscall.O_RDONLY == 1
-	if ro != readonly {
-		return fmt.Errorf("%q mounted ro=%t, want %t", d, ro, readonly)
-	}
-	return nil
+
+	return
 }
 
 // assertNotExistsAndCreate asserts that a file at the given path does not
