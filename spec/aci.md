@@ -127,8 +127,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
             {
                 "name": "resource/cpu",
                 "value": {
-                    "request": "250",
-                    "limit": "500"
+                    "request": "250m",
+                    "limit": "500m"
                 }
             },
             {

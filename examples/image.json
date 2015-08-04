@@ -47,7 +47,7 @@
         "isolators": [
             {
                 "name": "resource/cpu",
-                "value": {"limit": "20"}
+                "value": {"limit": "20m"}
             },
             {
                 "name": "resource/memory",
