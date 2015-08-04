@@ -481,7 +481,7 @@ func checkMount(d string, readonly bool) error {
 	if err := syscall.Statfs(filepath.Dir(d), sfs2); err != nil {
 		return fmt.Errorf("error calling statfs on %q: %v", d, err)
 	}
-	if sfs1.Fsid == sfs2.Fsid {
+	if isSameFilesystem(sfs1, sfs2) {
 		return fmt.Errorf("%q is not a mount point", d)
 	}
 	ro := sfs1.Flags&syscall.O_RDONLY == 1
