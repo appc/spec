@@ -100,7 +100,11 @@ Discovery URLs that require interpolation are [RFC6570](https://tools.ietf.org/h
 Implementations of the spec are responsible for enforcing any signature validation rules set in place by the operator.
 For example, in a testing environment, signature validation might be disabled, in which case the implementation would omit the signature retrieval.
 
-Implementations must ensure that the name in the Image Manifest in the retrieved ACI matches the initial name used for discovery.
+Implementations MUST ensure that the initial name and labels used for discovery matches the name and labels in the Image Manifest.
+
+A label is considered to match if it meets one of two criteria:
+- It is present in the discovery labels and present in the Image Manifest with the same value.
+- It is absent from the discovery labels and present in Image Manifest, with any value.
 
 ### Authentication
 

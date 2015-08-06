@@ -249,15 +249,10 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 #### Dependency Matching
 
 Dependency matching is based on a combination of the three different fields of the dependency - **imageName**, **imageID**, and **labels**.
-First, the image discovery mechanism is used to locate a dependency based on the **imageName**.
-If any labels are specified in the dependency, they are passed to the image discovery mechanism, and will be used when locating the image.
+First, the image discovery mechanism is used to locate a dependency based on the **imageName** and **labels** (see [App Container Image Discovery](discovery.md)).
 
-If the image discovery process successfully returns an image, it will be compared as follows.
-If the dependency specification has an image ID, it will be compared against the hash of image returned, and must match.
-Otherwise, the labels in the dependency specification are compared against the labels in the retrieved ACI (i.e. in its ImageManifest), and must match.
-A label is considered to match if it meets one of two criteria:
-- It is present in the dependency specification and present in the dependency's ImageManifest with the same value.
-- It is absent from the dependency specification and present in the dependency's ImageManifest, with any value.
+If the image discovery process successfully returns an image and the dependency specification has an image ID, it will be compared against the hash of image returned, and MUST match.
+
 This facilitates "wildcard" matching and a variety of common usage patterns, like "noarch" or "latest" dependencies.
 For example, an ACI containing a set of bash scripts might omit both "os" and "arch", and hence could be used as a dependency by a variety of different ACIs.
 Alternatively, an ACI might specify a dependency with no image ID and no "version" label, and the image discovery mechanism could always retrieve the latest version of an ACI.
