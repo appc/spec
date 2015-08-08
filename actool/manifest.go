@@ -145,23 +145,31 @@ func patchManifest(im *schema.ImageManifest) error {
 		im.Name = *name
 	}
 
+	var app *types.App = im.App
 	if patchExec != "" {
-		im.App.Exec = strings.Split(patchExec, " ")
+		if app == nil {
+			// if the original manifest was missing an app and
+			// patchExec is set let's assume the user is trying to
+			// inject one...
+			app = &types.App{}
+		}
+		app.Exec = strings.Split(patchExec, " ")
+	}
+
+	if patchUser != "" || patchGroup != "" || patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" {
+		// ...but if we still don't have an app and the user is trying
+		// to patch one of its other parameters, it's an error
+		if app == nil {
+			return fmt.Errorf("no app in the supplied manifest and no exec command provided")
+		}
 	}
 
 	if patchUser != "" {
-		im.App.User = patchUser
-	}
-	if patchGroup != "" {
-		im.App.Group = patchGroup
+		app.User = patchUser
 	}
 
-	var app *types.App
-	if patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" {
-		app = im.App
-		if app == nil {
-			return fmt.Errorf("no app in the manifest")
-		}
+	if patchGroup != "" {
+		app.Group = patchGroup
 	}
 
 	if patchCaps != "" {
