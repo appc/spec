@@ -412,6 +412,7 @@ func runPatchManifest(args []string) (exit int) {
 		stderr("patch-manifest: Cannot extract %s: %v", inputFile, err)
 		return 1
 	}
+	defer tr.Close()
 
 	var newManifest []byte
 
@@ -430,7 +431,7 @@ func runPatchManifest(args []string) (exit int) {
 		}
 	}
 
-	err = extractManifest(tr, tw, false, newManifest)
+	err = extractManifest(tr.Reader, tw, false, newManifest)
 	if err != nil {
 		stderr("patch-manifest: Unable to read %s: %v", inputFile, err)
 		return 1
@@ -467,8 +468,9 @@ func runCatManifest(args []string) (exit int) {
 		stderr("cat-manifest: Cannot extract %s: %v", inputFile, err)
 		return 1
 	}
+	defer tr.Close()
 
-	err = extractManifest(tr, nil, true, nil)
+	err = extractManifest(tr.Reader, nil, true, nil)
 	if err != nil {
 		stderr("cat-manifest: Unable to read %s: %v", inputFile, err)
 		return 1
