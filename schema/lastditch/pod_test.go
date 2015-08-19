@@ -15,6 +15,7 @@
 package lastditch
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -77,17 +78,19 @@ func TestInvalidPodManifest(t *testing.T) {
 }
 
 func TestBogusPodManifest(t *testing.T) {
-	bogus := []string{`
-		{
-		    "acKind": "Bogus",
-		    "acVersion": "0.6.1",
-		}
-		`, `
-		<html>
-		    <head>
-		        <title>Certainly not a JSON</title>
-		    </head>
-		</html>`,
+	bogus := []string{
+		`
+			{
+			    "acKind": "Bogus",
+			    "acVersion": "0.6.1",
+			}
+			`,
+		`
+			<html>
+			    <head>
+				<title>Certainly not a JSON</title>
+			    </head>
+			</html>`,
 	}
 
 	for _, str := range bogus {
@@ -100,13 +103,13 @@ func TestBogusPodManifest(t *testing.T) {
 
 // podJ returns a pod manifest JSON with given apps
 func podJ(apps, extra string) string {
-	return `
+	return fmt.Sprintf(`
 		{
-		    ` + extra + `
+		    %s
 		    "acKind": "PodManifest",
 		    "acVersion": "0.6.1",
-		    "apps": [` + apps + `]
-		}`
+		    "apps": [%s]
+		}`, extra, apps)
 }
 
 // podI returns a pod manifest instance with given apps
@@ -123,12 +126,12 @@ func podI(apps ...RuntimeApp) PodManifest {
 
 // appJ returns an app JSON snippet with given name and image
 func appJ(name, image, extra string) string {
-	return `
+	return fmt.Sprintf(`
 		{
-		    ` + extra + `
-		    "name": "` + name + `",
-		    "image": ` + image + `
-		}`
+		    %s
+		    "name": "%s",
+		    "image": %s
+		}`, extra, name, image)
 }
 
 // appI returns an app instance with given name and image
@@ -141,12 +144,12 @@ func appI(name string, image Image) RuntimeApp {
 
 // imgJ returns an image JSON snippet with given name and id
 func imgJ(name, id, extra string) string {
-	return `
+	return fmt.Sprintf(`
 		{
-		    ` + extra + `
-		    "name": "` + name + `",
-		    "id": "` + id + `"
-		}`
+		    %s
+		    "name": "%s",
+		    "id": "%s"
+		}`, extra, name, id)
 }
 
 // imgI returns an image instance with given name and id
