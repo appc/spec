@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/appc/spec.png?branch=master)](https://travis-ci.org/appc/spec)
 
+![appc logo](logos/appc-horizontal-color.png)
+
 This repository contains schema definitions and tools for the App Container (appc) specification.
 These include technical details on how an appc image is downloaded over a network, cryptographically verified, and executed on a host.
 See [SPEC.md](SPEC.md) for details of the specification itself.
