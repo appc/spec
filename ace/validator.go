@@ -429,7 +429,7 @@ func validateSigning(metadataURL string, pm *schema.PodManifest) results {
 	// Verify
 	_, err = metadataPostForm(metadataURL, "/pod/hmac/verify", url.Values{
 		"content":   []string{plaintext},
-		"uid":       []string{string(uuid)},
+		"uuid":      []string{string(uuid)},
 		"signature": []string{string(sig)},
 	})
 
