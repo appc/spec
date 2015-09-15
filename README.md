@@ -44,6 +44,7 @@ Some examples of build systems and tools that have been built so far include:
 - [actool](https://github.com/appc/spec/tree/master/actool) - Simple tool to assemble ACIs from root filesystems
 - [acbuild](https://github.com/appc/acbuild) - A versatile tool for building and manipulating ACIs
 - [baci](https://github.com/sgotti/baci) - A generic ACI build project
+- [openwrt-aci](https://github.com/1player/openwrt-aci) - A tool to build ACIs based on OpenWRT snapshots
 
 ## What are some implementations of the spec?
 
@@ -64,7 +65,9 @@ App Container is an open-source, community-driven project, developed under the [
 
 ### Building ACIs
 
-`actool` can be used to build an Application Container Image from an [Image Layout](spec/aci.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs).
+Various tools [listed above](#what-is-the-promise-of-the-app-container-spec) can be used to build ACIs from existing images or based on other sources.
+
+As an example of building an ACI from scratch, `actool` can be used to build an Application Container Image from an [Image Layout](spec/aci.md#image-layout) - that is, from an Image Manifest and an application root filesystem (rootfs).
 
 For example, to build a simple ACI (in this case consisting of a single binary), one could do the following:
 ```
