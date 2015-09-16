@@ -151,7 +151,8 @@ func patchManifest(im *schema.ImageManifest) error {
 			// if the original manifest was missing an app and
 			// patchExec is set let's assume the user is trying to
 			// inject one...
-			app = &types.App{}
+			im.App = &types.App{}
+			app = im.App
 		}
 		app.Exec = strings.Split(patchExec, " ")
 	}
