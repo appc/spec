@@ -15,6 +15,10 @@ The core goals of the specification include:
 * Using common technologies for cryptography, archiving, compression and transport
 * Using the DNS namespace to name and discover images
 
+### Requirements
+
+The key words "MUST", "MUST NOT", "REQUIRED", "SHALL", "SHALL NOT", "SHOULD", "SHOULD NOT", "RECOMMENDED", "MAY", and "OPTIONAL" in this and other documents of the specification are to be interpreted as described in [RFC2119](http://tools.ietf.org/html/rfc2119).
+
 ## Sections
 
 The specification consists of several key sections; the goal is that each can be implemented independently, but are composable with one another.

@@ -26,9 +26,12 @@ This UUID is exposed to the pod through the [Metadata Service](#app-container-me
 Each app in a pod will start chrooted into its own unique read-write filesystem before execution.
 
 An app's filesystem must be *rendered* in an empty directory by the following process (or equivalent):
-- The `rootfs` contained in the ACI is extracted
-- If the ACI contains a non-empty `dependencies` field in its `ImageManifest`, the `rootfs` of each dependent image is extracted, in the order in which they are listed
-- If the ACI contains a non-empty `pathWhitelist` field in its `ImageManifest`, *all* paths not in the whitelist must be removed
+
+1. If the ACI contains a non-empty `dependencies` field in its `ImageManifest`, the `rootfs` of each dependent image is extracted into the target directory, in the order in which they are listed.
+2. The `rootfs` contained in the ACI is extracted into the target directory
+3. If the ACI contains a non-empty `pathWhitelist` field in its `ImageManifest`, *all* paths not in the whitelist must be removed from the target directory
+
+If during rootfs extraction a path is already present in the target directory from an earlier dependency, the previously extracted path MUST be overwritten. If the existing path is a symbolic link to a directory, the link MUST NOT be followed and it MUST be removed and replaced with the new path.
 
 Every execution of an app MUST start from a clean copy of this rendered filesystem.
 
@@ -48,6 +51,14 @@ These details are orthogonal to the runtime environment.
 Volumes that are specified in the Pod Manifest are mounted into each of the apps via a bind mount (or equivalent).
 For example, say that the worker-backup and reduce-worker both have a `mountPoint` named "work".
 In this case, the executor will bind mount the host's `/opt/tenant1/work` directory into the `path` of each of the matching "work" `mountPoint`s of the two app filesystems.
+
+If the target `path` does not exist in the rendered filesystem, it SHOULD be created, including any missing parent directories. If the target `path` is a non-empty directory, its contents SHOULD be discarded (e.g. obscured by the bind mount). If the target `path` refers to a file, ACE SHOULD remove that file and create a directory in its place.
+
+Mount point `path` directories that ACE creates SHOULD be owned by UID 0 and GID 0, and have access mode `0755` (`rwxr-xr-xr-x`). ACE implementation MAY provide a method for administrator to specify different permissions on a per-pod basis.
+
+ACE MUST NOT create any paths in the host file system, and is REQUIRED to consider missing volume source paths as an error. If an underlying operating system supports it ACE MAY implement single-file volumes.
+
+If host volume's `source` path is a symbolic link, ACE SHOULD consider it an error, and SHOULD NOT attempt to use this link's target as volume. ACE MAY also consider it an error if any intermediate directory in volume's `source` path is a symbolic link. If ACE chooses to support symbolic links as volume sources, it MUST provide a way to enable or disable this behaviour on a per-pod basis (e.g. as a boolean isolator or a command line switch).
 
 #### Network Setup
 
