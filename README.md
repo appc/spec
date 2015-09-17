@@ -45,6 +45,7 @@ Some examples of build systems and tools that have been built so far include:
 - [acbuild](https://github.com/appc/acbuild) - A versatile tool for building and manipulating ACIs
 - [baci](https://github.com/sgotti/baci) - A generic ACI build project
 - [openwrt-aci](https://github.com/1player/openwrt-aci) - A tool to build ACIs based on OpenWRT snapshots
+- [oci2aci](https://github.com/huawei-openlab/oci2aci) - ACI builder from OCI bundle
 
 ## What are some implementations of the spec?
 
