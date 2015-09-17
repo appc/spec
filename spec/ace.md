@@ -53,8 +53,11 @@ For example, say that the worker-backup and reduce-worker both have a `mountPoin
 In this case, the executor will bind mount the host's `/opt/tenant1/work` directory into the `path` of each of the matching "work" `mountPoint`s of the two app filesystems.
 
 If the target `path` does not exist in the rendered filesystem, it SHOULD be created, including any missing parent directories.
+
 If the target `path` is a non-empty directory, its contents SHOULD be discarded (e.g. obscured by the bind mount).
 If the target `path` refers to a file, the ACE SHOULD remove that file and create a directory in its place.
+In either of these cases, the ACE SHOULD warn the user that existing files are being masked by a volume.
+
 If multiple targets have overlapping target `path`s (for example, if one is nested within another), the ACE SHOULD consider this an error.
 
 The target `path` directories that the ACE creates SHOULD be owned by UID 0 and GID 0, and have access mode `0755` (`rwxr-xr-xr-x`).
