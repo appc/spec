@@ -30,7 +30,7 @@
                 ]
             },
             "mounts": [
-                {"volume": "work", "mountPoint": "work"}
+                {"volume": "work", "path": "/mnt/foo"}
             ]
         },
         {
@@ -46,8 +46,8 @@
                 ]
             },
             "mounts": [
-                {"volume": "database", "mountPoint": "db"},
-                {"volume": "buildoutput", "mountPoint": "out"}
+                {"volume": "database", "path": "/mnt/db"},
+                {"volume": "buildoutput", "path": "/mnt/out"}
             ],
             "annotations": [
                 {
