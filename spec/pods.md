@@ -54,12 +54,15 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
                 "mountPoints": [
                     {
                         "name": "work",
-                        "path": "/mnt/foo"
+                        "path": "/var/lib/work"
                     }
                 ]
             },
             "mounts": [
-                {"volume": "work", "path": "/mnt/foo"}
+                {
+                    "volume": "worklib",
+                    "path": "/var/lib/work"
+                }
             ]
         },
         {
@@ -94,7 +97,10 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
                 ]
             },
             "mounts": [
-                {"volume": "work", "path": "/mnt/bar"}
+                {
+                    "volume": "worklib",
+                    "path": "/mnt/bar"
+                }
             ],
             "annotations": [
                 {
@@ -119,7 +125,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
     ],
     "volumes": [
         {
-            "name": "work",
+            "name": "worklib",
             "kind": "host",
             "source": "/opt/tenant1/work",
             "readOnly": true
@@ -158,11 +164,11 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
         * **labels** (list of objects, optional) additional labels characterizing the image
     * **app** (object, optional) substitute for the app object of the referred image's ImageManifest. See [Image Manifest Schema](aci.md#image-manifest-schema) for what the app object contains.
     * **mounts** (list of objects, optional) list of mounts mapping an app mountPoint to a volume. Each mount has the following set of key-value pairs:
-      * **volume** (string, required) name of the volume that will fulfill this mount (restricted to the [AC Name](types.md#ac-name-type) formatting)
-      * **path** (string, required) path inside of the app filesystem to mount the volume; generally this will come from one of an apps mountPoint paths
+      * **volume** (string, required) name of the volume that will fulfill this mount (restricted to the [AC Name](types.md#ac-name-type) formatting); this is a key into the list of `volumes`, below.
+      * **path** (string, required) path inside the app filesystem to mount the volume; generally this will come from one of an app's mountPoint paths. For example, if an app has a mountPoint named "work" with path "/var/lib/work", an executor should map an appropriate volume to fulfill that mountPoint by using a `mount` object with that path.
     * **annotations** (list of objects, optional) arbitrary metadata appended to the app. The annotation objects must have a *name* key that has a value that is restricted to the [AC Name](types.md#ac-name-type) formatting and *value* key that is an arbitrary string). Annotation names must be unique within the list. These will be merged with annotations provided by the image manifest when queried via the metadata service; values in this list take precedence over those in the image manifest.
 * **volumes** (list of objects, optional) list of volumes which will be mounted into each application's filesystem
-    * **name** (string, required) descriptive label for the volume. (restricted to the [AC Name](types.md#ac-name-type) formatting)
+    * **name** (string, required) descriptive label for the volume (restricted to the [AC Name](types.md#ac-name-type) formatting), used as an index by the `mounts` objects (above).
     * **readOnly** (boolean, optional, defaults to "false" if unsupplied) whether or not the volume will be mounted read only.
     * **kind** (string, required) either:
         * **empty** - creates an empty directory on the host and bind mounts it into the container. All containers in the pod share the mount, and the lifetime of the volume is equal to the lifetime of the pod (i.e. the directory on the host machine is removed when the pod's filesystem is garbage collected)
