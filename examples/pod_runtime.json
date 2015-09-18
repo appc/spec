@@ -1,6 +1,6 @@
 {
-    "acVersion": "0.6.1",
     "acKind": "PodManifest",
+    "acVersion": "0.6.1",
     "apps": [
         {
             "name": "reduce-worker",
@@ -10,7 +10,7 @@
             },
             "app": {
                 "exec": [
-                    "/bin/reduce-worker",
+                    "/usr/bin/reduce-worker",
                     "--debug=true",
                     "--data-dir=/mnt/foo"
                 ],
@@ -18,8 +18,8 @@
                 "user": "0",
                 "mountPoints": [
                     {
-                        "name": "work",
-                        "path": "/mnt/foo"
+                        "name": "database",
+                        "path": "/var/lib/db"
                     }
                 ],
                 "isolators": [
@@ -30,7 +30,10 @@
                 ]
             },
             "mounts": [
-                {"volume": "work", "path": "/mnt/foo"}
+                {
+                    "volume": "dbvolume",
+                    "path": "/var/lib/db"
+                }
             ]
         },
         {
@@ -46,8 +49,14 @@
                 ]
             },
             "mounts": [
-                {"volume": "database", "path": "/mnt/db"},
-                {"volume": "buildoutput", "path": "/mnt/out"}
+                {
+                    "volume": "dbvolume",
+                    "path": "/mnt/db"
+                },
+                {
+                    "volume": "buildoutput",
+                    "path": "/mnt/out"
+                }
             ],
             "annotations": [
                 {
@@ -72,7 +81,7 @@
     ],
     "volumes": [
         {
-            "name": "database",
+            "name": "dbvolume",
             "kind": "host",
             "source": "/opt/tenant1/database",
             "readOnly": true
