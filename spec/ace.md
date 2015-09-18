@@ -68,8 +68,8 @@ If the ACE does modify the host file system, it SHOULD be possible to disable th
 The ACE MAY implement single-file volumes if the underlying operating system supports it.
 
 If the host volume's `source` path is a symbolic link, the ACE SHOULD consider it an error, and SHOULD NOT attempt to use this link's target as volume.
-The ACE MAY also consider it an error if any intermediate directory in volume's `source` path is a symbolic link.
-If the ACE chooses to support symbolic links as volume sources, it MUST provide a way to enable or disable this behaviour on a per-pod basis (e.g. as a boolean isolator or a command line switch).
+The ACE SHOULD also consider it an error if any intermediate directory in volume's `source` path is a symbolic link.
+If the ACE chooses to support symbolic links as volume sources, it SHOULD provide a way to enable or disable this behaviour on a per-pod basis (e.g. as a boolean isolator or a command line switch).
 
 #### Network Setup
 
