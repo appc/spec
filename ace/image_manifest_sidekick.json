@@ -1,9 +1,9 @@
 {
-    "acVersion": "0.6.1",
+    "acVersion": "0.7.0",
     "acKind": "ImageManifest",
     "name": "coreos.com/ace-validator-sidekick",
     "labels": [
-        { "name": "version", "value": "0.6.1" },
+        { "name": "version", "value": "0.7.0" },
         { "name": "os", "value": "linux" },
         { "name": "arch", "value": "amd64" }
     ],
