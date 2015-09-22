@@ -37,13 +37,15 @@ type ACIEndpoint struct {
 }
 
 type Endpoints struct {
-	ACIEndpoints []ACIEndpoint
-	Keys         []string
+	ACIEndpoints     []ACIEndpoint
+	Keys             []string
+	ACIPushEndpoints []string
 }
 
 func (e *Endpoints) Append(ep Endpoints) {
 	e.ACIEndpoints = append(e.ACIEndpoints, ep.ACIEndpoints...)
 	e.Keys = append(e.Keys, ep.Keys...)
+	e.ACIPushEndpoints = append(e.ACIPushEndpoints, ep.ACIPushEndpoints...)
 }
 
 const (
@@ -162,6 +164,9 @@ func doDiscover(pre string, app App, insecure bool) (*Endpoints, error) {
 
 		case "ac-discovery-pubkeys":
 			de.Keys = append(de.Keys, m.uri)
+		case "ac-push-discovery":
+			uri, _ := renderTemplate(m.uri, tplVars...)
+			de.ACIPushEndpoints = append(de.ACIPushEndpoints, uri)
 		}
 	}
 
@@ -220,7 +225,7 @@ func walker(out *Endpoints, attempts *[]FailedAttempt, testFn DiscoverWalkFunc) 
 func DiscoverEndpoints(app App, insecure bool) (out *Endpoints, attempts []FailedAttempt, err error) {
 	out = &Endpoints{}
 	testFn := func(pre string, eps *Endpoints, err error) error {
-		if len(out.ACIEndpoints) != 0 {
+		if len(out.ACIEndpoints) != 0 || len(out.Keys) != 0 || len(out.ACIPushEndpoints) != 0 {
 			return errEnough
 		}
 		return nil
