@@ -1,3 +1,38 @@
+### v0.7.0
+
+Next major release of the spec, with a lot of tooling improvements, wording clarifications, and one breaking schema change from the previous release.
+
+Spec changes since v0.6.1:
+- The `mount` objects in pod manifests now refer directly to a path rather than referencing an app's mountPoint. This makes it easier for implementations to provide supplementary, arbitrary mounts in pods without needing to modify app sections in the pod manifest. This is a breaking schema change; however, implementations are suggested to preserve similar behaviour to the previous three-level mount mappings by continuing to use mountPoints name fields to generate mount<->volume mappings (#364, #495)
+- The resource/cpu unit has changed to cpu cores, instead of millicores (#468)
+- The wording around unpacking of ACI dependencies was reworked to clarify the expected order of unpacking (#425, #431, #494)
+- The wording around mounting volumes was expanded to advise much more explicit behaviour and protect various attack vectors for hosts (#431, #494)
+- App sections now support a `supplementaryGroups` field, which allows users to specify a list of additional GIDs that the processes of the app should run with (#339)
+- A new "Dependency Matching" section better explains the label matching process during dependency resolution (#469)
+- Clarified wording around the "empty" volume type (#449)
+
+Tooling changes and features:
+- Added an `IsValidOSArch` function implementations can use
+- When patching ACIs that do not have an `app` section in their manifest, actool will now automatically inject an App iff the user specifies an exec statement (#473, #489)
+- actool now warns if a manifest's ACVersion is too old (#322)
+- The NewCompressedReader function in the aci package now returns an io.ReadCloser instead of an io.Reader to facilitate closing the reader in the case of xz compression. (#462)
+- Added a new last-ditch parser of pod and image manifests to facilitate retrieving some debugging information for badly-formed manifests (#477)
+
+Schema and tooling bugfixes:
+- actool now validates layouts before opening output file so that it does not create empty files or truncate existing ones if a layout is invalid (#322)
+- Fixed a panic when `actool patch-manifest` is supplied with an ACI with no app section in its ImageManifest (#473)
+- ACE validator's name is ACName compatible (#448)
+- ACE validator's mountpoint checking is now more robust on Linux and works on FreeBSD (#467)
+- `build_aci` now works if NO_SIGNATURE is set
+- `build_aci` properly generates an armored signature (#460)
+- Fixed a typo in the ACE validator (uid should be uuid) (#485)
+
+Other changes:
+- Rewrote the kubernetes import path in Godeps (#471)
+- pkg/device is now buildable on OS X (#486)
+- schema code is now tested against Go 1.5
+- Added explicit reference to RFC2119 regarding wording
+
 ### v0.6.1
 
 Minor release of the spec; the most important change is adjusting the type for

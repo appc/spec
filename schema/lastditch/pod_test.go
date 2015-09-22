@@ -82,7 +82,7 @@ func TestBogusPodManifest(t *testing.T) {
 		`
 			{
 			    "acKind": "Bogus",
-			    "acVersion": "0.6.1",
+			    "acVersion": "0.7.0",
 			}
 			`,
 		`
@@ -107,7 +107,7 @@ func podJ(apps, extra string) string {
 		{
 		    %s
 		    "acKind": "PodManifest",
-		    "acVersion": "0.6.1",
+		    "acVersion": "0.7.0",
 		    "apps": [%s]
 		}`, extra, apps)
 }
@@ -118,7 +118,7 @@ func podI(apps ...RuntimeApp) PodManifest {
 		apps = AppList{}
 	}
 	return PodManifest{
-		ACVersion: "0.6.1",
+		ACVersion: "0.7.0",
 		ACKind:    "PodManifest",
 		Apps:      apps,
 	}

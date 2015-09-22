@@ -26,7 +26,7 @@ func TestImageManifestWithInvalidName(t *testing.T) {
 	imj := `
 		{
 		    "acKind": "ImageManifest",
-		    "acVersion": "0.6.1",
+		    "acVersion": "0.7.0",
 		    "name": "` + invalidName + `"
 		}
 		`
@@ -35,7 +35,7 @@ func TestImageManifestWithInvalidName(t *testing.T) {
 	}
 	expected := ImageManifest{
 		ACKind:    "ImageManifest",
-		ACVersion: "0.6.1",
+		ACVersion: "0.7.0",
 		Name:      invalidName,
 	}
 	im := ImageManifest{}
@@ -51,7 +51,7 @@ func TestBogusImageManifest(t *testing.T) {
 	bogus := []string{`
 		{
 		    "acKind": "Bogus",
-		    "acVersion": "0.6.1",
+		    "acVersion": "0.7.0",
 		}
 		`, `
 		<html>
