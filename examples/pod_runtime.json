@@ -102,5 +102,6 @@
             "name": "ip-address",
             "value": "10.1.2.3"
         }
-    ]
+    ],
+    "restartPolicy": "onFailure"
 }

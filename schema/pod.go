@@ -25,13 +25,14 @@ import (
 const PodManifestKind = types.ACKind("PodManifest")
 
 type PodManifest struct {
-	ACVersion   types.SemVer        `json:"acVersion"`
-	ACKind      types.ACKind        `json:"acKind"`
-	Apps        AppList             `json:"apps"`
-	Volumes     []types.Volume      `json:"volumes"`
-	Isolators   []types.Isolator    `json:"isolators"`
-	Annotations types.Annotations   `json:"annotations"`
-	Ports       []types.ExposedPort `json:"ports"`
+	ACVersion     types.SemVer        `json:"acVersion"`
+	ACKind        types.ACKind        `json:"acKind"`
+	Apps          AppList             `json:"apps"`
+	Volumes       []types.Volume      `json:"volumes"`
+	Isolators     []types.Isolator    `json:"isolators"`
+	Annotations   types.Annotations   `json:"annotations"`
+	Ports         []types.ExposedPort `json:"ports"`
+	RestartPolicy types.RestartPolicy `json:"restartPolicy"`
 }
 
 // podManifest is a model to facilitate extra validation during the
