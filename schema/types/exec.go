@@ -25,10 +25,7 @@ type Exec []string
 type exec Exec
 
 func (e Exec) assertValid() error {
-	if len(e) < 1 {
-		return errors.New(`exec cannot be empty`)
-	}
-	if !filepath.IsAbs(e[0]) {
+	if len(e) > 0 && !filepath.IsAbs(e[0]) {
 		return errors.New(`exec[0] must be absolute path`)
 	}
 	return nil

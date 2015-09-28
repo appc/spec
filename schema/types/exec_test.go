@@ -31,7 +31,6 @@ func TestExecValid(t *testing.T) {
 
 func TestExecInvalid(t *testing.T) {
 	tests := []Exec{
-		Exec{},
 		Exec{"app"},
 	}
 	for i, tt := range tests {
