@@ -25,6 +25,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/appc/spec/aci"
@@ -36,18 +37,19 @@ var (
 	inputFile  string
 	outputFile string
 
-	patchNocompress   bool
-	patchOverwrite    bool
-	patchReplace      bool
-	patchManifestFile string
-	patchName         string
-	patchExec         string
-	patchUser         string
-	patchGroup        string
-	patchCaps         string
-	patchMounts       string
-	patchPorts        string
-	patchIsolators    string
+	patchNocompress          bool
+	patchOverwrite           bool
+	patchReplace             bool
+	patchManifestFile        string
+	patchName                string
+	patchExec                string
+	patchUser                string
+	patchGroup               string
+	patchSupplementaryGroups string
+	patchCaps                string
+	patchMounts              string
+	patchPorts               string
+	patchIsolators           string
 
 	catPrettyPrint bool
 
@@ -88,6 +90,7 @@ func init() {
 	cmdPatchManifest.Flags.StringVar(&patchExec, "exec", "", "Replace the command line to launch the executable")
 	cmdPatchManifest.Flags.StringVar(&patchUser, "user", "", "Replace user")
 	cmdPatchManifest.Flags.StringVar(&patchGroup, "group", "", "Replace group")
+	cmdPatchManifest.Flags.StringVar(&patchSupplementaryGroups, "supplementary-groups", "", "Replace supplementary groups, expects a comma-separated list.")
 	cmdPatchManifest.Flags.StringVar(&patchCaps, "capability", "", "Replace capability")
 	cmdPatchManifest.Flags.StringVar(&patchMounts, "mounts", "", "Replace mount points")
 	cmdPatchManifest.Flags.StringVar(&patchPorts, "ports", "", "Replace ports")
@@ -157,7 +160,7 @@ func patchManifest(im *schema.ImageManifest) error {
 		app.Exec = strings.Split(patchExec, " ")
 	}
 
-	if patchUser != "" || patchGroup != "" || patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" {
+	if patchUser != "" || patchGroup != "" || patchSupplementaryGroups != "" || patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" {
 		// ...but if we still don't have an app and the user is trying
 		// to patch one of its other parameters, it's an error
 		if app == nil {
@@ -171,6 +174,18 @@ func patchManifest(im *schema.ImageManifest) error {
 
 	if patchGroup != "" {
 		app.Group = patchGroup
+	}
+
+	if patchSupplementaryGroups != "" {
+		app.SupplementaryGroups = []int{}
+		gids := strings.Split(patchSupplementaryGroups, ",")
+		for _, g := range gids {
+			gid, err := strconv.Atoi(g)
+			if err != nil {
+				return fmt.Errorf("invalid supplementary group %q: %v", g, err)
+			}
+			app.SupplementaryGroups = append(app.SupplementaryGroups, gid)
+		}
 	}
 
 	if patchCaps != "" {
