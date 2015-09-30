@@ -24,7 +24,7 @@ func TestInvalidPodManifest(t *testing.T) {
 	// empty image JSON
 	eImgJ := "{}"
 	// empty image instance
-	eImgI := imgI("", "")
+	eImgI := rImgI("", "")
 	tests := []struct {
 		desc     string
 		json     string
@@ -47,8 +47,8 @@ func TestInvalidPodManifest(t *testing.T) {
 		},
 		{
 			desc:     "Check a pod manifest with an invalid image name and ID",
-			json:     podJ(appJ("?", imgJ("!!!", "&&&", ""), ""), ""),
-			expected: podI(appI("?", imgI("!!!", "&&&"))),
+			json:     podJ(appJ("?", rImgJ("!!!", "&&&", ""), ""), ""),
+			expected: podI(appI("?", rImgI("!!!", "&&&"))),
 		},
 		{
 			desc:     "Check if we ignore extra fields in a pod",
@@ -62,8 +62,8 @@ func TestInvalidPodManifest(t *testing.T) {
 		},
 		{
 			desc:     "Check if we ignore extra fields in an image",
-			json:     podJ(appJ("a", imgJ("i", "id", `"labels": [],`), `"mounts": [],`), `"ports": [],`),
-			expected: podI(appI("a", imgI("i", "id"))),
+			json:     podJ(appJ("a", rImgJ("i", "id", `"labels": [],`), `"mounts": [],`), `"ports": [],`),
+			expected: podI(appI("a", rImgI("i", "id"))),
 		},
 	}
 	for _, tt := range tests {
@@ -135,15 +135,15 @@ func appJ(name, image, extra string) string {
 }
 
 // appI returns an app instance with given name and image
-func appI(name string, image Image) RuntimeApp {
+func appI(name string, image RuntimeImage) RuntimeApp {
 	return RuntimeApp{
 		Name:  name,
 		Image: image,
 	}
 }
 
-// imgJ returns an image JSON snippet with given name and id
-func imgJ(name, id, extra string) string {
+// rImgJ returns a runtime image JSON snippet with given name and id
+func rImgJ(name, id, extra string) string {
 	return fmt.Sprintf(`
 		{
 		    %s
@@ -152,9 +152,9 @@ func imgJ(name, id, extra string) string {
 		}`, extra, name, id)
 }
 
-// imgI returns an image instance with given name and id
-func imgI(name, id string) Image {
-	return Image{
+// rImgI returns a runtime image instance with given name and id
+func rImgI(name, id string) RuntimeImage {
+	return RuntimeImage{
 		Name: name,
 		ID:   id,
 	}

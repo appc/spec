@@ -30,11 +30,11 @@ type PodManifest struct {
 type AppList []RuntimeApp
 
 type RuntimeApp struct {
-	Name  string `json:"name"`
-	Image Image  `json:"image"`
+	Name  string       `json:"name"`
+	Image RuntimeImage `json:"image"`
 }
 
-type Image struct {
+type RuntimeImage struct {
 	Name string `json:"name"`
 	ID   string `json:"id"`
 }
