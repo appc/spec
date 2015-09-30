@@ -17,14 +17,11 @@ package lastditch
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
 func TestInvalidPodManifest(t *testing.T) {
-	// empty image JSON
-	eImgJ := "{}"
-	// empty image instance
-	eImgI := rImgI("", "")
 	tests := []struct {
 		desc     string
 		json     string
@@ -32,38 +29,48 @@ func TestInvalidPodManifest(t *testing.T) {
 	}{
 		{
 			desc:     "Check an empty pod manifest",
-			json:     podJ("", ""),
-			expected: podI(),
+			json:     podJ(appsJ(), ""),
+			expected: podI(appsI()),
+		},
+		{
+			desc:     "Check a pod manifest with an empty app",
+			json:     podJ(appsJ(appJ("", rImgJ("i", "id", ""), "")), ""),
+			expected: podI(appsI(appI("", rImgI("i", "id")))),
+		},
+		{
+			desc:     "Check a pod manifest with an app based on an empty image",
+			json:     podJ(appsJ(appJ("a", rImgJ("", "", ""), "")), ""),
+			expected: podI(appsI(appI("a", rImgI("", "")))),
 		},
 		{
 			desc:     "Check a pod manifest with an invalid app name",
-			json:     podJ(appJ("!", eImgJ, ""), ""),
-			expected: podI(appI("!", eImgI)),
+			json:     podJ(appsJ(appJ("!", rImgJ("i", "id", ""), "")), ""),
+			expected: podI(appsI(appI("!", rImgI("i", "id")))),
 		},
 		{
 			desc:     "Check a pod manifest with duplicated app names",
-			json:     podJ(appJ("a", eImgJ, "")+","+appJ("a", eImgJ, ""), ""),
-			expected: podI(appI("a", eImgI), appI("a", eImgI)),
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", ""), ""), appJ("a", rImgJ("", "", ""), "")), ""),
+			expected: podI(appsI(appI("a", rImgI("i", "id")), appI("a", rImgI("", "")))),
 		},
 		{
 			desc:     "Check a pod manifest with an invalid image name and ID",
-			json:     podJ(appJ("?", rImgJ("!!!", "&&&", ""), ""), ""),
-			expected: podI(appI("?", rImgI("!!!", "&&&"))),
+			json:     podJ(appsJ(appJ("?", rImgJ("!!!", "&&&", ""), "")), ""),
+			expected: podI(appsI(appI("?", rImgI("!!!", "&&&")))),
 		},
 		{
-			desc:     "Check if we ignore extra fields in a pod",
-			json:     podJ("", `"ports": [],`),
-			expected: podI(),
+			desc:     "Check a pod manifest with some extra fields",
+			json:     podJ(appsJ(), extJ("goblins")),
+			expected: podI(appsI()),
 		},
 		{
-			desc:     "Check if we ignore extra fields in an app",
-			json:     podJ(appJ("a", eImgJ, `"mounts": [],`), `"ports": [],`),
-			expected: podI(appI("a", eImgI)),
+			desc:     "Check a pod manifest with an app containing some extra fields",
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", ""), extJ("trolls"))), extJ("goblins")),
+			expected: podI(appsI(appI("a", rImgI("i", "id")))),
 		},
 		{
-			desc:     "Check if we ignore extra fields in an image",
-			json:     podJ(appJ("a", rImgJ("i", "id", `"labels": [],`), `"mounts": [],`), `"ports": [],`),
-			expected: podI(appI("a", rImgI("i", "id"))),
+			desc:     "Check a pod manifest with an app based on an image containing some extra fields",
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", extJ("stuff")), extJ("trolls"))), extJ("goblins")),
+			expected: podI(appsI(appI("a", rImgI("i", "id")))),
 		},
 	}
 	for _, tt := range tests {
@@ -72,7 +79,7 @@ func TestInvalidPodManifest(t *testing.T) {
 			t.Errorf("%s: unexpected error during unmarshalling pod manifest: %v", tt.desc, err)
 		}
 		if !reflect.DeepEqual(tt.expected, got) {
-			t.Errorf("%s: did not get expected pod manifest, got: %+v, expected: %+v", tt.desc, got, tt.expected)
+			t.Errorf("%s: did not get expected pod manifest, got:\n  %#v\nexpected:\n  %#v", tt.desc, got, tt.expected)
 		}
 	}
 }
@@ -108,20 +115,30 @@ func podJ(apps, extra string) string {
 		    %s
 		    "acKind": "PodManifest",
 		    "acVersion": "0.7.0",
-		    "apps": [%s]
+		    "apps": %s
 		}`, extra, apps)
 }
 
 // podI returns a pod manifest instance with given apps
-func podI(apps ...RuntimeApp) PodManifest {
-	if apps == nil {
-		apps = AppList{}
-	}
+func podI(apps AppList) PodManifest {
 	return PodManifest{
 		ACVersion: "0.7.0",
 		ACKind:    "PodManifest",
 		Apps:      apps,
 	}
+}
+
+// appsJ returns an applist JSON snippet with given apps
+func appsJ(apps ...string) string {
+	return fmt.Sprintf("[%s]", strings.Join(apps, ","))
+}
+
+// appsI returns an applist instance with given apps
+func appsI(apps ...RuntimeApp) AppList {
+	if apps == nil {
+		return AppList{}
+	}
+	return apps
 }
 
 // appJ returns an app JSON snippet with given name and image
