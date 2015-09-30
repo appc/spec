@@ -16,10 +16,42 @@ package lastditch
 
 import (
 	"fmt"
+	"strings"
 )
 
 // extJ returns a JSON snippet describing an extra field with a given
 // name
 func extJ(name string) string {
 	return fmt.Sprintf(`"%s": [],`, name)
+}
+
+// labsJ returns a labels array JSON snippet with given labels
+func labsJ(labels ...string) string {
+	return fmt.Sprintf("[%s]", strings.Join(labels, ","))
+}
+
+// labsI returns a labels array instance with given labels
+func labsI(labels ...Label) Labels {
+	if labels == nil {
+		return Labels{}
+	}
+	return labels
+}
+
+// labJ returns a label JSON snippet with given name and value
+func labJ(name, value, extra string) string {
+	return fmt.Sprintf(`
+		{
+		    %s
+		    "name": "%s",
+		    "value": "%s"
+		}`, extra, name, value)
+}
+
+// labI returns a label instance with given name and value
+func labI(name, value string) Label {
+	return Label{
+		Name:  name,
+		Value: value,
+	}
 }

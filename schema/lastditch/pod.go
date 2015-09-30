@@ -35,8 +35,9 @@ type RuntimeApp struct {
 }
 
 type RuntimeImage struct {
-	Name string `json:"name"`
-	ID   string `json:"id"`
+	Name   string `json:"name"`
+	ID     string `json:"id"`
+	Labels Labels `json:"labels,omitempty"`
 }
 
 // a type just to avoid a recursion during unmarshalling
