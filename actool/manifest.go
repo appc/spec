@@ -45,7 +45,7 @@ var (
 	patchExec              string
 	patchUser              string
 	patchGroup             string
-	patchSupplementaryGids string
+	patchSupplementaryGIDs string
 	patchCaps              string
 	patchMounts            string
 	patchPorts             string
@@ -91,7 +91,7 @@ func init() {
 	cmdPatchManifest.Flags.StringVar(&patchExec, "exec", "", "Replace the command line to launch the executable")
 	cmdPatchManifest.Flags.StringVar(&patchUser, "user", "", "Replace user")
 	cmdPatchManifest.Flags.StringVar(&patchGroup, "group", "", "Replace group")
-	cmdPatchManifest.Flags.StringVar(&patchSupplementaryGids, "supplementary-groups", "", "Replace supplementary groups, expects a comma-separated list.")
+	cmdPatchManifest.Flags.StringVar(&patchSupplementaryGIDs, "supplementary-groups", "", "Replace supplementary groups, expects a comma-separated list.")
 	cmdPatchManifest.Flags.StringVar(&patchCaps, "capability", "", "Replace capability")
 	cmdPatchManifest.Flags.StringVar(&patchMounts, "mounts", "", "Replace mount points")
 	cmdPatchManifest.Flags.StringVar(&patchPorts, "ports", "", "Replace ports")
@@ -161,7 +161,7 @@ func patchManifest(im *schema.ImageManifest) error {
 		app.Exec = strings.Split(patchExec, " ")
 	}
 
-	if patchUser != "" || patchGroup != "" || patchSupplementaryGids != "" || patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" {
+	if patchUser != "" || patchGroup != "" || patchSupplementaryGIDs != "" || patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" {
 		// ...but if we still don't have an app and the user is trying
 		// to patch one of its other parameters, it's an error
 		if app == nil {
@@ -177,15 +177,15 @@ func patchManifest(im *schema.ImageManifest) error {
 		app.Group = patchGroup
 	}
 
-	if patchSupplementaryGids != "" {
-		app.SupplementaryGids = []int{}
-		gids := strings.Split(patchSupplementaryGids, ",")
+	if patchSupplementaryGIDs != "" {
+		app.SupplementaryGIDs = []int{}
+		gids := strings.Split(patchSupplementaryGIDs, ",")
 		for _, g := range gids {
 			gid, err := strconv.Atoi(g)
 			if err != nil {
 				return fmt.Errorf("invalid supplementary group %q: %v", g, err)
 			}
-			app.SupplementaryGids = append(app.SupplementaryGids, gid)
+			app.SupplementaryGIDs = append(app.SupplementaryGIDs, gid)
 		}
 	}
 

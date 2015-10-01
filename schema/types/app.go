@@ -26,7 +26,7 @@ type App struct {
 	EventHandlers     []EventHandler `json:"eventHandlers,omitempty"`
 	User              string         `json:"user"`
 	Group             string         `json:"group"`
-	SupplementaryGids []int          `json:"supplementaryGids,omitempty"`
+	SupplementaryGIDs []int          `json:"supplementaryGIDs,omitempty"`
 	WorkingDirectory  string         `json:"workingDirectory,omitempty"`
 	Environment       Environment    `json:"environment,omitempty"`
 	MountPoints       []MountPoint   `json:"mountPoints,omitempty"`
