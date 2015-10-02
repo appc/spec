@@ -57,27 +57,11 @@ func NewAppFromString(app string) (*App, error) {
 		labels map[types.ACIdentifier]string
 	)
 
-	firstComma := strings.IndexRune(app, ',')
-	firstColon := strings.IndexRune(app, ':')
-	if firstColon > firstComma && firstComma > -1 {
-		return nil, fmt.Errorf("malformed app string - colon may appear only right after the app name")
+	preparedApp, err := prepareAppString(app)
+	if err != nil {
+		return nil, err
 	}
-	app = strings.Replace(app, ":", ",version=", 1)
-	if strings.ContainsRune(app, ':') {
-		return nil, fmt.Errorf("malformed app string - colon may appear at most once")
-	}
-	app = "name=" + app
-	parts := strings.Split(app, ",")
-	escapedParts := make([]string, 0, len(parts))
-	for _, s := range parts {
-		p := strings.SplitN(s, "=", 2)
-		if len(p) != 2 {
-			return nil, fmt.Errorf("malformed app string - has a label without a value: %s", p[0])
-		}
-		escaped := fmt.Sprintf("%s=%s", p[0], url.QueryEscape(p[1]))
-		escapedParts = append(escapedParts, escaped)
-	}
-	v, err := url.ParseQuery(strings.Join(escapedParts, "&"))
+	v, err := url.ParseQuery(preparedApp)
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +85,40 @@ func NewAppFromString(app string) (*App, error) {
 		return nil, err
 	}
 	return a, nil
+}
+
+func prepareAppString(app string) (string, error) {
+	if err := checkColon(app); err != nil {
+		return "", err
+	}
+
+	app = "name=" + strings.Replace(app, ":", ",version=", 1)
+	return makeQueryString(app)
+}
+
+func checkColon(app string) error {
+	firstComma := strings.IndexRune(app, ',')
+	firstColon := strings.IndexRune(app, ':')
+	if firstColon > firstComma && firstComma > -1 {
+		return fmt.Errorf("malformed app string - colon may appear only right after the app name")
+	}
+	if strings.Count(app, ":") > 1 {
+		return fmt.Errorf("malformed app string - colon may appear at most once")
+	}
+	return nil
+}
+
+func makeQueryString(app string) (string, error) {
+	parts := strings.Split(app, ",")
+	escapedParts := make([]string, len(parts))
+	for i, s := range parts {
+		p := strings.SplitN(s, "=", 2)
+		if len(p) != 2 {
+			return "", fmt.Errorf("malformed app string - has a label without a value: %s", p[0])
+		}
+		escapedParts[i] = fmt.Sprintf("%s=%s", p[0], url.QueryEscape(p[1]))
+	}
+	return strings.Join(escapedParts, "&"), nil
 }
 
 func (a *App) Copy() *App {
