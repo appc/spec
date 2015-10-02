@@ -46,6 +46,11 @@ func NewApp(name string, labels map[types.ACIdentifier]string) (*App, error) {
 // Example app parameters:
 // 	example.com/reduce-worker:1.0.0
 // 	example.com/reduce-worker,channel=alpha,label=value
+// 	example.com/reduce-worker:1.0.0,label=value
+//
+// As can be seen in above examples - colon, comma and equal sign have
+// special meaning. If any of them has to be a part of a label's value
+// then consider writing your own string to App parser.
 func NewAppFromString(app string) (*App, error) {
 	var (
 		name   string
@@ -54,7 +59,17 @@ func NewAppFromString(app string) (*App, error) {
 
 	app = strings.Replace(app, ":", ",version=", -1)
 	app = "name=" + app
-	v, err := url.ParseQuery(strings.Replace(app, ",", "&", -1))
+	parts := strings.Split(app, ",")
+	escapedParts := make([]string, 0, len(parts))
+	for _, s := range parts {
+		p := strings.SplitN(s, "=", 2)
+		if len(p) != 2 {
+			return nil, fmt.Errorf("malformed app string - has a label without a value: %s", p[0])
+		}
+		escaped := fmt.Sprintf("%s=%s", p[0], url.QueryEscape(p[1]))
+		escapedParts = append(escapedParts, escaped)
+	}
+	v, err := url.ParseQuery(strings.Join(escapedParts, "&"))
 	if err != nil {
 		return nil, err
 	}

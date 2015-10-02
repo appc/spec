@@ -52,6 +52,20 @@ func TestNewAppFromString(t *testing.T) {
 
 			false,
 		},
+		{
+			"example.com/app:1.2.3,special=!*'();@&+$/?#[],channel=beta",
+
+			&App{
+				Name: "example.com/app",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.2.3",
+					"special": "!*'();@&+$/?#[]",
+					"channel": "beta",
+				},
+			},
+
+			false,
+		},
 
 		// bad AC name for app
 		{
