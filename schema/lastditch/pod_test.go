@@ -17,14 +17,11 @@ package lastditch
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 )
 
 func TestInvalidPodManifest(t *testing.T) {
-	// empty image JSON
-	eImgJ := "{}"
-	// empty image instance
-	eImgI := imgI("", "")
 	tests := []struct {
 		desc     string
 		json     string
@@ -32,38 +29,68 @@ func TestInvalidPodManifest(t *testing.T) {
 	}{
 		{
 			desc:     "Check an empty pod manifest",
-			json:     podJ("", ""),
-			expected: podI(),
+			json:     podJ(appsJ(), ""),
+			expected: podI(appsI()),
+		},
+		{
+			desc:     "Check a pod manifest with an empty app",
+			json:     podJ(appsJ(appJ("", rImgJ("i", "id", labsJ(), ""), "")), ""),
+			expected: podI(appsI(appI("", rImgI("i", "id", labsI())))),
+		},
+		{
+			desc:     "Check a pod manifest with an app based on an empty image",
+			json:     podJ(appsJ(appJ("a", rImgJ("", "", labsJ(), ""), "")), ""),
+			expected: podI(appsI(appI("a", rImgI("", "", labsI())))),
+		},
+		{
+			desc:     "Check a pod manifest with an app based on an image containing an empty label",
+			json:     podJ(appsJ(appJ("a", rImgJ("", "", labsJ(labJ("", "", "")), ""), "")), ""),
+			expected: podI(appsI(appI("a", rImgI("", "", labsI(labI("", "")))))),
 		},
 		{
 			desc:     "Check a pod manifest with an invalid app name",
-			json:     podJ(appJ("!", eImgJ, ""), ""),
-			expected: podI(appI("!", eImgI)),
+			json:     podJ(appsJ(appJ("!", rImgJ("i", "id", labsJ(), ""), "")), ""),
+			expected: podI(appsI(appI("!", rImgI("i", "id", labsI())))),
 		},
 		{
 			desc:     "Check a pod manifest with duplicated app names",
-			json:     podJ(appJ("a", eImgJ, "")+","+appJ("a", eImgJ, ""), ""),
-			expected: podI(appI("a", eImgI), appI("a", eImgI)),
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", labsJ(), ""), ""), appJ("a", rImgJ("", "", labsJ(), ""), "")), ""),
+			expected: podI(appsI(appI("a", rImgI("i", "id", labsI())), appI("a", rImgI("", "", labsI())))),
 		},
 		{
 			desc:     "Check a pod manifest with an invalid image name and ID",
-			json:     podJ(appJ("?", imgJ("!!!", "&&&", ""), ""), ""),
-			expected: podI(appI("?", imgI("!!!", "&&&"))),
+			json:     podJ(appsJ(appJ("?", rImgJ("!!!", "&&&", labsJ(), ""), "")), ""),
+			expected: podI(appsI(appI("?", rImgI("!!!", "&&&", labsI())))),
 		},
 		{
-			desc:     "Check if we ignore extra fields in a pod",
-			json:     podJ("", `"ports": [],`),
-			expected: podI(),
+			desc:     "Check a pod manifest with an app based on an image containing labels with invalid names",
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", labsJ(labJ("!n1", "v1", ""), labJ("N2~", "v2", "")), ""), "")), ""),
+			expected: podI(appsI(appI("a", rImgI("i", "id", labsI(labI("!n1", "v1"), labI("N2~", "v2")))))),
 		},
 		{
-			desc:     "Check if we ignore extra fields in an app",
-			json:     podJ(appJ("a", eImgJ, `"mounts": [],`), `"ports": [],`),
-			expected: podI(appI("a", eImgI)),
+			desc:     "Check a pod manifest with an app based on an image containing repeated labels",
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", labsJ(labJ("n1", "v1", ""), labJ("n1", "v2", "")), ""), "")), ""),
+			expected: podI(appsI(appI("a", rImgI("i", "id", labsI(labI("n1", "v1"), labI("n1", "v2")))))),
 		},
 		{
-			desc:     "Check if we ignore extra fields in an image",
-			json:     podJ(appJ("a", imgJ("i", "id", `"labels": [],`), `"mounts": [],`), `"ports": [],`),
-			expected: podI(appI("a", imgI("i", "id"))),
+			desc:     "Check a pod manifest with some extra fields",
+			json:     podJ(appsJ(), extJ("goblins")),
+			expected: podI(appsI()),
+		},
+		{
+			desc:     "Check a pod manifest with an app containing some extra fields",
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", labsJ(), ""), extJ("trolls"))), extJ("goblins")),
+			expected: podI(appsI(appI("a", rImgI("i", "id", labsI())))),
+		},
+		{
+			desc:     "Check a pod manifest with an app based on an image containing some extra fields",
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", labsJ(), extJ("stuff")), extJ("trolls"))), extJ("goblins")),
+			expected: podI(appsI(appI("a", rImgI("i", "id", labsI())))),
+		},
+		{
+			desc:     "Check a pod manifest with an app based on an image containing labels with some extra fields",
+			json:     podJ(appsJ(appJ("a", rImgJ("i", "id", labsJ(labJ("n", "v", extJ("color"))), extJ("stuff")), extJ("trolls"))), extJ("goblins")),
+			expected: podI(appsI(appI("a", rImgI("i", "id", labsI(labI("n", "v")))))),
 		},
 	}
 	for _, tt := range tests {
@@ -72,7 +99,7 @@ func TestInvalidPodManifest(t *testing.T) {
 			t.Errorf("%s: unexpected error during unmarshalling pod manifest: %v", tt.desc, err)
 		}
 		if !reflect.DeepEqual(tt.expected, got) {
-			t.Errorf("%s: did not get expected pod manifest, got: %+v, expected: %+v", tt.desc, got, tt.expected)
+			t.Errorf("%s: did not get expected pod manifest, got:\n  %#v\nexpected:\n  %#v", tt.desc, got, tt.expected)
 		}
 	}
 }
@@ -108,20 +135,30 @@ func podJ(apps, extra string) string {
 		    %s
 		    "acKind": "PodManifest",
 		    "acVersion": "0.7.0",
-		    "apps": [%s]
+		    "apps": %s
 		}`, extra, apps)
 }
 
 // podI returns a pod manifest instance with given apps
-func podI(apps ...RuntimeApp) PodManifest {
-	if apps == nil {
-		apps = AppList{}
-	}
+func podI(apps AppList) PodManifest {
 	return PodManifest{
 		ACVersion: "0.7.0",
 		ACKind:    "PodManifest",
 		Apps:      apps,
 	}
+}
+
+// appsJ returns an applist JSON snippet with given apps
+func appsJ(apps ...string) string {
+	return fmt.Sprintf("[%s]", strings.Join(apps, ","))
+}
+
+// appsI returns an applist instance with given apps
+func appsI(apps ...RuntimeApp) AppList {
+	if apps == nil {
+		return AppList{}
+	}
+	return apps
 }
 
 // appJ returns an app JSON snippet with given name and image
@@ -135,27 +172,31 @@ func appJ(name, image, extra string) string {
 }
 
 // appI returns an app instance with given name and image
-func appI(name string, image Image) RuntimeApp {
+func appI(name string, image RuntimeImage) RuntimeApp {
 	return RuntimeApp{
 		Name:  name,
 		Image: image,
 	}
 }
 
-// imgJ returns an image JSON snippet with given name and id
-func imgJ(name, id, extra string) string {
+// rImgJ returns a runtime image JSON snippet with given name, id and
+// labels
+func rImgJ(name, id, labels, extra string) string {
 	return fmt.Sprintf(`
 		{
 		    %s
 		    "name": "%s",
-		    "id": "%s"
-		}`, extra, name, id)
+		    "id": "%s",
+		    "labels": %s
+		}`, extra, name, id, labels)
 }
 
-// imgI returns an image instance with given name and id
-func imgI(name, id string) Image {
-	return Image{
-		Name: name,
-		ID:   id,
+// rImgI returns a runtime image instance with given name, id and
+// labels
+func rImgI(name, id string, labels Labels) RuntimeImage {
+	return RuntimeImage{
+		Name:   name,
+		ID:     id,
+		Labels: labels,
 	}
 }

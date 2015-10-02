@@ -16,30 +16,23 @@ package lastditch
 
 import (
 	"encoding/json"
-
-	"github.com/appc/spec/schema"
-	"github.com/appc/spec/schema/types"
 )
 
-type ImageManifest struct {
-	ACVersion string `json:"acVersion"`
-	ACKind    string `json:"acKind"`
-	Name      string `json:"name"`
-	Labels    Labels `json:"labels,omitempty"`
-}
+type Labels []Label
 
 // a type just to avoid a recursion during unmarshalling
-type imageManifest ImageManifest
+type labels Labels
 
-func (im *ImageManifest) UnmarshalJSON(data []byte) error {
-	i := imageManifest(*im)
-	err := json.Unmarshal(data, &i)
-	if err != nil {
+type Label struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+func (l *Labels) UnmarshalJSON(data []byte) error {
+	var jl labels
+	if err := json.Unmarshal(data, &jl); err != nil {
 		return err
 	}
-	if i.ACKind != string(schema.ImageManifestKind) {
-		return types.InvalidACKindError(schema.ImageManifestKind)
-	}
-	*im = ImageManifest(i)
+	*l = Labels(jl)
 	return nil
 }
