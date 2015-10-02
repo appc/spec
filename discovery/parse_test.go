@@ -90,6 +90,28 @@ func TestNewAppFromString(t *testing.T) {
 			nil,
 			true,
 		},
+		// colon coming after some label instead of being
+		// right after the name
+		{
+			"example.com/app,channel=beta:1.2.3",
+
+			nil,
+			true,
+		},
+		// two colons in string
+		{
+			"example.com/app:3.2.1,channel=beta:1.2.3",
+
+			nil,
+			true,
+		},
+		// two version labels, one implicit, one explicit
+		{
+			"example.com/app:3.2.1,version=1.2.3",
+
+			nil,
+			true,
+		},
 	}
 	for i, tt := range tests {
 		g, err := NewAppFromString(tt.in)

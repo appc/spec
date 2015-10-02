@@ -57,7 +57,15 @@ func NewAppFromString(app string) (*App, error) {
 		labels map[types.ACIdentifier]string
 	)
 
-	app = strings.Replace(app, ":", ",version=", -1)
+	firstComma := strings.IndexRune(app, ',')
+	firstColon := strings.IndexRune(app, ':')
+	if firstColon > firstComma && firstComma > -1 {
+		return nil, fmt.Errorf("malformed app string - colon may appear only right after the app name")
+	}
+	app = strings.Replace(app, ":", ",version=", 1)
+	if strings.ContainsRune(app, ':') {
+		return nil, fmt.Errorf("malformed app string - colon may appear at most once")
+	}
 	app = "name=" + app
 	parts := strings.Split(app, ",")
 	escapedParts := make([]string, 0, len(parts))
