@@ -30,8 +30,11 @@ func init() {
 	AddIsolatorName(LinuxCapabilitiesRetainSetName, LinuxIsolatorNames)
 	AddIsolatorName(LinuxCapabilitiesRevokeSetName, LinuxIsolatorNames)
 
-	AddIsolatorValueConstructor(LinuxCapabilitiesRetainSetName, NewLinuxCapabilitiesRetainSet)
-	AddIsolatorValueConstructor(LinuxCapabilitiesRevokeSetName, NewLinuxCapabilitiesRevokeSet)
+	AddIsolatorValueConstructor(LinuxCapabilitiesRetainSetName,
+		func() IsolatorValue { return &LinuxCapabilitiesRetainSet{} })
+
+	AddIsolatorValueConstructor(LinuxCapabilitiesRevokeSetName,
+		func() IsolatorValue { return &LinuxCapabilitiesRevokeSet{} })
 }
 
 type LinuxCapabilitiesSet interface {
@@ -71,16 +74,8 @@ func (l linuxCapabilitiesSetBase) Set() []LinuxCapability {
 	return l.val.Set
 }
 
-func NewLinuxCapabilitiesRetainSet() IsolatorValue {
-	return &LinuxCapabilitiesRetainSet{}
-}
-
 type LinuxCapabilitiesRetainSet struct {
 	linuxCapabilitiesSetBase
-}
-
-func NewLinuxCapabilitiesRevokeSet() IsolatorValue {
-	return &LinuxCapabilitiesRevokeSet{}
 }
 
 type LinuxCapabilitiesRevokeSet struct {

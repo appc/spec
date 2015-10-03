@@ -44,27 +44,16 @@ func init() {
 	AddIsolatorName(ResourceMemoryName, ResourceIsolatorNames)
 	AddIsolatorName(ResourceNetworkBandwidthName, ResourceIsolatorNames)
 
-	AddIsolatorValueConstructor(ResourceBlockBandwidthName, NewResourceBlockBandwidth)
-	AddIsolatorValueConstructor(ResourceBlockIOPSName, NewResourceBlockIOPS)
-	AddIsolatorValueConstructor(ResourceCPUName, NewResourceCPU)
-	AddIsolatorValueConstructor(ResourceMemoryName, NewResourceMemory)
-	AddIsolatorValueConstructor(ResourceNetworkBandwidthName, NewResourceNetworkBandwidth)
-}
-
-func NewResourceBlockBandwidth() IsolatorValue {
-	return &ResourceBlockBandwidth{}
-}
-func NewResourceBlockIOPS() IsolatorValue {
-	return &ResourceBlockIOPS{}
-}
-func NewResourceCPU() IsolatorValue {
-	return &ResourceCPU{}
-}
-func NewResourceNetworkBandwidth() IsolatorValue {
-	return &ResourceNetworkBandwidth{}
-}
-func NewResourceMemory() IsolatorValue {
-	return &ResourceMemory{}
+	AddIsolatorValueConstructor(ResourceBlockBandwidthName,
+		func() IsolatorValue { return &ResourceBlockBandwidth{} })
+	AddIsolatorValueConstructor(ResourceBlockIOPSName,
+		func() IsolatorValue { return &ResourceBlockIOPS{} })
+	AddIsolatorValueConstructor(ResourceCPUName,
+		func() IsolatorValue { return &ResourceCPU{} })
+	AddIsolatorValueConstructor(ResourceMemoryName,
+		func() IsolatorValue { return &ResourceMemory{} })
+	AddIsolatorValueConstructor(ResourceNetworkBandwidthName,
+		func() IsolatorValue { return &ResourceNetworkBandwidth{} })
 }
 
 type Resource interface {
