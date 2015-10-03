@@ -38,22 +38,16 @@ const (
 )
 
 func init() {
-	AddIsolatorName(ResourceBlockBandwidthName, ResourceIsolatorNames)
-	AddIsolatorName(ResourceBlockIOPSName, ResourceIsolatorNames)
-	AddIsolatorName(ResourceCPUName, ResourceIsolatorNames)
-	AddIsolatorName(ResourceMemoryName, ResourceIsolatorNames)
-	AddIsolatorName(ResourceNetworkBandwidthName, ResourceIsolatorNames)
-
-	AddIsolatorValueConstructor(ResourceBlockBandwidthName,
-		func() IsolatorValue { return &ResourceBlockBandwidth{} })
-	AddIsolatorValueConstructor(ResourceBlockIOPSName,
-		func() IsolatorValue { return &ResourceBlockIOPS{} })
-	AddIsolatorValueConstructor(ResourceCPUName,
-		func() IsolatorValue { return &ResourceCPU{} })
-	AddIsolatorValueConstructor(ResourceMemoryName,
-		func() IsolatorValue { return &ResourceMemory{} })
-	AddIsolatorValueConstructor(ResourceNetworkBandwidthName,
-		func() IsolatorValue { return &ResourceNetworkBandwidth{} })
+	for name, con := range map[ACIdentifier]IsolatorValueConstructor{
+		ResourceBlockBandwidthName:   func() IsolatorValue { return &ResourceBlockBandwidth{} },
+		ResourceBlockIOPSName:        func() IsolatorValue { return &ResourceBlockIOPS{} },
+		ResourceCPUName:              func() IsolatorValue { return &ResourceCPU{} },
+		ResourceMemoryName:           func() IsolatorValue { return &ResourceMemory{} },
+		ResourceNetworkBandwidthName: func() IsolatorValue { return &ResourceNetworkBandwidth{} },
+	} {
+		AddIsolatorName(name, ResourceIsolatorNames)
+		AddIsolatorValueConstructor(name, con)
+	}
 }
 
 type Resource interface {
