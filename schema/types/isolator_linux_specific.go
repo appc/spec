@@ -32,7 +32,6 @@ func init() {
 		LinuxCapabilitiesRetainSetName: func() IsolatorValue { return &LinuxCapabilitiesRetainSet{} },
 	} {
 		AddIsolatorName(name, LinuxIsolatorNames)
-
 		AddIsolatorValueConstructor(name, con)
 	}
 }
