@@ -21,7 +21,8 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
-	"strings"
+
+	"github.com/appc/spec/schema/common"
 )
 
 // Volume encapsulates a volume which should be mounted into the filesystem
@@ -98,7 +99,12 @@ func VolumeFromString(vp string) (*Volume, error) {
 	var vol Volume
 
 	vp = "name=" + vp
-	v, err := url.ParseQuery(strings.Replace(vp, ",", "&", -1))
+	vpQuery, err := common.MakeQueryString(vp)
+	if err != nil {
+		return nil, err
+	}
+
+	v, err := url.ParseQuery(vpQuery)
 	if err != nil {
 		return nil, err
 	}
