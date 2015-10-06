@@ -1,3 +1,18 @@
+### v0.7.1
+
+Minor release of the spec with one critical bug/consistency fix and a few tooling enhancements.
+
+0.7.0 introduced a field to the app section of ImageManifests to allow users to specify supplementary group IDs. Unfortunately, this was implemented with inconsistent naming: `supplementaryGids` in the text of the spec itself, but `supplementaryGroups` in the schema code.
+
+In this release we standardise both the spec and the schema to `supplementaryGIDs`. See #516 for more information.
+
+Other changes in this release:
+- Added a callback to BuildWalker in the aci package to allow users to modify tar entries while building an ACI (#509)
+- Added an `--owner-root` flag to acbuild to adjust the uid/gid of all files in an ACI to 0:0 (#509)
+- Added a `--supplementary-gids` flag to actool's patch-manifest subcommand to adjust the supplementary group IDs of an ACI (#506, #516)
+- Added the ability to extract labels in the `lastditch` package (#508)
+- Changed the behaviour of the `NewAppFromString` parser in the `discovery` package to URL-encode label values before parsing them (#514)
+
 ### v0.7.0
 
 Next major release of the spec, with a lot of tooling improvements, wording clarifications, and one breaking schema change from the previous release.

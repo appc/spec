@@ -20,7 +20,7 @@ func TestEmptyApp(t *testing.T) {
 	imj := `
 		{
 		    "acKind": "ImageManifest",
-		    "acVersion": "0.7.0",
+		    "acVersion": "0.7.1",
 		    "name": "example.com/test"
 		}
 		`
