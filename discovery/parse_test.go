@@ -52,6 +52,20 @@ func TestNewAppFromString(t *testing.T) {
 
 			false,
 		},
+		{
+			"example.com/app:1.2.3,special=!*'();@&+$/?#[],channel=beta",
+
+			&App{
+				Name: "example.com/app",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.2.3",
+					"special": "!*'();@&+$/?#[]",
+					"channel": "beta",
+				},
+			},
+
+			false,
+		},
 
 		// bad AC name for app
 		{
@@ -72,6 +86,28 @@ func TestNewAppFromString(t *testing.T) {
 		// multi-value labels
 		{
 			"foo.com/bar,channel=alpha,dog=woof,channel=beta",
+
+			nil,
+			true,
+		},
+		// colon coming after some label instead of being
+		// right after the name
+		{
+			"example.com/app,channel=beta:1.2.3",
+
+			nil,
+			true,
+		},
+		// two colons in string
+		{
+			"example.com/app:3.2.1,channel=beta:1.2.3",
+
+			nil,
+			true,
+		},
+		// two version labels, one implicit, one explicit
+		{
+			"example.com/app:3.2.1,version=1.2.3",
 
 			nil,
 			true,
