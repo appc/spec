@@ -269,7 +269,7 @@ The App Container specification defines an HTTP-based metadata service for provi
 
 ### Metadata Service
 
-The ACE must provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` [environment variable](#execution-environment).
+The ACE SHOULD provide a Metadata service on the address given to the applications via the `AC_METADATA_URL` [environment variable](#execution-environment).
 
 ACE implementations SHOULD embed an authorization token in `AC_METADATA_URL`, which provides a means for the metadata service to uniquely and securely identify a pod.
 For example, `AC_METADATA_URL` passed to a pod could be set to `https://10.0.0.1:8888/Y4vFeVZzKM2T9rwkpWHfqXuGsNjS6O5c` with the path portion acting as a token.
