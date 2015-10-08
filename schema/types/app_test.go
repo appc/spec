@@ -55,28 +55,48 @@ func TestAppValid(t *testing.T) {
 }
 
 func TestAppExecInvalid(t *testing.T) {
-	tests := []App{
-		App{
-			Exec: nil,
+	tests := []struct {
+		app   App
+		valid bool
+	}{
+		{
+			App{
+				Exec:  nil,
+				User:  "0",
+				Group: "0",
+			},
+			true,
 		},
-		App{
-			Exec:  []string{},
-			User:  "0",
-			Group: "0",
+		{
+			App{
+				Exec:  []string{},
+				User:  "0",
+				Group: "0",
+			},
+			true,
 		},
-		App{
-			Exec:  []string{"app"},
-			User:  "0",
-			Group: "0",
+		{
+			App{
+				Exec:  []string{"app"},
+				User:  "0",
+				Group: "0",
+			},
+			false,
 		},
-		App{
-			Exec:  []string{"bin/app", "arg1"},
-			User:  "0",
-			Group: "0",
+		{
+			App{
+				Exec:  []string{"bin/app", "arg1"},
+				User:  "0",
+				Group: "0",
+			},
+			false,
 		},
 	}
 	for i, tt := range tests {
-		if err := tt.assertValid(); err == nil {
+		err := tt.app.assertValid()
+		if err != nil && tt.valid {
+			t.Errorf("#%d: err == %v, want nil", i, err)
+		} else if err == nil && !tt.valid {
 			t.Errorf("#%d: err == nil, want non-nil", i)
 		}
 	}
