@@ -25,3 +25,9 @@ The following devices and filesystems MUST be made available in each application
 | /dev/pts     | [devpts](https://www.kernel.org/doc/Documentation/filesystems/devpts.txt)  | |
 | /dev/ptmx    | [device](https://www.kernel.org/doc/Documentation/filesystems/devpts.txt)  | Bind-mount or symlink of /dev/pts/ptmx |
 | /dev/shm     | [tmpfs](https://www.kernel.org/doc/Documentation/filesystems/tmpfs.txt)    | |
+
+## Common Files
+
+An ACE MAY provide a default, functional `/etc/hosts` in each application's filesystem.
+If provided, this file SHOULD contain a localhost loopback entry.
+If an application's filesystem already contains `/etc/hosts` (whether because it is provided in the application's image, or mounted in using a volume) the ACE SHOULD NOT modify the file unless explicitly requested by the user.
