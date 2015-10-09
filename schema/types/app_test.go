@@ -46,58 +46,34 @@ func TestAppValid(t *testing.T) {
 			Group:            "0",
 			WorkingDirectory: "/tmp",
 		},
+		App{
+			Exec:             nil,
+			User:             "0",
+			Group:            "0",
+			WorkingDirectory: "/tmp",
+		},
+		App{
+			Exec:             []string{},
+			User:             "0",
+			Group:            "0",
+			WorkingDirectory: "/tmp",
+		},
+		App{
+			Exec:             []string{"app"},
+			User:             "0",
+			Group:            "0",
+			WorkingDirectory: "/tmp",
+		},
+		App{
+			Exec:             []string{"bin/app", "arg1"},
+			User:             "0",
+			Group:            "0",
+			WorkingDirectory: "/tmp",
+		},
 	}
 	for i, tt := range tests {
 		if err := tt.assertValid(); err != nil {
 			t.Errorf("#%d: err == %v, want nil", i, err)
-		}
-	}
-}
-
-func TestAppExecInvalid(t *testing.T) {
-	tests := []struct {
-		app   App
-		valid bool
-	}{
-		{
-			App{
-				Exec:  nil,
-				User:  "0",
-				Group: "0",
-			},
-			true,
-		},
-		{
-			App{
-				Exec:  []string{},
-				User:  "0",
-				Group: "0",
-			},
-			true,
-		},
-		{
-			App{
-				Exec:  []string{"app"},
-				User:  "0",
-				Group: "0",
-			},
-			false,
-		},
-		{
-			App{
-				Exec:  []string{"bin/app", "arg1"},
-				User:  "0",
-				Group: "0",
-			},
-			false,
-		},
-	}
-	for i, tt := range tests {
-		err := tt.app.assertValid()
-		if err != nil && tt.valid {
-			t.Errorf("#%d: err == %v, want nil", i, err)
-		} else if err == nil && !tt.valid {
-			t.Errorf("#%d: err == nil, want non-nil", i)
 		}
 	}
 }
