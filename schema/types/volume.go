@@ -34,6 +34,11 @@ type Volume struct {
 	// TODO(jonboulle): factor out?
 	Source   string `json:"source,omitempty"`
 	ReadOnly *bool  `json:"readOnly,omitempty"`
+
+	// currently used only by "empty"
+	Mode string `json:"mode,omitempty"`
+	UID  int    `json:"uid,omitempty"`
+	GID  int    `json:"gid,omitempty"`
 }
 
 type volume Volume
@@ -47,6 +52,15 @@ func (v Volume) assertValid() error {
 	case "empty":
 		if v.Source != "" {
 			return errors.New("source for empty volume must be empty")
+		}
+		if v.Mode == "" {
+			return errors.New("mode for empty volume must be set")
+		}
+		if v.UID == -1 {
+			return errors.New("uid for empty volume must be set")
+		}
+		if v.GID == -1 {
+			return errors.New("gid for empty volume must be set")
 		}
 		return nil
 	case "host":
@@ -64,12 +78,20 @@ func (v Volume) assertValid() error {
 
 func (v *Volume) UnmarshalJSON(data []byte) error {
 	var vv volume
+	vv.Mode = "0755"
+	vv.UID = 0
+	vv.GID = 0
 	if err := json.Unmarshal(data, &vv); err != nil {
 		return err
 	}
 	nv := Volume(vv)
 	if err := nv.assertValid(); err != nil {
 		return err
+	}
+	if nv.Kind != "empty" {
+		nv.Mode = ""
+		nv.UID = -1
+		nv.GID = -1
 	}
 	*v = nv
 	return nil
@@ -85,7 +107,10 @@ func (v Volume) MarshalJSON() ([]byte, error) {
 func (v Volume) String() string {
 	s := fmt.Sprintf("%s,kind=%s,readOnly=%t", v.Name, v.Kind, *v.ReadOnly)
 	if v.Source != "" {
-		s = s + fmt.Sprintf("source=%s", v.Source)
+		s = s + fmt.Sprintf(",source=%s", v.Source)
+	}
+	if v.Mode != "" && v.UID != -1 && v.GID != -1 {
+		s = s + fmt.Sprintf(",mode=%s,uid=%d,gid=%d", v.Mode, v.UID, v.GID)
 	}
 	return s
 }
@@ -95,7 +120,11 @@ func (v Volume) String() string {
 // Example volume parameters:
 // 	database,kind=host,source=/tmp,readOnly=true
 func VolumeFromString(vp string) (*Volume, error) {
-	var vol Volume
+	vol := Volume{
+		Mode: "0755",
+		UID:  0,
+		GID:  0,
+	}
 
 	vp = "name=" + vp
 	v, err := url.ParseQuery(strings.Replace(vp, ",", "&", -1))
@@ -124,6 +153,20 @@ func VolumeFromString(vp string) (*Volume, error) {
 				return nil, err
 			}
 			vol.ReadOnly = &ro
+		case "mode":
+			vol.Mode = val[0]
+		case "uid":
+			u, err := strconv.Atoi(val[0])
+			if err != nil {
+				return nil, err
+			}
+			vol.UID = u
+		case "gid":
+			g, err := strconv.Atoi(val[0])
+			if err != nil {
+				return nil, err
+			}
+			vol.GID = g
 		default:
 			return nil, fmt.Errorf("unknown volume parameter %q", key)
 		}
@@ -131,6 +174,11 @@ func VolumeFromString(vp string) (*Volume, error) {
 	err = vol.assertValid()
 	if err != nil {
 		return nil, err
+	}
+	if vol.Kind != "empty" {
+		vol.Mode = ""
+		vol.UID = -1
+		vol.GID = -1
 	}
 
 	return &vol, nil

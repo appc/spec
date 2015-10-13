@@ -33,6 +33,9 @@ func TestVolumeFromString(t *testing.T) {
 				Kind:     "host",
 				Source:   "/tmp",
 				ReadOnly: nil,
+				Mode:     "",
+				UID:      -1,
+				GID:      -1,
 			},
 		},
 		{
@@ -42,6 +45,9 @@ func TestVolumeFromString(t *testing.T) {
 				Kind:     "host",
 				Source:   "/tmp",
 				ReadOnly: &falseVar,
+				Mode:     "",
+				UID:      -1,
+				GID:      -1,
 			},
 		},
 		{
@@ -51,6 +57,9 @@ func TestVolumeFromString(t *testing.T) {
 				Kind:     "host",
 				Source:   "/tmp",
 				ReadOnly: &trueVar,
+				Mode:     "",
+				UID:      -1,
+				GID:      -1,
 			},
 		},
 		{
@@ -59,6 +68,9 @@ func TestVolumeFromString(t *testing.T) {
 				Name:     "foobar",
 				Kind:     "empty",
 				ReadOnly: nil,
+				Mode:     "0755",
+				UID:      0,
+				GID:      0,
 			},
 		},
 		{
@@ -67,6 +79,42 @@ func TestVolumeFromString(t *testing.T) {
 				Name:     "foobar",
 				Kind:     "empty",
 				ReadOnly: &trueVar,
+				Mode:     "0755",
+				UID:      0,
+				GID:      0,
+			},
+		},
+		{
+			"foobar,kind=empty,readOnly=true,mode=0777",
+			Volume{
+				Name:     "foobar",
+				Kind:     "empty",
+				ReadOnly: &trueVar,
+				Mode:     "0777",
+				UID:      0,
+				GID:      0,
+			},
+		},
+		{
+			"foobar,kind=empty,mode=0777,uid=1000",
+			Volume{
+				Name:     "foobar",
+				Kind:     "empty",
+				ReadOnly: nil,
+				Mode:     "0777",
+				UID:      1000,
+				GID:      0,
+			},
+		},
+		{
+			"foobar,kind=empty,mode=0777,uid=1000,gid=1000",
+			Volume{
+				Name:     "foobar",
+				Kind:     "empty",
+				ReadOnly: nil,
+				Mode:     "0777",
+				UID:      1000,
+				GID:      1000,
 			},
 		},
 	}
