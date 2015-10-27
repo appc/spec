@@ -15,10 +15,10 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"runtime"
 	"strings"
-	"encoding/json"
 
 	"github.com/appc/spec/discovery"
 )
