@@ -54,7 +54,7 @@ func runDiscover(args []string) (exit int) {
 			stderr("%s: %s", name, err)
 			return 1
 		}
-		eps, attempts, err := discovery.DiscoverEndpoints(*app, transportFlags.Insecure)
+		eps, attempts, err := discovery.DiscoverEndpoints(*app, nil, transportFlags.Insecure)
 		if err != nil {
 			stderr("error fetching %s: %s", name, err)
 			return 1

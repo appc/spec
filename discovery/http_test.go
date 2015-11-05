@@ -17,24 +17,27 @@ package discovery
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
-	"strings"
+	"reflect"
 	"testing"
 )
 
-// mockHttpGetter defines a wrapper that allows returning a mocked response.
-type mockHttpGetter struct {
-	getter func(url string) (resp *http.Response, err error)
+var testAuthHeader http.Header = http.Header{"Authorization": {"Basic YmFyOmJheg=="}}
+
+// mockHttpDoer defines a wrapper that allows returning a mocked response.
+type mockHttpDoer struct {
+	doer func(req *http.Request) (resp *http.Response, err error)
 }
 
-func (m *mockHttpGetter) Get(url string) (resp *http.Response, err error) {
-	return m.getter(url)
+func (m *mockHttpDoer) Do(req *http.Request) (resp *http.Response, err error) {
+	return m.doer(req)
 }
 
-func fakeHttpOrHttpsGet(filename string, httpSuccess bool, httpsSuccess bool, httpErrorCode int) func(uri string) (*http.Response, error) {
-	return func(uri string) (*http.Response, error) {
+func fakeHttpOrHttpsGet(filename string, httpSuccess bool, httpsSuccess bool, httpErrorCode int, header http.Header) func(req *http.Request) (*http.Response, error) {
+	return func(req *http.Request) (*http.Response, error) {
 		f, err := os.Open(filename)
 		if err != nil {
 			return nil, err
@@ -42,10 +45,15 @@ func fakeHttpOrHttpsGet(filename string, httpSuccess bool, httpsSuccess bool, ht
 
 		var resp *http.Response
 
+		if header != nil && !reflect.DeepEqual(req.Header, header) {
+			err = fmt.Errorf("fakeHttpOrHttpsGet: wrong header %v. Expected %v", req.Header, header)
+			return nil, err
+		}
+
 		switch {
-		case strings.HasPrefix(uri, "https://") && httpsSuccess:
+		case req.URL.Scheme == "https" && httpsSuccess:
 			fallthrough
-		case strings.HasPrefix(uri, "http://") && httpSuccess:
+		case req.URL.Scheme == "http" && httpSuccess:
 			resp = &http.Response{
 				Status:     "200 OK",
 				StatusCode: http.StatusOK,
@@ -82,57 +90,89 @@ func TestHttpsOrHTTP(t *testing.T) {
 	tests := []struct {
 		name          string
 		insecure      bool
-		get           httpgetter
+		do            httpDoer
 		expectUrlStr  string
 		expectSuccess bool
+		authHeader    http.Header
 	}{
 		{
 			"good-server",
 			false,
-			fakeHttpOrHttpsGet("myapp.html", true, true, 0),
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", true, true, 0, nil),
+			},
 			"https://good-server?ac-discovery=1",
 			true,
+			nil,
 		},
 		{
 			"file-not-found",
 			false,
-			fakeHttpOrHttpsGet("myapp.html", false, false, 404),
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", false, false, 404, nil),
+			},
 			"",
 			false,
+			nil,
 		},
 		{
 			"completely-broken-server",
 			false,
-			fakeHttpOrHttpsGet("myapp.html", false, false, 0),
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", false, false, 0, nil),
+			},
 			"",
 			false,
+			nil,
 		},
 		{
 			"file-only-on-http",
 			false, // do not accept fallback on http
-			fakeHttpOrHttpsGet("myapp.html", true, false, 404),
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", true, false, 404, nil),
+			},
 			"",
 			false,
+			nil,
 		},
 		{
 			"file-only-on-http",
 			true, // accept fallback on http
-			fakeHttpOrHttpsGet("myapp.html", true, false, 404),
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", true, false, 404, nil),
+			},
 			"http://file-only-on-http?ac-discovery=1",
 			true,
+			nil,
 		},
 		{
 			"https-server-is-down",
 			true, // accept fallback on http
-			fakeHttpOrHttpsGet("myapp.html", true, false, 0),
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", true, false, 0, nil),
+			},
 			"http://https-server-is-down?ac-discovery=1",
 			true,
+			nil,
+		},
+		{
+			"coreos.com",
+			false,
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", false, true, 0, testAuthHeader),
+			},
+			"https://coreos.com?ac-discovery=1",
+			true,
+			testAuthHeader,
 		},
 	}
 
 	for i, tt := range tests {
-		httpGet = &mockHttpGetter{getter: tt.get}
-		urlStr, body, err := httpsOrHTTP(tt.name, tt.insecure)
+		httpDo = tt.do
+		hostHeaders := map[string]http.Header{
+			tt.name: tt.authHeader,
+		}
+		urlStr, body, err := httpsOrHTTP(tt.name, hostHeaders, tt.insecure)
 		if tt.expectSuccess {
 			if err != nil {
 				t.Fatalf("#%d httpsOrHTTP failed: %v", i, err)
