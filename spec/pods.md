@@ -174,6 +174,9 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
         * **empty** - creates an empty directory on the host and bind mounts it into the container. All containers in the pod share the mount, and the lifetime of the volume is equal to the lifetime of the pod (i.e. the directory on the host machine is removed when the pod's filesystem is garbage collected)
         * **host** - fulfills a mount point with a bind mount from a **source** directory on the host.
     * **source** (string, required if **kind** is "host") absolute path on host to be bind mounted under a mount point in each app's chroot.
+    * **mode** (integer, optional, only interpreted if **kind** is "empty", defaults to "0755" if unsupplied) indicates the mode permission of the empty volume.
+    * **uid** (integer, optional, only interpreted if **kind** is "empty", defaults to "0" if unsupplied) indicates the user id that will own the empty volume. Note it is an integer number because each app in the pod would interpret a user name differently.
+    * **gid** (integer, optional, only interpreted if **kind** is "empty", defaults to "0" if unsupplied) indicates the group id that will own the empty volume. Note it is an integer number because each app in the pod would interpret a group name differently.
 * **isolators** (list of objects of type [Isolator](types.md#isolator-type), optional) list of isolation steps that will apply to this pod.
 * **annotations** (list of objects, optional) arbitrary metadata the executor will make available to applications via the metadata service. Objects must contain two key-value pairs: **name** is restricted to the [AC Name](types.md#ac-name-type) formatting and **value** is an arbitrary string). Annotation names must be unique within the list.
 * **ports** (list of objects, optional) list of ports that SHOULD be exposed on the host.
