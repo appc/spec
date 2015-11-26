@@ -96,7 +96,7 @@ func NewLinuxCapabilitiesRetainSet(caps ...string) (*LinuxCapabilitiesRetainSet,
 }
 
 func (l LinuxCapabilitiesRetainSet) AsIsolator() Isolator {
-	b, err := json.Marshal(l)
+	b, err := json.Marshal(l.linuxCapabilitiesSetBase.val)
 	if err != nil {
 		panic(err)
 	}
@@ -130,7 +130,7 @@ func NewLinuxCapabilitiesRevokeSet(caps ...string) (*LinuxCapabilitiesRevokeSet,
 }
 
 func (l LinuxCapabilitiesRevokeSet) AsIsolator() Isolator {
-	b, err := json.Marshal(l)
+	b, err := json.Marshal(l.linuxCapabilitiesSetBase.val)
 	if err != nil {
 		panic(err)
 	}
