@@ -19,6 +19,10 @@ import (
 	"testing"
 )
 
+func bp(b bool) *bool {
+	return &b
+}
+
 func sp(s string) *string {
 	return &s
 }
@@ -28,8 +32,6 @@ func ip(i int) *int {
 }
 
 func TestVolumeToFromString(t *testing.T) {
-	trueVar := true
-	falseVar := false
 	tests := []struct {
 		s string
 		v Volume
@@ -52,7 +54,7 @@ func TestVolumeToFromString(t *testing.T) {
 				Name:     "foobar",
 				Kind:     "host",
 				Source:   "/tmp",
-				ReadOnly: &falseVar,
+				ReadOnly: bp(false),
 				Mode:     nil,
 				UID:      nil,
 				GID:      nil,
@@ -64,7 +66,7 @@ func TestVolumeToFromString(t *testing.T) {
 				Name:     "foobar",
 				Kind:     "host",
 				Source:   "/tmp",
-				ReadOnly: &trueVar,
+				ReadOnly: bp(true),
 				Mode:     nil,
 				UID:      nil,
 				GID:      nil,
@@ -86,7 +88,7 @@ func TestVolumeToFromString(t *testing.T) {
 			Volume{
 				Name:     "foobar",
 				Kind:     "empty",
-				ReadOnly: &trueVar,
+				ReadOnly: bp(true),
 				Mode:     sp(emptyVolumeDefaultMode),
 				UID:      ip(emptyVolumeDefaultUID),
 				GID:      ip(emptyVolumeDefaultGID),
@@ -97,7 +99,7 @@ func TestVolumeToFromString(t *testing.T) {
 			Volume{
 				Name:     "foobar",
 				Kind:     "empty",
-				ReadOnly: &trueVar,
+				ReadOnly: bp(true),
 				Mode:     sp("0777"),
 				UID:      ip(emptyVolumeDefaultUID),
 				GID:      ip(emptyVolumeDefaultGID),
@@ -164,11 +166,10 @@ func TestVolumeFromStringBad(t *testing.T) {
 }
 
 func BenchmarkVolumeToString(b *testing.B) {
-	trueVar := true
 	vol := Volume{
 		Name:     "foobar",
 		Kind:     "empty",
-		ReadOnly: &trueVar,
+		ReadOnly: bp(true),
 		Mode:     sp("0777"),
 		UID:      ip(3),
 		GID:      ip(4),
