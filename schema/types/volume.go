@@ -25,6 +25,12 @@ import (
 	"github.com/appc/spec/schema/common"
 )
 
+const (
+	emptyVolumeDefaultMode = "0755"
+	emptyVolumeDefaultUID  = 0
+	emptyVolumeDefaultGID  = 0
+)
+
 // Volume encapsulates a volume which should be mounted into the filesystem
 // of all apps in a PodManifest
 type Volume struct {
@@ -37,9 +43,9 @@ type Volume struct {
 	ReadOnly *bool  `json:"readOnly,omitempty"`
 
 	// currently used only by "empty"
-	Mode string `json:"mode,omitempty"`
-	UID  int    `json:"uid,omitempty"`
-	GID  int    `json:"gid,omitempty"`
+	Mode *string `json:"mode,omitempty"`
+	UID  *int    `json:"uid,omitempty"`
+	GID  *int    `json:"gid,omitempty"`
 }
 
 type volume Volume
@@ -54,19 +60,28 @@ func (v Volume) assertValid() error {
 		if v.Source != "" {
 			return errors.New("source for empty volume must be empty")
 		}
-		if v.Mode == "" {
+		if v.Mode == nil {
 			return errors.New("mode for empty volume must be set")
 		}
-		if v.UID == -1 {
+		if v.UID == nil {
 			return errors.New("uid for empty volume must be set")
 		}
-		if v.GID == -1 {
+		if v.GID == nil {
 			return errors.New("gid for empty volume must be set")
 		}
 		return nil
 	case "host":
 		if v.Source == "" {
 			return errors.New("source for host volume cannot be empty")
+		}
+		if v.Mode != nil {
+			return errors.New("mode for host volume cannot be set")
+		}
+		if v.UID != nil {
+			return errors.New("uid for host volume cannot be set")
+		}
+		if v.GID != nil {
+			return errors.New("gid for host volume cannot be set")
 		}
 		if !filepath.IsAbs(v.Source) {
 			return errors.New("source for host volume must be absolute path")
@@ -79,20 +94,13 @@ func (v Volume) assertValid() error {
 
 func (v *Volume) UnmarshalJSON(data []byte) error {
 	var vv volume
-	vv.Mode = "0755"
-	vv.UID = 0
-	vv.GID = 0
 	if err := json.Unmarshal(data, &vv); err != nil {
 		return err
 	}
 	nv := Volume(vv)
+	maybeSetDefaults(&nv)
 	if err := nv.assertValid(); err != nil {
 		return err
-	}
-	if nv.Kind != "empty" {
-		nv.Mode = ""
-		nv.UID = -1
-		nv.GID = -1
 	}
 	*v = nv
 	return nil
@@ -106,12 +114,24 @@ func (v Volume) MarshalJSON() ([]byte, error) {
 }
 
 func (v Volume) String() string {
-	s := fmt.Sprintf("%s,kind=%s,readOnly=%t", v.Name, v.Kind, *v.ReadOnly)
+	s := fmt.Sprintf("%s,kind=%s", v.Name, v.Kind)
 	if v.Source != "" {
-		s = s + fmt.Sprintf(",source=%s", v.Source)
+		s += fmt.Sprintf(",source=%s", v.Source)
 	}
-	if v.Mode != "" && v.UID != -1 && v.GID != -1 {
-		s = s + fmt.Sprintf(",mode=%s,uid=%d,gid=%d", v.Mode, v.UID, v.GID)
+	if v.ReadOnly != nil {
+		s += fmt.Sprintf(",readOnly=%t", *v.ReadOnly)
+	}
+	switch v.Kind {
+	case "empty":
+		if *v.Mode != emptyVolumeDefaultMode {
+			s += fmt.Sprintf(",mode=%s", *v.Mode)
+		}
+		if *v.UID != emptyVolumeDefaultUID {
+			s += fmt.Sprintf(",uid=%d", *v.UID)
+		}
+		if *v.GID != emptyVolumeDefaultGID {
+			s += fmt.Sprintf(",gid=%d", *v.GID)
+		}
 	}
 	return s
 }
@@ -121,11 +141,7 @@ func (v Volume) String() string {
 // Example volume parameters:
 // 	database,kind=host,source=/tmp,readOnly=true
 func VolumeFromString(vp string) (*Volume, error) {
-	vol := Volume{
-		Mode: "0755",
-		UID:  0,
-		GID:  0,
-	}
+	var vol Volume
 
 	vp = "name=" + vp
 	vpQuery, err := common.MakeQueryString(vp)
@@ -138,6 +154,7 @@ func VolumeFromString(vp string) (*Volume, error) {
 		return nil, err
 	}
 	for key, val := range v {
+		val := val
 		if len(val) > 1 {
 			return nil, fmt.Errorf("label %s with multiple values %q", key, val)
 		}
@@ -160,32 +177,50 @@ func VolumeFromString(vp string) (*Volume, error) {
 			}
 			vol.ReadOnly = &ro
 		case "mode":
-			vol.Mode = val[0]
+			vol.Mode = &val[0]
 		case "uid":
 			u, err := strconv.Atoi(val[0])
 			if err != nil {
 				return nil, err
 			}
-			vol.UID = u
+			vol.UID = &u
 		case "gid":
 			g, err := strconv.Atoi(val[0])
 			if err != nil {
 				return nil, err
 			}
-			vol.GID = g
+			vol.GID = &g
 		default:
 			return nil, fmt.Errorf("unknown volume parameter %q", key)
 		}
 	}
+
+	maybeSetDefaults(&vol)
+
 	err = vol.assertValid()
 	if err != nil {
 		return nil, err
 	}
-	if vol.Kind != "empty" {
-		vol.Mode = ""
-		vol.UID = -1
-		vol.GID = -1
-	}
 
 	return &vol, nil
+}
+
+// maybeSetDefaults sets the correct default values for certain fields on a
+// Volume if they are not already been set. These fields are not
+// pre-populated on all Volumes as the Volume type is polymorphic.
+func maybeSetDefaults(vol *Volume) {
+	if vol.Kind == "empty" {
+		if vol.Mode == nil {
+			m := emptyVolumeDefaultMode
+			vol.Mode = &m
+		}
+		if vol.UID == nil {
+			u := emptyVolumeDefaultUID
+			vol.UID = &u
+		}
+		if vol.GID == nil {
+			g := emptyVolumeDefaultGID
+			vol.GID = &g
+		}
+	}
 }
