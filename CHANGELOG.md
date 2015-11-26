@@ -1,3 +1,8 @@
+### v0.7.3
+
+This is a minor release of the spec with one bug fix over the previous release:
+- Fixed the `AsIsolator` function on the LinuxCapabilitiesSet isolator types so it correctly populates the value
+
 ### v0.7.2
 
 This is a minor release of the spec which should be fully backwards-compatible but extends functionality in several ways and loosens some restrictions.
