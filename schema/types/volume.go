@@ -21,6 +21,7 @@ import (
 	"net/url"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/appc/spec/schema/common"
 )
@@ -114,26 +115,35 @@ func (v Volume) MarshalJSON() ([]byte, error) {
 }
 
 func (v Volume) String() string {
-	s := fmt.Sprintf("%s,kind=%s", v.Name, v.Kind)
+	s := []string{
+		v.Name.String(),
+		",kind=",
+		v.Kind,
+	}
 	if v.Source != "" {
-		s += fmt.Sprintf(",source=%s", v.Source)
+		s = append(s, ",source=")
+		s = append(s, v.Source)
 	}
 	if v.ReadOnly != nil {
-		s += fmt.Sprintf(",readOnly=%t", *v.ReadOnly)
+		s = append(s, ",readOnly=")
+		s = append(s, strconv.FormatBool(*v.ReadOnly))
 	}
 	switch v.Kind {
 	case "empty":
 		if *v.Mode != emptyVolumeDefaultMode {
-			s += fmt.Sprintf(",mode=%s", *v.Mode)
+			s = append(s, ",mode=")
+			s = append(s, *v.Mode)
 		}
 		if *v.UID != emptyVolumeDefaultUID {
-			s += fmt.Sprintf(",uid=%d", *v.UID)
+			s = append(s, ",uid=")
+			s = append(s, strconv.Itoa(*v.UID))
 		}
 		if *v.GID != emptyVolumeDefaultGID {
-			s += fmt.Sprintf(",gid=%d", *v.GID)
+			s = append(s, ",gid=")
+			s = append(s, strconv.Itoa(*v.GID))
 		}
 	}
-	return s
+	return strings.Join(s, "")
 }
 
 // VolumeFromString takes a command line volume parameter and returns a volume
