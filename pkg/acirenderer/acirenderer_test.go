@@ -2149,7 +2149,7 @@ func TestEmptyRootFsDir(t *testing.T) {
 			`
 		            {
 		                "acKind": "ImageManifest",
-		                "acVersion": "0.7.1",
+		                "acVersion": "0.7.2",
 		                "name": "example.com/test_empty_rootfs"
 		            }
                         `,
@@ -2175,7 +2175,7 @@ func TestEmptyRootFsDir(t *testing.T) {
 			`
 		            {
 		                "acKind": "ImageManifest",
-		                "acVersion": "0.7.1",
+		                "acVersion": "0.7.2",
 		                "name": "example.com/test_empty_rootfs_pwl",
                                 "pathWhitelist": ["foo"]
 		            }

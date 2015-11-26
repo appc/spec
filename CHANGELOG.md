@@ -1,3 +1,22 @@
+### v0.7.2
+
+This is a minor release of the spec which should be fully backwards-compatible but extends functionality in several ways and loosens some restrictions.
+
+Spec changes:
+- The requirement for the metadata service has been downgraded to a SHOULD. This requirement necessitated a daemon which seemed burdensome for implementations.
+- Added a SHOULD requirement for Linux ACEs to provide a basic `/etc/hosts` if none already exists in application filesystems
+- The requirement for `exec` fields in the `app` schema to be non-empty was removed. An ACE is permitted to override/replace this section and so this provides greater flexibility when generating images, particularly when converting from other image types to ACI.
+- Added `mode`, `uid`, and `gid` parameters to empty volumes. This allows setting which permissions are applied to empty volumes. 
+- Changed the definition of the executable path in `app.exec` to be PATH-dependent. The procedure for an ACE to locate the executable path mimics that of the shell (as described in `man 3 exec`). This means that executable paths are no longer required to be absolute.
+
+Other changes:
+- Improved manifest parsing errors - when provided manifests are invalid JSON, the erroneous line and column number will now be highlighted in the produced error
+- The discovery code now includes per-host HTTP headers, allowing authentication during discovery
+- Added several new helper functions for initializing memory and CPU isolator types
+- Added several helpers to work with LinuxCapabilitiesSet schema types
+- Refactored the MakeQueryString helper to centralise the parsing of different comma-separated label/value strings used in several places (for volumes, ports, mountpoints, etc). This also now escapes values when parsing, allowing values with special URL characters like "+" or "&"
+- Fixed a nil-pointer dereference in the schema `Volume` type's `String()` method
+
 ### v0.7.1
 
 Minor release of the spec with one critical bug/consistency fix and a few tooling enhancements.
