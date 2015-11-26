@@ -162,3 +162,18 @@ func TestVolumeFromStringBad(t *testing.T) {
 		}
 	}
 }
+
+func BenchmarkVolumeToString(b *testing.B) {
+	trueVar := true
+	vol := Volume{
+		Name:     "foobar",
+		Kind:     "empty",
+		ReadOnly: &trueVar,
+		Mode:     sp("0777"),
+		UID:      ip(3),
+		GID:      ip(4),
+	}
+	for i := 0; i < b.N; i++ {
+		_ = vol.String()
+	}
+}
