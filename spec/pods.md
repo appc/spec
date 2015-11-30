@@ -150,7 +150,8 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
             "name": "ftp",
             "hostPort": 2121
         }
-    ]
+    ],
+    "exitPolicy": "onAnyFailure"
 }
 ```
 
@@ -182,3 +183,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 * **ports** (list of objects, optional) list of ports that SHOULD be exposed on the host.
     * **name** (string, required, restricted to the [AC Name](#ac-name-type) formatting) name of the port to be exposed on the host. This field is a key referencing by name ports specified in the Image Manifest(s) of the app(s) within this Pod Manifest; consequently, port names MUST be unique among apps within a pod.
     * **hostPort** (integer, required) port number on the host that will be mapped to the application port.
+* **exitPolicy** (string, optional) a string that specify the exit policy of the pod, if left empty, then it's up to ACE to choose the default behavior. Valid values are:
+    * **untilAll** - the pod exits only when all the apps exit, no matter they are successful or not.
+    * **onAny** - the pod exits when any of the apps exits either successfully or unsuccessfully.
+    * **onAnyFailure** -the pod exits when any of the pod exits unsuccessfully, also the pod exits when there is no app running.

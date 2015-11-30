@@ -35,6 +35,7 @@ type PodManifest struct {
 	Isolators   []types.Isolator    `json:"isolators"`
 	Annotations types.Annotations   `json:"annotations"`
 	Ports       []types.ExposedPort `json:"ports"`
+	ExitPolicy  types.ExitPolicy    `json:"exitPolicy"`
 }
 
 // podManifest is a model to facilitate extra validation during the
