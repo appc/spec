@@ -13,16 +13,21 @@ There are three URLs types:
 * Image URLs
 * Signature URLs
 * Public key URLs
+* Torrent URLs
+
+The Torrent URLs are torrent files for download image,signature(optional) and public key(optional) by p2p(peer to peer).Client should parse torrent file and start download image by p2p after torrent file is downloaded.
 
 Simple and Meta Discovery processes use one or more templates (predefined or derived from various sources) to render Image and Signature URLs (while the Public keys URLs aren't templates).
 
-Note that, to discriminate between the image and its signature, the templates must contain `{ext}` and its values MUST be either `aci` (for the image) or `aci.asc` (for the signature).
+Note that, to discriminate between the image and its signature, the templates must contain `{ext}` and its values MUST be `aci` (for the image), `aci.asc` (for the signature) or `torrent`(for the torrent file). 
 
-### Simple Discovery
+### 1.Simple Discovery
 
 The simple discovery template is:
 
     https://{name}-{version}-{os}-{arch}.{ext}
+
+####1.1 client-server
 
 First, try to fetch the App Container Image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
 
@@ -34,29 +39,43 @@ If this fails, move on to meta discovery.
 If this succeeds, try fetching the signature using the same template but with `{ext}` rendered to `aci.asc`:
 
     https://example.com/reduce-worker-1.0.0-linux-amd64.aci.asc
+####1.2 p2p(peer to peer)
+Try to fetch the torrent by rendering the above template (with `{ext}` rendered to `torrent`) and directly retrieving the resulting URL.
+
+
 
 Simple discovery does not provide a way to discover Public Keys.
 
-### Meta Discovery
+### 2.Meta Discovery
 
 If simple discovery fails, then we use HTTPS+HTML `meta` tags retrieved from a "discovery URL" to resolve an image name to downloadable URLs.
 
-The template for the discovery URL is:
+The client-server download template for the discovery URL is:
 
     https://{name}?ac-discovery=1
+	
+The p2p download template for the discovery URL is:
 
+    https://{name}?ac-discovery-p2p=1
+	
 For example, if the client is looking for `example.com/reduce-worker` it will request:
 
     https://example.com/reduce-worker?ac-discovery=1
+	https://example.com/reduce-worker?ac-discovery-p2p=1
+
+
+	
 
 then inspect the HTML returned for `meta` tags that have the following format:
 
 ```html
 <meta name="ac-discovery" content="prefix-match url-tmpl">
+<meta name="ac-discovery-p2p" content="prefix-match url-tmpl">
 <meta name="ac-discovery-pubkeys" content="prefix-match url">
 ```
 
 * `ac-discovery` MUST contain a URL template that can be rendered to retrieve the ACI or associated signature
+* `ac-discovery-p2p` MUST contain a URL template that can be rendered to retrieve the torrent file which use for download the ACI,signature and public key.
 * `ac-discovery-pubkeys` SHOULD contain a URL that provides a set of public keys that can be used to verify the signature of the ACI
 
 Some examples for different schemes and URLs:
@@ -64,6 +83,7 @@ Some examples for different schemes and URLs:
 ```html
 <meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{version}.{ext}">
 <meta name="ac-discovery" content="example.com hdfs://storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
+<meta name="ac-discovery-p2p" content="example.com hdfs://storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
 <meta name="ac-discovery-pubkeys" content="example.com https://example.com/pubkeys.gpg">
 ```
 
@@ -74,7 +94,8 @@ urltmpl="https://{name}-{version}-{os}-{arch}.{ext}"
 curl $(echo "$urltmpl" | sed -e "s/{name}/$name/" -e "s/{version}/$version/" -e "s/{os}/$os/" -e "s/{arch}/$arch/" -e "s/{ext}/$ext/")
 ```
 
-where _name_, _version_, _os_, and _arch_ are set to their respective values for the image, and _ext_ is either `aci` or `aci.asc` for retrieving an App Container Image or signature respectively.
+If it's `ac-discovery` tag, where _name_, _version_, _os_, and _arch_ are set to their respective values for the image, and _ext_ is either `aci` or `aci.asc` for retrieving an App Container Image or signature respectively. 
+If it's `ac-discovery-p2p` tag, where _name_, _version_, _os_, and _arch_ are set to their respective values for the torrent, and  _ext_ is `torrent` for retrieving a torrent file of App Container Image. 
 
 Note that multiple `ac-discovery` tags MAY be returned for a given prefix-match (for example, with different scheme names representing different transport mechanisms).
 In this case, the client implementation MAY choose which to use at its own discretion.
@@ -86,6 +107,7 @@ In our example above, using the HTTPS URL template, the client would attempt to 
 Signature: 	https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci.asc
 ACI: 		https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci
 Keys: 		https://example.com/pubkeys.gpg
+Torrent:	https://storage.example.com/linux/amd64/reduce-worker-1.0.0.torrent
 ```
 
 If the first attempt at fetching the initial discovery URL returns a `4xx` status code or does not contain any `ac-discovery` meta tags then attempt the parent path in the `name`.
