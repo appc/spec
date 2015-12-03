@@ -137,7 +137,8 @@ func TestDiscoverEndpoints(t *testing.T) {
 		},
 		{
 			&mockHttpDoer{
-				doer: fakeHTTPGet("myapp.html", 20, nil),
+				// always fails
+				doer: fakeHTTPGet("myapp.html", 10000, nil),
 			},
 			false,
 			App{
@@ -248,36 +249,45 @@ func TestDiscoverEndpoints(t *testing.T) {
 
 	for i, tt := range tests {
 		httpDo = tt.do
+		httpDoInsecureTls = tt.do
 		var hostHeaders map[string]http.Header
 		if tt.authHeader != nil {
 			hostHeaders = map[string]http.Header{
 				strings.Split(tt.app.String(), "/")[0]: tt.authHeader,
 			}
 		}
-		de, _, err := DiscoverEndpoints(tt.app, hostHeaders, true)
-		if err != nil && !tt.expectDiscoverySuccess {
-			continue
+		insecureList := []InsecureOption{
+			InsecureNone,
+			InsecureTls,
+			InsecureHttp,
+			InsecureTls | InsecureHttp,
 		}
-		if err != nil {
-			t.Fatalf("#%d DiscoverEndpoints failed: %v", i, err)
-		}
+		for _, insecure := range insecureList {
+			de, _, err := DiscoverEndpoints(tt.app, hostHeaders, insecure)
+			if err != nil && !tt.expectDiscoverySuccess {
+				continue
+			}
+			if err != nil {
+				t.Fatalf("#%d DiscoverEndpoints failed: %v", i, err)
+			}
 
-		if len(de.ACIEndpoints) != len(tt.expectedACIEndpoints) {
-			t.Errorf("ACIEndpoints array is wrong length want %d got %d", len(tt.expectedACIEndpoints), len(de.ACIEndpoints))
-		} else {
-			for n, _ := range de.ACIEndpoints {
-				if de.ACIEndpoints[n] != tt.expectedACIEndpoints[n] {
-					t.Errorf("#%d ACIEndpoints[%d] mismatch: want %v got %v", i, n, tt.expectedACIEndpoints[n], de.ACIEndpoints[n])
+			if len(de.ACIEndpoints) != len(tt.expectedACIEndpoints) {
+				t.Errorf("ACIEndpoints array is wrong length want %d got %d", len(tt.expectedACIEndpoints), len(de.ACIEndpoints))
+			} else {
+				for n, _ := range de.ACIEndpoints {
+					if de.ACIEndpoints[n] != tt.expectedACIEndpoints[n] {
+						t.Errorf("#%d ACIEndpoints[%d] mismatch: want %v got %v", i, n, tt.expectedACIEndpoints[n], de.ACIEndpoints[n])
+					}
 				}
 			}
-		}
 
-		if len(de.Keys) != len(tt.expectedKeys) {
-			t.Errorf("Keys array is wrong length want %d got %d", len(tt.expectedKeys), len(de.Keys))
-		} else {
-			for n, _ := range de.Keys {
-				if de.Keys[n] != tt.expectedKeys[n] {
-					t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedKeys[n], de.Keys[n])
+			if len(de.Keys) != len(tt.expectedKeys) {
+				t.Errorf("Keys array is wrong length want %d got %d", len(tt.expectedKeys), len(de.Keys))
+			} else {
+				for n, _ := range de.Keys {
+					if de.Keys[n] != tt.expectedKeys[n] {
+						t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedKeys[n], de.Keys[n])
+					}
 				}
 			}
 		}

@@ -89,7 +89,7 @@ func fakeHttpOrHttpsGet(filename string, httpSuccess bool, httpsSuccess bool, ht
 func TestHttpsOrHTTP(t *testing.T) {
 	tests := []struct {
 		name          string
-		insecure      bool
+		insecure      InsecureOption
 		do            httpDoer
 		expectUrlStr  string
 		expectSuccess bool
@@ -97,7 +97,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 	}{
 		{
 			"good-server",
-			false,
+			InsecureNone,
 			&mockHttpDoer{
 				doer: fakeHttpOrHttpsGet("myapp.html", true, true, 0, nil),
 			},
@@ -106,8 +106,28 @@ func TestHttpsOrHTTP(t *testing.T) {
 			nil,
 		},
 		{
+			"good-server-no-tls",
+			InsecureTls,
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", true, true, 0, nil),
+			},
+			"https://good-server-no-tls?ac-discovery=1",
+			true,
+			nil,
+		},
+		{
 			"file-not-found",
+			InsecureNone,
+			&mockHttpDoer{
+				doer: fakeHttpOrHttpsGet("myapp.html", false, false, 404, nil),
+			},
+			"",
 			false,
+			nil,
+		},
+		{
+			"file-not-found-no-tls",
+			InsecureTls,
 			&mockHttpDoer{
 				doer: fakeHttpOrHttpsGet("myapp.html", false, false, 404, nil),
 			},
@@ -117,7 +137,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 		},
 		{
 			"completely-broken-server",
-			false,
+			InsecureNone,
 			&mockHttpDoer{
 				doer: fakeHttpOrHttpsGet("myapp.html", false, false, 0, nil),
 			},
@@ -127,7 +147,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 		},
 		{
 			"file-only-on-http",
-			false, // do not accept fallback on http
+			InsecureNone, // do not accept fallback on http
 			&mockHttpDoer{
 				doer: fakeHttpOrHttpsGet("myapp.html", true, false, 404, nil),
 			},
@@ -137,7 +157,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 		},
 		{
 			"file-only-on-http",
-			true, // accept fallback on http
+			InsecureHttp, // accept fallback on http
 			&mockHttpDoer{
 				doer: fakeHttpOrHttpsGet("myapp.html", true, false, 404, nil),
 			},
@@ -147,7 +167,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 		},
 		{
 			"https-server-is-down",
-			true, // accept fallback on http
+			InsecureHttp, // accept fallback on http
 			&mockHttpDoer{
 				doer: fakeHttpOrHttpsGet("myapp.html", true, false, 0, nil),
 			},
@@ -157,7 +177,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 		},
 		{
 			"coreos.com",
-			false,
+			InsecureNone,
 			&mockHttpDoer{
 				doer: fakeHttpOrHttpsGet("myapp.html", false, true, 0, testAuthHeader),
 			},
@@ -169,6 +189,7 @@ func TestHttpsOrHTTP(t *testing.T) {
 
 	for i, tt := range tests {
 		httpDo = tt.do
+		httpDoInsecureTls = tt.do
 		hostHeaders := map[string]http.Header{
 			tt.name: tt.authHeader,
 		}
