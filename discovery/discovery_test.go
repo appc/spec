@@ -182,7 +182,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			&mockHttpDoer{
 				doer: fakeHTTPGet("myapp2.html", 0, nil),
 			},
-			false,
+			true,
 			App{
 				Name:   "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{},
@@ -201,7 +201,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			&mockHttpDoer{
 				doer: fakeHTTPGet("myapp2.html", 0, nil),
 			},
-			false,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -266,6 +266,9 @@ func TestDiscoverEndpoints(t *testing.T) {
 			de, _, err := DiscoverEndpoints(tt.app, hostHeaders, insecure)
 			if err != nil && !tt.expectDiscoverySuccess {
 				continue
+			}
+			if err == nil && !tt.expectDiscoverySuccess {
+				t.Fatalf("#%d DiscoverEndpoints should have failed but didn't", i)
 			}
 			if err != nil {
 				t.Fatalf("#%d DiscoverEndpoints failed: %v", i, err)
