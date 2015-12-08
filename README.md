@@ -46,6 +46,7 @@ Some examples of build systems and tools that have been built so far include:
 - [baci](https://github.com/sgotti/baci) - A generic ACI build project
 - [openwrt-aci](https://github.com/1player/openwrt-aci) - A tool to build ACIs based on OpenWRT snapshots
 - [oci2aci](https://github.com/huawei-openlab/oci2aci) - ACI builder from OCI bundle
+- [nix2aci](https://github.com/steveej/nix2aci) - ACI builder that leverages the Nix package manager and acbuild
 
 ## What are some implementations of the spec?
 
