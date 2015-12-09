@@ -27,11 +27,27 @@ Each app in a pod will start chrooted into its own unique read-write filesystem 
 
 An app's filesystem must be *rendered* in an empty directory by the following process (or equivalent):
 
-1. If the ACI contains a non-empty `dependencies` field in its `ImageManifest`, the `rootfs` of each dependent image is extracted into the target directory, in the order in which they are listed.
-2. The `rootfs` contained in the ACI is extracted into the target directory
-3. If the ACI contains a non-empty `pathWhitelist` field in its `ImageManifest`, *all* paths not in the whitelist must be removed from the target directory
+1. If the ACI contains a non-empty `dependencies` field in its `ImageManifest`, the `rootfs` of each dependent image is extracted into the target directory, in the order in which they are listed. The multiple dependencies can form a tree. The dependencies are resolved in the depth-first order.
+2. The `rootfs` contained in the ACI is extracted into the target directory.
+3. If the ACI contains a non-empty `pathWhitelist` field in its `ImageManifest`, *all* paths not in the whitelist must be removed from the target directory. When extracting a file from an image, the file can be filtered by any of the `pathWhitelist` of the image itself and the images depending on the image.
 
 If during rootfs extraction a path is already present in the target directory from an earlier dependency, the previously extracted path MUST be overwritten. If the existing path is a symbolic link to a directory, the link MUST NOT be followed and it MUST be removed and replaced with the new path.
+
+Let's say we have the following dependencies:
+```
+A -> [B, C]
+C -> [D]
+```
+Files from C and D will override files from B because C is placed after B in the dependency list. The order of override is: B, D, C, A.
+
+An image can be a dependency through multiple paths:
+```
+A -> [B, C]
+B -> [D]
+C -> [D]
+```
+The order of override is: D, B, D, C, A. In this example, the renderer has to examine the files from D twice and each pass will have a different `pathWhitelist`, taking into account the `pathWhitelist` from the child image.
+
 
 Every execution of an app MUST start from a clean copy of this rendered filesystem.
 
