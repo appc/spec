@@ -50,6 +50,7 @@ var (
 	patchMounts            string
 	patchPorts             string
 	patchIsolators         string
+	patchDependencies      string
 
 	catPrettyPrint bool
 
@@ -67,6 +68,7 @@ var (
 		  [--ports=query,protocol=tcp,port=8080[:query2,...]]
 		  [--supplementary-groups=gid1,gid2,...]
 		  [--isolators=resource/cpu,request=50m,limit=100m[:resource/memory,...]]
+		  [--dependencies=example.com/app1[:example.com/app2:...]]
 		  [--replace]
 		  INPUT_ACI_FILE
 		  [OUTPUT_ACI_FILE]`,
@@ -96,6 +98,7 @@ func init() {
 	cmdPatchManifest.Flags.StringVar(&patchMounts, "mounts", "", "Replace mount points")
 	cmdPatchManifest.Flags.StringVar(&patchPorts, "ports", "", "Replace ports")
 	cmdPatchManifest.Flags.StringVar(&patchIsolators, "isolators", "", "Replace isolators")
+	cmdPatchManifest.Flags.StringVar(&patchDependencies, "dependencies", "", "Replace dependencies")
 
 	cmdCatManifest.Flags.BoolVar(&catPrettyPrint, "pretty-print", false, "Print with better style")
 }
@@ -161,7 +164,7 @@ func patchManifest(im *schema.ImageManifest) error {
 		app.Exec = strings.Split(patchExec, " ")
 	}
 
-	if patchUser != "" || patchGroup != "" || patchSupplementaryGIDs != "" || patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" {
+	if patchUser != "" || patchGroup != "" || patchSupplementaryGIDs != "" || patchCaps != "" || patchMounts != "" || patchPorts != "" || patchIsolators != "" || patchDependencies != "" {
 		// ...but if we still don't have an app and the user is trying
 		// to patch one of its other parameters, it's an error
 		if app == nil {
@@ -243,6 +246,20 @@ func patchManifest(im *schema.ImageManifest) error {
 				return fmt.Errorf("cannot unmarshal isolator %v: %v", isolatorStr, err)
 			}
 			app.Isolators = append(app.Isolators, *isolator)
+		}
+	}
+
+	if patchDependencies != "" {
+		dependencies := strings.Split(patchDependencies, ":")
+		for _, depStr := range dependencies {
+			depId, err := types.NewACIdentifier(depStr)
+			if err != nil {
+				return fmt.Errorf("cannot unmarshal dependency %v: %v", depStr, err)
+			}
+			dep := types.Dependency{
+				ImageName: *depId,
+			}
+			im.Dependencies = append(im.Dependencies, dep)
 		}
 	}
 	return nil
