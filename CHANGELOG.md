@@ -1,3 +1,9 @@
+### v0.7.4
+
+Minor release of the spec with some enhancements to the schema types and discovery code:
+- Added `AsIsolator` constructors for Memory and CPU resource isolators (#552)
+- Added insecure flags for HTTP and TLS to discovery code, for more granular control over security during discovery (#545, #551)
+
 ### v0.7.3
 
 This is a minor release of the spec with one bug fix over the previous release:
