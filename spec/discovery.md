@@ -8,38 +8,21 @@ App Container Image Discovery prescribes a discovery process to retrieve an imag
 
 Image Discovery is inspired by Go's [remote import paths](https://golang.org/cmd/go/#hdr-Remote_import_paths).
 
-There are three URLs types:
+There are three URL types:
 
 * Image URLs
 * Signature URLs
 * Public key URLs
 
-Simple and Meta Discovery processes use one or more templates (predefined or derived from various sources) to render Image and Signature URLs (while the Public keys URLs aren't templates).
+### Discovery Templates
 
-Note that, to discriminate between the image and its signature, the templates must contain `{ext}` and its values MUST be either `aci` (for the image) or `aci.asc` (for the signature).
+Image Discovery uses one or more templates to render Image and Signature URLs (while the Public keys URLs aren't templates).
 
-### Simple Discovery
+To discriminate between the image and its signature, the templates must contain `{ext}` and its values MUST be either `aci` (for the image) or `aci.asc` (for the signature).
 
-The simple discovery template is:
+### Discovery URL
 
-    https://{name}-{version}-{os}-{arch}.{ext}
-
-First, try to fetch the App Container Image by rendering the above template (with `{ext}` rendered to `aci`) and directly retrieving the resulting URL.
-
-For example, given the image `{name}`: `example.com/reduce-worker`, with `{version}`: `1.0.0`, `{arch}`: `amd64`, and `{os}`: `linux`, try to retrieve:
-
-    https://example.com/reduce-worker-1.0.0-linux-amd64.aci
-
-If this fails, move on to meta discovery.
-If this succeeds, try fetching the signature using the same template but with `{ext}` rendered to `aci.asc`:
-
-    https://example.com/reduce-worker-1.0.0-linux-amd64.aci.asc
-
-Simple discovery does not provide a way to discover Public Keys.
-
-### Meta Discovery
-
-If simple discovery fails, then we use HTTPS+HTML `meta` tags retrieved from a "discovery URL" to resolve an image name to downloadable URLs.
+Image Discovery locates the templates using HTTPS+HTML `meta` tags retrieved from a _discovery URL_.
 
 The template for the discovery URL is:
 
