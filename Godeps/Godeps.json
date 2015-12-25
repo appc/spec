@@ -6,8 +6,8 @@
 	],
 	"Deps": [
 		{
-			"ImportPath": "github.com/camlistore/camlistore/pkg/errorutil",
-			"Rev": "9106ce829629773474c689b34aacd7d3aaa99426"
+			"ImportPath": "github.com/camlistore/go4/errorutil",
+			"Rev": "a4bbc1170bd4f25e69133ab72aceadd23be97b79"
 		},
 		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
