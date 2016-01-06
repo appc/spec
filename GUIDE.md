@@ -44,7 +44,7 @@ To make more efficient use of disk space, and improve performance, implementatio
 ### Image Discovery
 
 While the specification prescribes that the Meta Discovery process occurs over HTTP(S), it is intentionally agnostic with respect to the transport over which the discovered resource can be retrieved.
-In the simplest cases (and as for example in Simple Discovery), the ACI payload can simply be retrieved over HTTPS itself.
+In the simplest cases, the ACI payload can simply be retrieved over HTTPS itself.
 However, in more advanced implementations - particularly in highly distributed environments - alternative protocols like [HDFS](hdfs) or [BitTorrent](bittorrent) could be used instead.
 
 [hdfs]: http://hadoop.apache.org/docs/r1.2.1/hdfs_design.html
