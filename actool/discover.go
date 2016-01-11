@@ -60,7 +60,7 @@ func runDiscover(args []string) (exit int) {
 		}
 		insecure := discovery.InsecureNone
 		if transportFlags.Insecure {
-			insecure = discovery.InsecureTls | discovery.InsecureHttp
+			insecure = discovery.InsecureTLS | discovery.InsecureHTTP
 		}
 		eps, attempts, err := discovery.DiscoverEndpoints(*app, nil, insecure)
 		if err != nil {
