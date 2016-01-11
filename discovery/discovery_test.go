@@ -84,7 +84,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 		authHeader             http.Header
 	}{
 		{
-			&mockHttpDoer{
+			&mockHTTPDoer{
 				doer: fakeHTTPGet("myapp.html", 0, nil),
 			},
 			true,
@@ -110,7 +110,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			nil,
 		},
 		{
-			&mockHttpDoer{
+			&mockHTTPDoer{
 				doer: fakeHTTPGet("myapp.html", 1, nil),
 			},
 			true,
@@ -136,7 +136,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			nil,
 		},
 		{
-			&mockHttpDoer{
+			&mockHTTPDoer{
 				// always fails
 				doer: fakeHTTPGet("myapp.html", 10000, nil),
 			},
@@ -157,7 +157,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 		// returned as the other one cannot be completely rendered due to
 		// missing labels.
 		{
-			&mockHttpDoer{
+			&mockHTTPDoer{
 				doer: fakeHTTPGet("myapp2.html", 0, nil),
 			},
 			true,
@@ -179,7 +179,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 		// Test missing labels. version label should default to
 		// "latest" and the first template should be rendered
 		{
-			&mockHttpDoer{
+			&mockHTTPDoer{
 				doer: fakeHTTPGet("myapp2.html", 0, nil),
 			},
 			true,
@@ -198,7 +198,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 		},
 		// Test with a label called "name". It should be ignored.
 		{
-			&mockHttpDoer{
+			&mockHTTPDoer{
 				doer: fakeHTTPGet("myapp2.html", 0, nil),
 			},
 			true,
@@ -220,7 +220,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 		},
 		// Test with an auth header
 		{
-			&mockHttpDoer{
+			&mockHTTPDoer{
 				doer: fakeHTTPGet("myapp.html", 0, testAuthHeader),
 			},
 			true,
@@ -249,7 +249,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 
 	for i, tt := range tests {
 		httpDo = tt.do
-		httpDoInsecureTls = tt.do
+		httpDoInsecureTLS = tt.do
 		var hostHeaders map[string]http.Header
 		if tt.authHeader != nil {
 			hostHeaders = map[string]http.Header{
@@ -258,9 +258,9 @@ func TestDiscoverEndpoints(t *testing.T) {
 		}
 		insecureList := []InsecureOption{
 			InsecureNone,
-			InsecureTls,
-			InsecureHttp,
-			InsecureTls | InsecureHttp,
+			InsecureTLS,
+			InsecureHTTP,
+			InsecureTLS | InsecureHTTP,
 		}
 		for _, insecure := range insecureList {
 			de, _, err := DiscoverEndpoints(tt.app, hostHeaders, insecure)
