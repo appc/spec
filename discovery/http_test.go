@@ -21,6 +21,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 )
@@ -38,7 +39,7 @@ func (m *mockHTTPDoer) Do(req *http.Request) (resp *http.Response, err error) {
 
 func fakeHTTPOrHTTPSGet(filename string, httpSuccess bool, httpsSuccess bool, httpErrorCode int, header http.Header) func(req *http.Request) (*http.Response, error) {
 	return func(req *http.Request) (*http.Response, error) {
-		f, err := os.Open(filename)
+		f, err := os.Open(filepath.Join("testdata", filename))
 		if err != nil {
 			return nil, err
 		}
@@ -99,7 +100,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"good-server",
 			InsecureNone,
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", true, true, 0, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", true, true, 0, nil),
 			},
 			"https://good-server?ac-discovery=1",
 			true,
@@ -109,7 +110,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"good-server-no-tls",
 			InsecureTLS,
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", true, true, 0, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", true, true, 0, nil),
 			},
 			"https://good-server-no-tls?ac-discovery=1",
 			true,
@@ -119,7 +120,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"file-not-found",
 			InsecureNone,
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", false, false, 404, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", false, false, 404, nil),
 			},
 			"",
 			false,
@@ -129,7 +130,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"file-not-found-no-tls",
 			InsecureTLS,
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", false, false, 404, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", false, false, 404, nil),
 			},
 			"",
 			false,
@@ -139,7 +140,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"completely-broken-server",
 			InsecureNone,
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", false, false, 0, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", false, false, 0, nil),
 			},
 			"",
 			false,
@@ -149,7 +150,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"file-only-on-http",
 			InsecureNone, // do not accept fallback on http
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", true, false, 404, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", true, false, 404, nil),
 			},
 			"",
 			false,
@@ -159,7 +160,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"file-only-on-http",
 			InsecureHTTP, // accept fallback on http
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", true, false, 404, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", true, false, 404, nil),
 			},
 			"http://file-only-on-http?ac-discovery=1",
 			true,
@@ -169,7 +170,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"https-server-is-down",
 			InsecureHTTP, // accept fallback on http
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", true, false, 0, nil),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", true, false, 0, nil),
 			},
 			"http://https-server-is-down?ac-discovery=1",
 			true,
@@ -179,7 +180,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 			"coreos.com",
 			InsecureNone,
 			&mockHTTPDoer{
-				doer: fakeHTTPOrHTTPSGet("myapp.html", false, true, 0, testAuthHeader),
+				doer: fakeHTTPOrHTTPSGet("meta01.html", false, true, 0, testAuthHeader),
 			},
 			"https://coreos.com?ac-discovery=1",
 			true,
