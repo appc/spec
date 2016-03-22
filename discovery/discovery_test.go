@@ -460,7 +460,9 @@ func TestDiscoverEndpoints(t *testing.T) {
 			[]string{"https://example.com/pubkeys.gpg"},
 			nil,
 		},
-		// Test multiple ACIEndpoints.
+		// Test multiple endpoints.
+		// Should render two endpoint, since '<meta name="ac-discovery" content="example.com https://storage.example.com/{name}-{version}.{ext}">'
+		// doesn't contain all the required labels
 		{
 			&mockHTTPDoer{
 				doer: fakeHTTPGet(
@@ -488,12 +490,39 @@ func TestDiscoverEndpoints(t *testing.T) {
 					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 				ACIEndpoint{
-					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci",
-					ASC: "https://storage.example.com/example.com/myapp-1.0.0.aci.asc",
-				},
-				ACIEndpoint{
 					ACI: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
 					ASC: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test a discovery string that has an hardcoded app name instead of using the provided {name}
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta07.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
