@@ -378,7 +378,8 @@ func TestDiscoverEndpoints(t *testing.T) {
 			&mockHTTPDoer{
 				doer: fakeHTTPGet(
 					[]meta{
-						{"/myapp",
+						{
+							"/myapp",
 							"meta05.html",
 						},
 					},
@@ -408,7 +409,8 @@ func TestDiscoverEndpoints(t *testing.T) {
 			&mockHTTPDoer{
 				doer: fakeHTTPGet(
 					[]meta{
-						{"/myapp",
+						{
+							"/myapp",
 							"meta05.html",
 						},
 					},
@@ -461,11 +463,13 @@ func TestDiscoverEndpoints(t *testing.T) {
 			nil,
 		},
 		// Test multiple ACIEndpoints.
+		// Should render the first two endpoint, since the others match fewer labels
 		{
 			&mockHTTPDoer{
 				doer: fakeHTTPGet(
 					[]meta{
-						{"/myapp",
+						{
+							"/myapp",
 							"meta06.html",
 						},
 					},
@@ -488,12 +492,148 @@ func TestDiscoverEndpoints(t *testing.T) {
 					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 				ACIEndpoint{
-					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci",
-					ASC: "https://storage.example.com/example.com/myapp-1.0.0.aci.asc",
+					ACI: "https://mirror.storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://mirror.storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test multiple ACIEndpoints.
+		// Should render endpoints 3 and 4, since 1 and 2 don't fully render and the others match fewer labels
+		// Example noarch versioned matching
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"/myapp",
+							"meta06.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-noarch.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-noarch.aci.asc",
 				},
 				ACIEndpoint{
-					ACI: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
-					ASC: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+					ACI: "https://mirror.storage.example.com/example.com/myapp-1.0.0-noarch.aci",
+					ASC: "https://mirror.storage.example.com/example.com/myapp-1.0.0-noarch.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test multiple ACIEndpoints.
+		// Should render endpoints 5 and 6, since 1, 2, 3, 4 don't fully render and the others match fewer labels
+		// Example latest matching
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"/myapp",
+							"meta06.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"os":   "linux",
+					"arch": "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-latest-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-latest-linux-amd64.aci.asc",
+				},
+				ACIEndpoint{
+					ACI: "https://mirror.storage.example.com/example.com/myapp-latest-linux-amd64.aci",
+					ASC: "https://mirror.storage.example.com/example.com/myapp-latest-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test multiple ACIEndpoints.
+		// Should render endpoints 7 and 8, since the others don't fully render.
+		// Example noarch latest matching
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"/myapp",
+							"meta06.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name:   "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-latest-noarch.aci",
+					ASC: "https://storage.example.com/example.com/myapp-latest-noarch.aci.asc",
+				},
+				ACIEndpoint{
+					ACI: "https://mirror.storage.example.com/example.com/myapp-latest-noarch.aci",
+					ASC: "https://mirror.storage.example.com/example.com/myapp-latest-noarch.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+
+		// Test a discovery string that has an hardcoded app name instead of using the provided {name}
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"/myapp",
+							"meta07.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
@@ -505,7 +645,8 @@ func TestDiscoverEndpoints(t *testing.T) {
 			&mockHTTPDoer{
 				doer: fakeHTTPGet(
 					[]meta{
-						{"/myapp",
+						{
+							"/myapp",
 							"meta01.html",
 						},
 					},
