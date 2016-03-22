@@ -43,6 +43,7 @@ Some examples of build systems and tools that have been built so far include:
 - [deb2aci](https://github.com/klizhentas/deb2aci) - ACI builder from Debian packages
 - [actool](https://github.com/appc/spec/tree/master/actool) - Simple tool to assemble ACIs from root filesystems
 - [acbuild](https://github.com/appc/acbuild) - A versatile tool for building and manipulating ACIs
+- [dgr](https://github.com/blablacar/dgr) - A command-line utility to build ACIs and configure them at runtime
 - [baci](https://github.com/sgotti/baci) - A generic ACI build project
 - [openwrt-aci](https://github.com/1player/openwrt-aci) - A tool to build ACIs based on OpenWRT snapshots
 - [oci2aci](https://github.com/huawei-openlab/oci2aci) - ACI builder from OCI bundle
