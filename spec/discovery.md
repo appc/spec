@@ -107,3 +107,19 @@ Authentication during the discovery process is optional.
 If an attempt at fetching any resource (the initial discovery URL, an App Container Image, or signature) returns a `401 Unauthorized`, implementations should enact the authentication policy set by the operator.
 For example, some implementations might only perform HTTP basic authentication over HTTPS connections.
 
+
+### Examples
+
+#### Latest pattern
+
+If a client wants to retrieve the latest available ACI (without knowing its version) it can provide these meta tags:
+
+```html
+<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{version}.{ext}">
+<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-latest.{ext}">
+```
+
+When requiring a specific version, the first template will be rendered, when not requiring a _version_ label the second template will match.
+
+On the http server, the "latest" url should point to the current latest ACI.
+

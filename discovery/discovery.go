@@ -49,10 +49,6 @@ type ACIEndpoints []ACIEndpoint
 
 type PublicKeys []string
 
-const (
-	defaultVersion = "latest"
-)
-
 var (
 	templateExpression = regexp.MustCompile(`{.*?}`)
 	errEnough          = errors.New("enough discovery information found")
@@ -134,9 +130,6 @@ func createTemplateVars(app App) []string {
 
 func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecure InsecureOption) (*discoveryData, error) {
 	app = *app.Copy()
-	if app.Labels["version"] == "" {
-		app.Labels["version"] = defaultVersion
-	}
 
 	_, body, err := httpsOrHTTP(pre, hostHeaders, insecure)
 	if err != nil {

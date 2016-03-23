@@ -402,8 +402,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			[]string{"https://example.com/pubkeys.gpg"},
 			nil,
 		},
-		// Test missing labels. version label should default to
-		// "latest" and the first template should be rendered
+		// Test missing labels. No template will render
 		{
 			&mockHTTPDoer{
 				doer: fakeHTTPGet(
@@ -415,18 +414,13 @@ func TestDiscoverEndpoints(t *testing.T) {
 					nil,
 				),
 			},
-			true,
+			false,
 			true,
 			App{
 				Name:   "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{},
 			},
-			[]ACIEndpoint{
-				ACIEndpoint{
-					ACI: "https://storage.example.com/example.com/myapp-latest.aci",
-					ASC: "https://storage.example.com/example.com/myapp-latest.aci.asc",
-				},
-			},
+			[]ACIEndpoint{},
 			[]string{"https://example.com/pubkeys.gpg"},
 			nil,
 		},
