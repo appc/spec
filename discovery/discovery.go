@@ -37,21 +37,25 @@ type ACIEndpoint struct {
 	ASC string
 }
 
+type ImageTagsEndpoint struct {
+	ImageTags string
+	ASC       string
+}
+
 // A struct containing both discovered endpoints and keys. Used to avoid
 // function duplication (one for endpoints and one for keys, so to avoid two
 // doDiscover, two DiscoverWalkFunc)
 type discoveryData struct {
-	ACIEndpoints []ACIEndpoint
-	PublicKeys   []string
+	ACIEndpoints       []ACIEndpoint
+	PublicKeys         []string
+	ImageTagsEndpoints []ImageTagsEndpoint
 }
 
 type ACIEndpoints []ACIEndpoint
 
 type PublicKeys []string
 
-const (
-	defaultVersion = "latest"
-)
+type ImageTagsEndpoints []ImageTagsEndpoint
 
 var (
 	templateExpression = regexp.MustCompile(`{.*?}`)
@@ -128,9 +132,6 @@ func createTemplateVars(app App) []string {
 
 func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecure InsecureOption) (*discoveryData, error) {
 	app = *app.Copy()
-	if app.Labels["version"] == "" {
-		app.Labels["version"] = defaultVersion
-	}
 
 	_, body, err := httpsOrHTTP(pre, hostHeaders, insecure)
 	if err != nil {
@@ -165,6 +166,20 @@ func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecur
 
 		case "ac-discovery-pubkeys":
 			dd.PublicKeys = append(dd.PublicKeys, m.uri)
+		case "ac-discovery-tags":
+			// Only name is used for tags discovery
+			tplVars := []string{"{name}", app.Name.String()}
+			// Ignore not handled variables as {ext} isn't already rendered.
+			uri, _ := renderTemplate(m.uri, tplVars...)
+			asc, ok := renderTemplate(uri, "{ext}", "aci.asc")
+			if !ok {
+				continue
+			}
+			tags, ok := renderTemplate(uri, "{ext}", "aci")
+			if !ok {
+				continue
+			}
+			dd.ImageTagsEndpoints = append(dd.ImageTagsEndpoints, ImageTagsEndpoint{ImageTags: tags, ASC: asc})
 		}
 	}
 
@@ -175,6 +190,7 @@ func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecur
 // optionally will use HTTP if insecure is set. hostHeaders specifies the
 // header to apply depending on the host (e.g. authentication). Based on the
 // response of the discoverFn it will continue to recurse up the tree.
+// If no discovery data can be found an empty discoveryData will be returned.
 func DiscoverWalk(app App, hostHeaders map[string]http.Header, insecure InsecureOption, discoverFn DiscoverWalkFunc) (dd *discoveryData, err error) {
 	parts := strings.Split(string(app.Name), "/")
 	for i := range parts {
@@ -187,7 +203,7 @@ func DiscoverWalk(app App, hostHeaders map[string]http.Header, insecure Insecure
 		}
 	}
 
-	return nil, fmt.Errorf("discovery failed")
+	return &discoveryData{}, nil
 }
 
 // DiscoverWalkFunc can stop a DiscoverWalk by returning non-nil error.
@@ -232,10 +248,13 @@ func DiscoverACIEndpoints(app App, hostHeaders map[string]http.Header, insecure 
 		return nil, attempts, err
 	}
 
+	if len(dd.ACIEndpoints) == 0 {
+		return nil, attempts, fmt.Errorf("No ACI endpoints discovered")
+	}
 	return dd.ACIEndpoints, attempts, nil
 }
 
-// DiscoverPublicKey will make HTTPS requests to find the ac-public-keys meta
+// DiscoverPublicKeys will make HTTPS requests to find the ac-discovery-pubkeys meta
 // tags and optionally will use HTTP if insecure is set. hostHeaders
 // specifies the header to apply depending on the host (e.g. authentication).
 // It will not give up until it has exhausted the path or found an public key.
@@ -253,5 +272,29 @@ func DiscoverPublicKeys(app App, hostHeaders map[string]http.Header, insecure In
 		return nil, attempts, err
 	}
 
+	if len(dd.PublicKeys) == 0 {
+		return nil, attempts, fmt.Errorf("No public keys discovered")
+	}
 	return dd.PublicKeys, attempts, nil
+}
+
+// DiscoverImageTags will make HTTPS requests to find the ac-discovery-imagetags meta
+// tags and optionally will use HTTP if insecure is set. hostHeaders
+// specifies the header to apply depending on the host (e.g. authentication).
+// It will not give up until it has exhausted the path or found an imagetag.
+func DiscoverImageTags(app App, hostHeaders map[string]http.Header, insecure InsecureOption) (ImageTagsEndpoints, []FailedAttempt, error) {
+	testFn := func(pre string, dd *discoveryData, err error) error {
+		if len(dd.ImageTagsEndpoints) != 0 {
+			return errEnough
+		}
+		return nil
+	}
+
+	attempts := []FailedAttempt{}
+	dd, err := DiscoverWalk(app, hostHeaders, insecure, walker(&attempts, testFn))
+	if err != nil && err != errEnough {
+		return nil, attempts, err
+	}
+
+	return dd.ImageTagsEndpoints, attempts, nil
 }

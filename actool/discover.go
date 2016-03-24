@@ -15,12 +15,18 @@
 package main
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"net"
+	"net/http"
+	"net/url"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/appc/spec/discovery"
+	"github.com/appc/spec/schema"
 )
 
 var (
@@ -62,12 +68,37 @@ func runDiscover(args []string) (exit int) {
 		if transportFlags.Insecure {
 			insecure = discovery.InsecureTLS | discovery.InsecureHTTP
 		}
+		tagsEndpoints, attempts, err := discovery.DiscoverImageTags(*app, nil, insecure)
+		if err != nil {
+			stderr("error fetching endpoints for %s: %s", name, err)
+			return 1
+		}
+		for _, a := range attempts {
+			fmt.Printf("discover tags walk: prefix: %s error: %v\n", a.Prefix, a.Error)
+		}
+		if len(tagsEndpoints) != 0 {
+			tags, err := fetchImageTags(tagsEndpoints[0].ImageTags, insecure)
+			if err != nil {
+				stderr("error fetching tags info: %s", err)
+				return 1
+			}
+			// Merge tag labels
+			app, err = app.MergeTag(tags)
+			if err != nil {
+				stderr("error resolving tags to labels: %s", err)
+				return 1
+			}
+		} else {
+			fmt.Printf("no discover tags found")
+		}
+
 		eps, attempts, err := discovery.DiscoverACIEndpoints(*app, nil, insecure)
 		if err != nil {
 			stderr("error fetching endpoints for %s: %s", name, err)
 			return 1
 		}
 		for _, a := range attempts {
+
 			fmt.Printf("discover endpoints walk: prefix: %s error: %v\n", a.Prefix, a.Error)
 		}
 		publicKeys, attempts, err := discovery.DiscoverPublicKeys(*app, nil, insecure)
@@ -103,4 +134,62 @@ func runDiscover(args []string) (exit int) {
 	}
 
 	return
+}
+
+func fetchImageTags(urlStr string, insecure discovery.InsecureOption) (*schema.ImageTags, error) {
+	t := &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: func(n, a string) (net.Conn, error) {
+			return net.DialTimeout(n, a, 5*time.Second)
+		},
+	}
+	if insecure&discovery.InsecureTLS != 0 {
+		t.TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
+	}
+	client := &http.Client{
+		Transport: t,
+	}
+
+	fetch := func(scheme string) (res *http.Response, err error) {
+		u, err := url.Parse(urlStr)
+		if err != nil {
+			return nil, err
+		}
+		u.Scheme = scheme
+		urlStr := u.String()
+		req, err := http.NewRequest("GET", urlStr, nil)
+		if err != nil {
+			return nil, err
+		}
+		res, err = client.Do(req)
+		return
+	}
+	closeBody := func(res *http.Response) {
+		if res != nil {
+			res.Body.Close()
+		}
+	}
+	res, err := fetch("https")
+	if err != nil || res.StatusCode != http.StatusOK {
+		if insecure&discovery.InsecureHTTP != 0 {
+			closeBody(res)
+			res, err = fetch("http")
+		}
+	}
+
+	if res != nil && res.StatusCode != http.StatusOK {
+		err = fmt.Errorf("expected a 200 OK got %d", res.StatusCode)
+	}
+
+	if err != nil {
+		closeBody(res)
+		return nil, err
+	}
+
+	var tags *schema.ImageTags
+	jd := json.NewDecoder(res.Body)
+	jd.Decode(&tags)
+	closeBody(res)
+
+	return tags, nil
 }

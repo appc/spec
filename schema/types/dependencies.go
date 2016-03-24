@@ -24,6 +24,7 @@ type Dependencies []Dependency
 type Dependency struct {
 	ImageName ACIdentifier `json:"imageName"`
 	ImageID   *Hash        `json:"imageID,omitempty"`
+	Tag       string       `json:"tag,omitempty"`
 	Labels    Labels       `json:"labels,omitempty"`
 	Size      uint         `json:"size,omitempty"`
 }
