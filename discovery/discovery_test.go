@@ -20,6 +20,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"path/filepath"
 	"reflect"
 	"strings"
 	"testing"
@@ -27,14 +28,14 @@ import (
 	"github.com/appc/spec/schema/types"
 )
 
-func fakeHTTPGet(filename string, failures int, header http.Header) func(req *http.Request) (*http.Response, error) {
-	attempts := 0
-	return func(req *http.Request) (*http.Response, error) {
-		f, err := os.Open(filename)
-		if err != nil {
-			return nil, err
-		}
+type meta struct {
+	path    string
+	content string
+}
 
+func fakeHTTPGet(metas []meta, header http.Header) func(req *http.Request) (*http.Response, error) {
+	return func(req *http.Request) (*http.Response, error) {
+		var err error
 		var resp *http.Response
 
 		if header != nil && !reflect.DeepEqual(req.Header, header) {
@@ -42,8 +43,29 @@ func fakeHTTPGet(filename string, failures int, header http.Header) func(req *ht
 			return nil, err
 		}
 
-		switch {
-		case attempts < failures:
+		for _, meta := range metas {
+			if req.URL.Path == meta.path {
+				f, err := os.Open(filepath.Join("testdata", meta.content))
+				if err != nil {
+					return nil, err
+				}
+
+				resp = &http.Response{
+					Status:     "200 OK",
+					StatusCode: http.StatusOK,
+					Proto:      "HTTP/1.1",
+					ProtoMajor: 1,
+					ProtoMinor: 1,
+					Header: http.Header{
+						"Content-Type": []string{"text/html"},
+					},
+					Body: f,
+				}
+				break
+			}
+		}
+
+		if resp == nil {
 			resp = &http.Response{
 				Status:     "404 Not Found",
 				StatusCode: http.StatusNotFound,
@@ -55,38 +77,39 @@ func fakeHTTPGet(filename string, failures int, header http.Header) func(req *ht
 				},
 				Body: ioutil.NopCloser(bytes.NewBufferString("")),
 			}
-		default:
-			resp = &http.Response{
-				Status:     "200 OK",
-				StatusCode: http.StatusOK,
-				Proto:      "HTTP/1.1",
-				ProtoMajor: 1,
-				ProtoMinor: 1,
-				Header: http.Header{
-					"Content-Type": []string{"text/html"},
-				},
-				Body: f,
-			}
 		}
 
-		attempts = attempts + 1
 		return resp, nil
 	}
 }
 
 func TestDiscoverEndpoints(t *testing.T) {
 	tests := []struct {
-		do                     httpDoer
-		expectDiscoverySuccess bool
-		app                    App
-		expectedACIEndpoints   []ACIEndpoint
-		expectedKeys           []string
-		authHeader             http.Header
+		do                                 httpDoer
+		expectDiscoveryACIEndpointsSuccess bool
+		expectDiscoveryPublicKeysSuccess   bool
+		app                                App
+		expectedACIEndpoints               []ACIEndpoint
+		expectedPublicKeys                 []string
+		authHeader                         http.Header
 	}{
+		//
+		// Tests for meta tag discovery. Suppose template matching works.
+		//
+
+		// Test discovery for ACIEndpoint and publicKeys should work
 		{
 			&mockHTTPDoer{
-				doer: fakeHTTPGet("myapp.html", 0, nil),
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
 			},
+			true,
 			true,
 			App{
 				Name: "example.com/myapp",
@@ -98,21 +121,28 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			[]ACIEndpoint{
 				ACIEndpoint{
-					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci?torrent",
-					ASC: "https://storage.example.com/example.com/myapp-1.0.0.aci.asc?torrent",
-				},
-				ACIEndpoint{
-					ACI: "hdfs://storage.example.com/example.com/myapp-1.0.0.aci",
-					ASC: "hdfs://storage.example.com/example.com/myapp-1.0.0.aci.asc",
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
 			nil,
 		},
+		// Test discovery for ACIEndpoint and publicKeys should work walking up
+		// to parent paths
 		{
 			&mockHTTPDoer{
-				doer: fakeHTTPGet("myapp.html", 1, nil),
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
 			},
+			true,
 			true,
 			App{
 				Name: "example.com/myapp/foobar",
@@ -124,22 +154,29 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			[]ACIEndpoint{
 				ACIEndpoint{
-					ACI: "https://storage.example.com/example.com/myapp/foobar-1.0.0.aci?torrent",
-					ASC: "https://storage.example.com/example.com/myapp/foobar-1.0.0.aci.asc?torrent",
-				},
-				ACIEndpoint{
-					ACI: "hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.aci",
-					ASC: "hdfs://storage.example.com/example.com/myapp/foobar-1.0.0.aci.asc",
+					ACI: "https://storage.example.com/example.com/myapp/foobar-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp/foobar-1.0.0-linux-amd64.aci.asc",
 				},
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
 			nil,
 		},
+		// Test discovery for ACIEndpoint and publicKeys should fail due to
+		// missing meta tags in any walked path
 		{
 			&mockHTTPDoer{
 				// always fails
-				doer: fakeHTTPGet("myapp.html", 10000, nil),
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"/path/out/of/myapp",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
 			},
+			false,
 			false,
 			App{
 				Name: "example.com/myapp/foobar/bazzer",
@@ -149,17 +186,206 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
-			[]ACIEndpoint{},
-			[]string{},
+			nil,
+			nil,
 			nil,
 		},
+
+		// Test with only 'ac-discovery' at / and only
+		// 'ac-discovery-pubkeys' at /myapp. Both ACIEndpoints and PublicKeys
+		// discovery should work.
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"",
+							"meta02.html",
+						},
+						{
+							"/myapp",
+							"meta03.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test with only 'ac-discovery-pubkeys' at / and only
+		// 'ac-discovery' at /myapp. Both ACIEndpoints and PublicKeys discovery
+		// should work.
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"",
+							"meta03.html",
+						},
+						{
+							"/myapp",
+							"meta02.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test with only 'ac-discovery-pubkeys' at / . PublicKeys discovery should fail and ACIEndpoints should work.
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"",
+							"meta02.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			false,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			nil,
+			nil,
+		},
+		// Test with only 'ac-discovery' at / . ACIEndpoints discovery should fail and PublicKeys should work.
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"",
+							"meta03.html",
+						},
+					},
+					nil,
+				),
+			},
+			false,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			nil,
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test with both 'ac-discovery' and 'ac-discovery-pubkeys' at
+		// / and only 'ac-discovery' at /myapp.
+		// ACIEndpoints discovery should work and use the template provided
+		// by /myapp (ignoring /) and PublicKeys should work using the
+		// template provided by /.
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{
+							"",
+							"meta04.html",
+						},
+						{
+							"/myapp",
+							"meta02.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+
+		//
+		// Tests for template matching. Suppose meta tags are always returned.
+		//
+
 		// Test missing label. Only one ac-discovery template should be
 		// returned as the other one cannot be completely rendered due to
 		// missing labels.
 		{
 			&mockHTTPDoer{
-				doer: fakeHTTPGet("myapp2.html", 0, nil),
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta05.html",
+						},
+					},
+					nil,
+				),
 			},
+			true,
 			true,
 			App{
 				Name: "example.com/myapp",
@@ -180,8 +406,16 @@ func TestDiscoverEndpoints(t *testing.T) {
 		// "latest" and the first template should be rendered
 		{
 			&mockHTTPDoer{
-				doer: fakeHTTPGet("myapp2.html", 0, nil),
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta05.html",
+						},
+					},
+					nil,
+				),
 			},
+			true,
 			true,
 			App{
 				Name:   "example.com/myapp",
@@ -199,8 +433,16 @@ func TestDiscoverEndpoints(t *testing.T) {
 		// Test with a label called "name". It should be ignored.
 		{
 			&mockHTTPDoer{
-				doer: fakeHTTPGet("myapp2.html", 0, nil),
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta05.html",
+						},
+					},
+					nil,
+				),
 			},
+			true,
 			true,
 			App{
 				Name: "example.com/myapp",
@@ -218,11 +460,19 @@ func TestDiscoverEndpoints(t *testing.T) {
 			[]string{"https://example.com/pubkeys.gpg"},
 			nil,
 		},
-		// Test with an auth header
+		// Test multiple ACIEndpoints.
 		{
 			&mockHTTPDoer{
-				doer: fakeHTTPGet("myapp.html", 0, testAuthHeader),
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta06.html",
+						},
+					},
+					nil,
+				),
 			},
+			true,
 			true,
 			App{
 				Name: "example.com/myapp",
@@ -234,12 +484,48 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			[]ACIEndpoint{
 				ACIEndpoint{
-					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci?torrent",
-					ASC: "https://storage.example.com/example.com/myapp-1.0.0.aci.asc?torrent",
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 				ACIEndpoint{
-					ACI: "hdfs://storage.example.com/example.com/myapp-1.0.0.aci",
-					ASC: "hdfs://storage.example.com/example.com/myapp-1.0.0.aci.asc",
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0.aci.asc",
+				},
+				ACIEndpoint{
+					ACI: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+
+		// Test with an auth header
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
@@ -263,33 +549,43 @@ func TestDiscoverEndpoints(t *testing.T) {
 			InsecureTLS | InsecureHTTP,
 		}
 		for _, insecure := range insecureList {
-			de, _, err := DiscoverEndpoints(tt.app, hostHeaders, insecure)
-			if err != nil && !tt.expectDiscoverySuccess {
+			eps, _, err := DiscoverACIEndpoints(tt.app, hostHeaders, insecure)
+			if err != nil && !tt.expectDiscoveryACIEndpointsSuccess {
 				continue
 			}
-			if err == nil && !tt.expectDiscoverySuccess {
-				t.Fatalf("#%d DiscoverEndpoints should have failed but didn't", i)
+			if err == nil && !tt.expectDiscoveryACIEndpointsSuccess {
+				t.Fatalf("#%d DiscoverACIEndpoints should have failed but didn't", i)
 			}
 			if err != nil {
-				t.Fatalf("#%d DiscoverEndpoints failed: %v", i, err)
+				t.Fatalf("#%d DiscoverACIEndpoints failed: %v", i, err)
+			}
+			publicKeys, _, err := DiscoverPublicKeys(tt.app, hostHeaders, insecure)
+			if err != nil && !tt.expectDiscoveryPublicKeysSuccess {
+				continue
+			}
+			if err == nil && !tt.expectDiscoveryPublicKeysSuccess {
+				t.Fatalf("#%d DiscoverPublicKeys should have failed but didn't", i)
+			}
+			if err != nil {
+				t.Fatalf("#%d DiscoverPublicKeys failed: %v", i, err)
 			}
 
-			if len(de.ACIEndpoints) != len(tt.expectedACIEndpoints) {
-				t.Errorf("ACIEndpoints array is wrong length want %d got %d", len(tt.expectedACIEndpoints), len(de.ACIEndpoints))
+			if len(eps) != len(tt.expectedACIEndpoints) {
+				t.Errorf("#%d ACIEndpoints array is wrong length want %d got %d", i, len(tt.expectedACIEndpoints), len(eps))
 			} else {
-				for n, _ := range de.ACIEndpoints {
-					if de.ACIEndpoints[n] != tt.expectedACIEndpoints[n] {
-						t.Errorf("#%d ACIEndpoints[%d] mismatch: want %v got %v", i, n, tt.expectedACIEndpoints[n], de.ACIEndpoints[n])
+				for n, _ := range eps {
+					if eps[n] != tt.expectedACIEndpoints[n] {
+						t.Errorf("#%d ACIEndpoints[%d] mismatch: want %v got %v", i, n, tt.expectedACIEndpoints[n], eps[n])
 					}
 				}
 			}
 
-			if len(de.Keys) != len(tt.expectedKeys) {
-				t.Errorf("Keys array is wrong length want %d got %d", len(tt.expectedKeys), len(de.Keys))
+			if len(publicKeys) != len(tt.expectedPublicKeys) {
+				t.Errorf("#%d PublicKeys array is wrong length want %d got %d", i, len(tt.expectedPublicKeys), len(publicKeys))
 			} else {
-				for n, _ := range de.Keys {
-					if de.Keys[n] != tt.expectedKeys[n] {
-						t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedKeys[n], de.Keys[n])
+				for n, _ := range publicKeys {
+					if publicKeys[n] != tt.expectedPublicKeys[n] {
+						t.Errorf("#%d sig[%d] mismatch: want %v got %v", i, n, tt.expectedPublicKeys[n], publicKeys[n])
 					}
 				}
 			}
