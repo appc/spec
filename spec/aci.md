@@ -67,7 +67,7 @@ Image manifests MUST be valid JSON located in the file `manifest` in the root of
 Image manifests MAY specify dependencies, which describe how to assemble the final rootfs from a collection of other images.
 As an example, an app might require special certificates to be layered into its filesystem.
 In this case, the app can reference the name "example.com/trusted-certificate-authority" as a dependency in the image manifest.
-The dependencies are applied in order and each image dependency can overwrite files from the previous dependency.
+The dependencies are applied in the order defined in the [Filesystem Setup specification](ace.md#filesystem-setup) and each image dependency can overwrite files from the previous dependency.
 Execution details specified in image dependencies are ignored.
 An optional *path whitelist* can be provided, in which case all non-specified files from all dependencies will be omitted in the final, assembled rootfs.
 
