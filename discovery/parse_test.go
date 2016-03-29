@@ -53,13 +53,14 @@ func TestNewAppFromString(t *testing.T) {
 			false,
 		},
 		{
-			"example.com/app:1.2.3,special=!*'();@&+$/?#[],channel=beta",
+			// URL escaped !*'();@&+$/?#[]
+			"example.com/app:1.2.3,special=%21%2A%27%28%29%3B%40%26%2B%24%2F%3F%23%5B%5D%C2%BC%C2%B5%C3%9F,channel=beta",
 
 			&App{
 				Name: "example.com/app",
 				Labels: map[types.ACIdentifier]string{
 					"version": "1.2.3",
-					"special": "!*'();@&+$/?#[]",
+					"special": "!*'();@&+$/?#[]¼µß",
 					"channel": "beta",
 				},
 			},
