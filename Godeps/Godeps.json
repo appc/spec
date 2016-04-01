@@ -1,14 +1,11 @@
 {
 	"ImportPath": "github.com/appc/spec",
 	"GoVersion": "go1.5",
+	"GodepVersion": "v60",
 	"Packages": [
 		"./..."
 	],
 	"Deps": [
-		{
-			"ImportPath": "github.com/camlistore/go4/errorutil",
-			"Rev": "a4bbc1170bd4f25e69133ab72aceadd23be97b79"
-		},
 		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
 			"Rev": "6fe83ccda8fb9b7549c9ab4ba47f47858bc950aa"
@@ -18,7 +15,15 @@
 			"Rev": "94e98a55fb412fcbcfc302555cb990f5e1590627"
 		},
 		{
+			"ImportPath": "go4.org/errorutil",
+			"Rev": "03efcb870d84809319ea509714dd6d19a1498483"
+		},
+		{
 			"ImportPath": "golang.org/x/net/html",
+			"Rev": "ccfcd82c7124abd517842acbacc3b8c1e390c73d"
+		},
+		{
+			"ImportPath": "golang.org/x/net/html/atom",
 			"Rev": "ccfcd82c7124abd517842acbacc3b8c1e390c73d"
 		},
 		{
