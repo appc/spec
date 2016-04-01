@@ -25,12 +25,12 @@ import (
 
 type App struct {
 	Name   types.ACIdentifier
-	Labels map[types.ACIdentifier]string
+	Labels map[types.ACIdentifier]types.ACString
 }
 
-func NewApp(name string, labels map[types.ACIdentifier]string) (*App, error) {
+func NewApp(name string, labels map[types.ACIdentifier]types.ACString) (*App, error) {
 	if labels == nil {
-		labels = make(map[types.ACIdentifier]string, 0)
+		labels = make(map[types.ACIdentifier]types.ACString, 0)
 	}
 	acn, err := types.NewACIdentifier(name)
 	if err != nil {
@@ -55,7 +55,7 @@ func NewApp(name string, labels map[types.ACIdentifier]string) (*App, error) {
 func NewAppFromString(app string) (*App, error) {
 	var (
 		name   string
-		labels map[types.ACIdentifier]string
+		labels map[types.ACIdentifier]types.ACString
 	)
 
 	preparedApp, err := prepareAppString(app)
@@ -66,7 +66,7 @@ func NewAppFromString(app string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	labels = make(map[types.ACIdentifier]string, 0)
+	labels = make(map[types.ACIdentifier]types.ACString, 0)
 	for key, val := range v {
 		if len(val) > 1 {
 			return nil, fmt.Errorf("label %s with multiple values %q", key, val)
@@ -79,7 +79,11 @@ func NewAppFromString(app string) (*App, error) {
 		if err != nil {
 			return nil, err
 		}
-		labels[*labelName] = val[0]
+		acsv, err := types.NewACString(val[0])
+		if err != nil {
+			return nil, err
+		}
+		labels[*labelName] = *acsv
 	}
 	a, err := NewApp(name, labels)
 	if err != nil {
@@ -112,7 +116,7 @@ func checkColon(app string) error {
 func (a *App) Copy() *App {
 	ac := &App{
 		Name:   a.Name,
-		Labels: make(map[types.ACIdentifier]string, 0),
+		Labels: make(map[types.ACIdentifier]types.ACString, 0),
 	}
 	for k, v := range a.Labels {
 		ac.Labels[k] = v

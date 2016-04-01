@@ -21,6 +21,7 @@ import (
 	"strings"
 
 	"github.com/appc/spec/discovery"
+	"github.com/appc/spec/schema/types"
 )
 
 var (
@@ -49,10 +50,10 @@ func runDiscover(args []string) (exit int) {
 	for _, name := range args {
 		app, err := discovery.NewAppFromString(name)
 		if app.Labels["os"] == "" {
-			app.Labels["os"] = runtime.GOOS
+			app.Labels["os"] = types.ACString(runtime.GOOS)
 		}
 		if app.Labels["arch"] == "" {
-			app.Labels["arch"] = runtime.GOARCH
+			app.Labels["arch"] = types.ACString(runtime.GOARCH)
 		}
 		if err != nil {
 			stderr("%s: %s", name, err)
