@@ -531,6 +531,63 @@ func TestDiscoverEndpoints(t *testing.T) {
 			[]string{"https://example.com/pubkeys.gpg"},
 			testAuthHeader,
 		},
+
+		// Test for https://github.com/appc/spec/issues/592
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"",
+							"meta07.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"",
+							"meta07.html",
+						},
+					},
+					nil,
+				),
+			},
+			false,
+			false,
+			App{
+				Name: "example.com/myappandothers",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			nil,
+			nil,
+			nil,
+		},
 	}
 
 	for i, tt := range tests {
