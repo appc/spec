@@ -16,6 +16,7 @@ package acirenderer
 
 import (
 	"container/list"
+	"fmt"
 
 	"github.com/appc/spec/schema/types"
 )
@@ -75,6 +76,19 @@ func createDepList(key string, ap ACIRegistry) (Images, error) {
 			if err != nil {
 				return nil, err
 			}
+			// Check that an upper image is not the same as this dependency (same key)
+			// Walk up the current branch and check that this depKey is not already in this branch
+			curlevel := img.Level + 1
+			for tel := el; tel != nil; tel = tel.Prev() {
+				timg := tel.Value.(Image)
+				if timg.Level < curlevel {
+					if depKey == timg.Key {
+						return nil, fmt.Errorf("recursion error, image with key %s already referenced by a parent image", depKey)
+					}
+				}
+				curlevel = timg.Level
+			}
+
 			depimg = Image{Im: im, Key: depKey, Level: img.Level + 1}
 			imgsl.InsertAfter(depimg, el)
 		}
