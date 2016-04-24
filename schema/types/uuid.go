@@ -39,7 +39,8 @@ func (u UUID) String() string {
 	return fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:16])
 }
 
-func (u UUID) UnformattedString() string {
+//HexString returns the UUID as a string, but without any formatting
+func (u UUID) HexString() string {
 	return fmt.Sprintf("%x", u)
 }
 
