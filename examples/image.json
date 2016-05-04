@@ -54,8 +54,8 @@
                 "value": {"limit": "1G"}
             },
             {
-                "name": "os/linux/capabilities-remove-set",
-                "value": {"set": ["CAP_NET_BIND_SERVICE", "CAP_SYS_ADMIN"]}
+                "name": "os/linux/capabilities-retain-set",
+                "value": {"set": ["CAP_NET_ADMIN", "CAP_NET_BIND_SERVICE"]}
             }
         ],
         "mountPoints": [
