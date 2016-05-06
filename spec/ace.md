@@ -138,16 +138,40 @@ The first example is "capabilities" but this will be expanded to include things 
 
 **Parameters:**
 
-* **set** list of capabilities that will be removed from the process's capabilities bounding set, all others will be included.
+* **set** list of capabilities that will be removed from the process's capabilities bounding set, all others from the default set will be included.
+
+The default set is defined by the following 14 capabilities:
+- `CAP_AUDIT_WRITE`
+- `CAP_CHOWN`
+- `CAP_DAC_OVERRIDE`
+- `CAP_FSETID`
+- `CAP_FOWNER`
+- `CAP_KILL`
+- `CAP_MKNOD`
+- `CAP_NET_RAW`
+- `CAP_NET_BIND_SERVICE`
+- `CAP_SETUID`
+- `CAP_SETGID`
+- `CAP_SETPCAP`
+- `CAP_SETFCAP`
+- `CAP_SYS_CHROOT`
+
+When the app does not have any capability isolator, the process's capabilities bounding set is just the default set defined above.
 
 ```json
 "name": "os/linux/capabilities-remove-set",
 "value": {
   "set": [
-    "CAP_SYS_PTRACE"
+    "CAP_SYS_CHROOT",
+    "CAP_MKNOD"
   ]
 }
 ```
+
+In the example above, the process will have 12 capabilities in its bounding set: the 14 default capabilities minus the 2 from the remove set.
+
+The default set is a small subset of all capabilities as there are today 37 capabilities on Linux.
+Listing a capability in the remove set that is not in the default set such as `CAP_SYS_ADMIN` has no effect.
 
 #### os/linux/capabilities-retain-set
 
@@ -155,17 +179,20 @@ The first example is "capabilities" but this will be expanded to include things 
 
 **Parameters:**
 
-* **set** list of capabilities that will be retained in the process's capabilities bounding set, all others will be removed
+* **set** list of capabilities that will be retained in the process's capabilities bounding set, all others will be removed.
 
 ```json
 "name": "os/linux/capabilities-retain-set",
 "value": {
   "set": [
-    "CAP_KILL",
-    "CAP_CHOWN"
+    "CAP_NET_ADMIN",
+    "CAP_NET_BIND_SERVICE"
   ]
 }
 ```
+
+In the example above, the process will only have the two capabilities in its bounding set.
+The retain set cannot be used in conjunction with the remove set.
 
 ### Resource Isolators
 
