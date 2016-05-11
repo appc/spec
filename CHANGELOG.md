@@ -1,3 +1,28 @@
+### v0.8.0
+
+This release of the spec contains one major change over the 0.7.x series, which is that Simple Discovery has been removed.
+The value of Simple Discovery has always been somewhat dubious, and most implementations of the spec (`apcera/kurma`, `3ofcoins/jetpack`, `coreos/rkt`) never actually implemented it. 
+On the other hand, meta discovery is used actively and arguably is synonymous with discovery.
+Simple Discovery is now removed entirely and App Container Image Discovery is what was formerly called Meta Discovery.
+
+There is also one breaking change in the discovery code: DiscoverEndpoints and DiscoverPublicKeys have been reworked. 
+DiscoverEndpoints is renamed to DiscoverACIEndpoints (for consistency), and now each method returns only their requested type.
+
+Spec changes:
+- Defined a default capability set for executors
+- Added specificity to metadata endpoint descriptions.
+- Clarified image dependencies
+- Added note that dependencies can form a tree or a directed acyclic graph as well if they share a common dependency.
+- Fixed pod spec to clarify the 'mode' field is a string, not an integer.
+
+Tooling/build changes:
+- Dropped go 1.3 and 1.4 support in testing, add go 1.6
+- Updated errorutil import path
+- Performed an unrewrite of import paths
+- Removed dependency on glibc in pkg/device, so that appc can be built as a statically linked binary on Linux
+- Changed to use actual `GOOS` and `GOARCH` of system when building validator ACIs
+- Implemented `actool patch-manifest --revoke-capability`
+
 ### v0.7.4
 
 Minor release of the spec with some enhancements to the schema types and discovery code:
