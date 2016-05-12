@@ -58,6 +58,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
                     }
                 ]
             },
+            "readOnlyRootFS": true,
             "mounts": [
                 {
                     "volume": "worklib",
@@ -163,6 +164,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
         * **name** (string, optional) name of the image (restricted to [AC Identifier](types.md#ac-identifier-type) formatting)
         * **labels** (list of objects, optional) additional labels characterizing the image
     * **app** (object, optional) substitute for the app object of the referred image's ImageManifest. See [Image Manifest Schema](aci.md#image-manifest-schema) for what the app object contains.
+    * **readOnlyRootFS** (boolean, optional, defaults to "false" if unsupplied) whether or not the root filesystem of the app will be mounted read-only.
     * **mounts** (list of objects, optional) list of mounts mapping an app mountPoint to a volume. Each mount has the following set of key-value pairs:
       * **volume** (string, required) name of the volume that will fulfill this mount (restricted to the [AC Name](types.md#ac-name-type) formatting); this is a key into the list of `volumes`, below.
       * **path** (string, required) path inside the app filesystem to mount the volume; generally this will come from one of an app's mountPoint paths. For example, if an app has a mountPoint named "work" with path "/var/lib/work", an executor should map an appropriate volume to fulfill that mountPoint by using a `mount` object with that path.

@@ -23,7 +23,8 @@ This UUID is exposed to the pod through the [Metadata Service](#app-container-me
 
 #### Filesystem Setup
 
-Each app in a pod will start chrooted into its own unique read-write filesystem before execution.
+Each app in a pod will start chrooted into its own unique filesystem before execution.
+If the app's entry in the `PodManifest` has the field `readOnlyRootFS` is set to `true`, the rootfs will be mounted as read-only for that app otherwise it will be mounted as read-write.
 
 An app's filesystem must be *rendered* in an empty directory by the following process (or equivalent):
 
