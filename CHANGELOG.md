@@ -1,3 +1,8 @@
+### v0.8.1
+
+Minor release of the spec which introduces one new backwards-compatible feature: the field `readOnlyRootFS` in the pod spec. 
+If this field is set for an app, the app's root filesystem must be mounted read-only by the executor.
+
 ### v0.8.0
 
 This release of the spec contains one major change over the 0.7.x series, which is that Simple Discovery has been removed.
