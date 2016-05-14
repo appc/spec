@@ -243,8 +243,8 @@ func metadataRequest(req *http.Request, expectedContentType string) ([]byte, err
 	}
 
 	if respContentType := resp.Header.Get("Content-Type"); respContentType != expectedContentType {
-		return nil, fmt.Errorf("`%s` did not respond with expected Content-Type header.  Expected %s, received %s",
-			req.RequestURI, expectedContentType, respContentType)
+		return nil, fmt.Errorf("`%v` did not respond with expected Content-Type header.  Expected %s, received %s",
+			req.URL, expectedContentType, respContentType)
 	}
 
 	body, err := ioutil.ReadAll(resp.Body)
@@ -292,12 +292,12 @@ func validatePodAnnotations(metadataURL string, pm *schema.PodManifest) results 
 
 	var actualAnnots types.Annotations
 
-	annotJson, err := metadataGet(metadataURL, "/pod/annotations/", "application/json")
+	annotJson, err := metadataGet(metadataURL, "/pod/annotations", "application/json")
 	if err != nil {
 		return append(r, err)
 	}
 
-	err = json.Unmarshal(annotJson, actualAnnots)
+	err = json.Unmarshal(annotJson, &actualAnnots)
 	if err != nil {
 		return append(r, err)
 	}
@@ -346,7 +346,7 @@ func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *sch
 		return append(r, err)
 	}
 
-	err = json.Unmarshal(annotJson, actualAnnots)
+	err = json.Unmarshal(annotJson, &actualAnnots)
 	if err != nil {
 		return append(r, err)
 	}
