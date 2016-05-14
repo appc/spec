@@ -338,6 +338,9 @@ func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *sch
 	for _, annot := range a.Annotations {
 		expectedAnnots.Set(annot.Name, annot.Value)
 	}
+	if len(expectedAnnots) == 0 {
+		expectedAnnots = nil
+	}
 
 	var actualAnnots types.Annotations
 
@@ -349,6 +352,9 @@ func validateAppAnnotations(metadataURL string, pm *schema.PodManifest, app *sch
 	err = json.Unmarshal(annotJson, &actualAnnots)
 	if err != nil {
 		return append(r, err)
+	}
+	if len(actualAnnots) == 0 {
+		actualAnnots = nil
 	}
 
 	if !reflect.DeepEqual(actualAnnots, expectedAnnots) {
