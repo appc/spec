@@ -1,6 +1,6 @@
 {
     "acKind": "ImageManifest",
-    "acVersion": "0.8.1",
+    "acVersion": "0.8.2",
     "name": "example.com/reduce-worker",
     "labels": [
         {

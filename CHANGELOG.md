@@ -1,3 +1,9 @@
+### v0.8.2
+
+Minor release of the spec with two tooling fixes:
+- Updated Godeps to the latest k8s.io packages, which should help downstream users attempting to vendor schema code (#607)
+- Minor fixes to the ACE validator (#605)
+
 ### v0.8.1
 
 Minor release of the spec which introduces one new backwards-compatible feature: the field `readOnlyRootFS` in the pod spec. 
