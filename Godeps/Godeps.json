@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/appc/spec",
 	"GoVersion": "go1.5",
-	"GodepVersion": "v60",
+	"GodepVersion": "v63",
 	"Packages": [
 		"./..."
 	],
@@ -9,6 +9,11 @@
 		{
 			"ImportPath": "github.com/coreos/go-semver/semver",
 			"Rev": "6fe83ccda8fb9b7549c9ab4ba47f47858bc950aa"
+		},
+		{
+			"ImportPath": "github.com/gogo/protobuf/proto",
+			"Comment": "v0.1-125-g82d16f7",
+			"Rev": "82d16f734d6d871204a3feb1a73cb220cc92574c"
 		},
 		{
 			"ImportPath": "github.com/spf13/pflag",
@@ -27,13 +32,23 @@
 			"Rev": "ccfcd82c7124abd517842acbacc3b8c1e390c73d"
 		},
 		{
-			"ImportPath": "k8s.io/kubernetes/pkg/api/resource",
-			"Comment": "v1.0.2",
-			"Rev": "e310e619fc1ac4f3238bf5ebe9e7033bf5d47ee2"
+			"ImportPath": "gopkg.in/inf.v0",
+			"Rev": "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
 		},
 		{
-			"ImportPath": "speter.net/go/exp/math/dec/inf",
-			"Rev": "42ca6cd68aa922bc3f32f1e056e61b65945d9ad7"
+			"ImportPath": "k8s.io/kubernetes/pkg/api/resource",
+			"Comment": "v1.3.0-alpha.3-1204-g9625926",
+			"Rev": "9625926852e215caa35e278c2cd7926744532291"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/pkg/conversion",
+			"Comment": "v1.3.0-alpha.3-1204-g9625926",
+			"Rev": "9625926852e215caa35e278c2cd7926744532291"
+		},
+		{
+			"ImportPath": "k8s.io/kubernetes/third_party/forked/reflect",
+			"Comment": "v1.3.0-alpha.3-1204-g9625926",
+			"Rev": "9625926852e215caa35e278c2cd7926744532291"
 		}
 	]
 }
