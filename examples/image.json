@@ -56,6 +56,10 @@
             {
                 "name": "os/linux/capabilities-retain-set",
                 "value": {"set": ["CAP_NET_ADMIN", "CAP_NET_BIND_SERVICE"]}
+            },
+            {
+                "name": "os/linux/no-new-privileges",
+                "value": true
             }
         ],
         "mountPoints": [

@@ -195,6 +195,21 @@ Listing a capability in the remove set that is not in the default set such as `C
 In the example above, the process will only have the two capabilities in its bounding set.
 The retain set cannot be used in conjunction with the remove set.
 
+#### os/linux/no-new-privileges
+
+* Scope: app
+
+If set to true the app's process and all its children can never gain new privileges. For details see the corresponding kernel documentation about [prctl/no_new_privs.txt](https://www.kernel.org/doc/Documentation/prctl/no_new_privs.txt).
+
+The default value is `false`.
+
+```json
+"name": "os/linux/no-new-privileges",
+"value": true
+```
+
+In the example above, the process will have `no_new_privs` set. If the app's executable has i.e. setuid/setgid bits set they will be ignored.
+
 ### Resource Isolators
 
 A _resource_ is something that can be consumed by an application (app) or group of applications (pod), such as memory (RAM), CPU, and network bandwidth.
