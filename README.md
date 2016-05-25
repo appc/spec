@@ -83,7 +83,7 @@ $ find /tmp/my-app/
 $ cat /tmp/my-app/manifest
 {
     "acKind": "ImageManifest",
-    "acVersion": "0.8.2",
+    "acVersion": "0.8.3",
     "name": "my-app",
     "labels": [
         {"name": "os", "value": "linux"},
@@ -115,7 +115,7 @@ and verify that the manifest was embedded appropriately
 $ tar xf /tmp/my-app.aci manifest -O | python -m json.tool
 {
     "acKind": "ImageManifest",
-    "acVersion": "0.8.2",
+    "acVersion": "0.8.3",
     "annotations": null,
     "app": {
         "environment": [],
