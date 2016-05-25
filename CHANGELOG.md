@@ -1,3 +1,8 @@
+### v0.8.3
+
+Minor release of the spec adding one backwards-compatible feature:
+- Added a `os/linux/no-new-privileges` isolator type. Support also added to actool `patch-manifest` (#611)
+
 ### v0.8.2
 
 Minor release of the spec with two tooling fixes:
