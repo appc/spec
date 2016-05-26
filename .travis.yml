@@ -7,5 +7,9 @@ matrix:
     - go: 1.5.1
     - go: 1.6
 
+# Stop Travis mucking about with godeps:
+# https://docs.travis-ci.com/user/languages/go#godep-support
+install: true
+
 script:
  - ./test
