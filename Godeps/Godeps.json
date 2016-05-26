@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/appc/spec",
-	"GoVersion": "go1.5",
-	"GodepVersion": "v70",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v60",
 	"Packages": [
 		"./..."
 	],
@@ -33,6 +33,7 @@
 		},
 		{
 			"ImportPath": "gopkg.in/inf.v0",
+			"Comment": "v0.9.0",
 			"Rev": "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
 		},
 		{
