@@ -5,6 +5,7 @@ language: go
 matrix:
   include:
     - go: 1.5.3
+      env: GO15VENDOREXPERIMENT=1
     - go: 1.6.2
 
 # Stop Travis mucking about with godeps:
