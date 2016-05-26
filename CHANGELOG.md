@@ -1,3 +1,8 @@
+### v0.8.4
+
+This is a minor release of the spec; the only changes over 0.8.3 are that some of the Godeps are updated to use tagged releases.
+This should help downstream developers trying to vendor and package the appc/spec code.
+
 ### v0.8.3
 
 Minor release of the spec adding one backwards-compatible feature:
