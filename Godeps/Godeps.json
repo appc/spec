@@ -37,18 +37,18 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/api/resource",
-			"Comment": "v1.3.0-alpha.3-1204-g9625926",
-			"Rev": "9625926852e215caa35e278c2cd7926744532291"
+			"Comment": "v1.3.0-alpha.4",
+			"Rev": "9990f843cd62caa90445cf76b07d63ba7b5c86fd"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/conversion",
-			"Comment": "v1.3.0-alpha.3-1204-g9625926",
-			"Rev": "9625926852e215caa35e278c2cd7926744532291"
+			"Comment": "v1.3.0-alpha.4",
+			"Rev": "9990f843cd62caa90445cf76b07d63ba7b5c86fd"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/third_party/forked/reflect",
-			"Comment": "v1.3.0-alpha.3-1204-g9625926",
-			"Rev": "9625926852e215caa35e278c2cd7926744532291"
+			"Comment": "v1.3.0-alpha.4",
+			"Rev": "9990f843cd62caa90445cf76b07d63ba7b5c86fd"
 		}
 	]
 }
