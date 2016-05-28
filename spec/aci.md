@@ -242,6 +242,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 * **dependencies** (list of objects, optional) dependent application images that need to be placed down into the rootfs before the files from this image (if any). The ordering is significant. See [Dependency Matching](#dependency-matching) for how dependencies are retrieved.
     * **imageName** (string of type [AC Identifier](types.md#ac-identifier-type), required) name of the dependent App Container Image.
     * **imageID** (string of type [Image ID](types.md#image-id-type), optional) content hash of the dependency. If provided, the retrieved dependency must match the hash. This can be used to produce deterministic, repeatable builds of an App Container Image that has dependencies.
+    * **tag** (string, optional) a tag that will be resolved to a list of labels (see [Labels Resolution](imagetags.md#labels-resolution)). See [Dependency Matching](#dependency-matching) for how this is used.
     * **labels** (list of objects, optional) a list of the very same form as the aforementioned label objects in the top level ImageManifest. See [Dependency Matching](#dependency-matching) for how these are used.
     * **size** (integer, optional) the size of the image referenced dependency, in bytes. This field is optional; if it is present, the ACE SHOULD ensure it matches when retrieving a dependency, to mitigate "endless data" attacks.
 * **pathWhitelist** (list of strings, optional) whitelist of absolute paths that will exist in the app's rootfs after rendering. This must be a complete and absolute set. An empty list is equivalent to an absent value and means that all files in this image and any dependencies will be available in the rootfs.
@@ -253,8 +254,8 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 
 #### Dependency Matching
 
-Dependency matching is based on a combination of the three different fields of the dependency - **imageName**, **imageID**, and **labels**.
-First, the image discovery mechanism is used to locate a dependency based on the **imageName** and **labels** (see [App Container Image Discovery](discovery.md)).
+Dependency matching is based on a combination of the four different fields of the dependency - **imageName**, **imageID**, **tag**, and **labels**.
+First, the image discovery mechanism is used to locate a dependency based on the **imageName**, **tag** and **labels** (see [App Container Image Discovery](discovery.md)).
 
 If the image discovery process successfully returns an image and the dependency specification has an image ID, it will be compared against the hash of image returned, and MUST match.
 

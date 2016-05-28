@@ -25,6 +25,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/types"
 )
 
@@ -86,9 +87,11 @@ func fakeHTTPGet(metas []meta, header http.Header) func(req *http.Request) (*htt
 func TestDiscoverEndpoints(t *testing.T) {
 	tests := []struct {
 		do                                 httpDoer
+		expectMergeTagSuccess              bool
 		expectDiscoveryACIEndpointsSuccess bool
 		expectDiscoveryPublicKeysSuccess   bool
 		app                                App
+		tags                               *schema.ImageTags
 		expectedACIEndpoints               []ACIEndpoint
 		expectedPublicKeys                 []string
 		authHeader                         http.Header
@@ -111,6 +114,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -119,6 +123,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
@@ -144,6 +149,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp/foobar",
 				Labels: map[types.ACIdentifier]string{
@@ -152,6 +158,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp/foobar-1.0.0-linux-amd64.aci",
@@ -176,6 +183,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					nil,
 				),
 			},
+			true,
 			false,
 			false,
 			App{
@@ -186,6 +194,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			nil,
 			nil,
 			nil,
@@ -212,6 +221,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -220,6 +230,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
@@ -250,6 +261,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -258,6 +270,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
@@ -281,6 +294,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 				),
 			},
 			true,
+			true,
 			false,
 			App{
 				Name: "example.com/myapp",
@@ -290,6 +304,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
@@ -312,6 +327,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					nil,
 				),
 			},
+			true,
 			false,
 			true,
 			App{
@@ -322,6 +338,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			nil,
 			[]string{"https://example.com/pubkeys.gpg"},
 			nil,
@@ -349,6 +366,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -357,6 +375,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
@@ -387,44 +406,18 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
 					"version": "1.0.0",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci",
 					ASC: "https://storage.example.com/example.com/myapp-1.0.0.aci.asc",
-				},
-			},
-			[]string{"https://example.com/pubkeys.gpg"},
-			nil,
-		},
-		// Test missing labels. version label should default to
-		// "latest" and the first template should be rendered
-		{
-			&mockHTTPDoer{
-				doer: fakeHTTPGet(
-					[]meta{
-						{"/myapp",
-							"meta05.html",
-						},
-					},
-					nil,
-				),
-			},
-			true,
-			true,
-			App{
-				Name:   "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{},
-			},
-			[]ACIEndpoint{
-				ACIEndpoint{
-					ACI: "https://storage.example.com/example.com/myapp-latest.aci",
-					ASC: "https://storage.example.com/example.com/myapp-latest.aci.asc",
 				},
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
@@ -444,6 +437,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -451,6 +445,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"version": "1.0.0",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0.aci",
@@ -474,6 +469,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -482,6 +478,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
@@ -494,6 +491,158 @@ func TestDiscoverEndpoints(t *testing.T) {
 				ACIEndpoint{
 					ACI: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
 					ASC: "hdfs://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test tag alias
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Tag:  "latest",
+				Labels: map[types.ACIdentifier]string{
+					"os":   "linux",
+					"arch": "amd64",
+				},
+			},
+			&schema.ImageTags{
+				Aliases: schema.TagAliases{
+					"latest": "2.x",
+				},
+				Labels: schema.TagLabels{
+					"2.x": map[types.ACIdentifier]string{
+						"version": "2.0.0",
+					},
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-2.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-2.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test tag alias should not override required version label
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Tag:  "latest",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			&schema.ImageTags{
+				Aliases: schema.TagAliases{
+					"latest": "2.x",
+				},
+				Labels: schema.TagLabels{
+					"2.x": map[types.ACIdentifier]string{
+						"version": "2.0.0",
+					},
+				},
+			},
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test tag without image tags. Should set tag to version label.
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
+			},
+			true,
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Tag:  "latest",
+				Labels: map[types.ACIdentifier]string{
+					"os":   "linux",
+					"arch": "amd64",
+				},
+			},
+			nil,
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-latest-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-latest-linux-amd64.aci.asc",
+				},
+			},
+			[]string{"https://example.com/pubkeys.gpg"},
+			nil,
+		},
+		// Test tag without image tags. Should set tag to version label but fail since version is already specified.
+		{
+			&mockHTTPDoer{
+				doer: fakeHTTPGet(
+					[]meta{
+						{"/myapp",
+							"meta01.html",
+						},
+					},
+					nil,
+				),
+			},
+			false,
+			true,
+			true,
+			App{
+				Name: "example.com/myapp",
+				Tag:  "latest",
+				Labels: map[types.ACIdentifier]string{
+					"version": "1.0.0",
+					"os":      "linux",
+					"arch":    "amd64",
+				},
+			},
+			nil,
+			[]ACIEndpoint{
+				ACIEndpoint{
+					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
+					ASC: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci.asc",
 				},
 			},
 			[]string{"https://example.com/pubkeys.gpg"},
@@ -514,6 +663,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			},
 			true,
 			true,
+			true,
 			App{
 				Name: "example.com/myapp",
 				Labels: map[types.ACIdentifier]string{
@@ -522,6 +672,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 					"arch":    "amd64",
 				},
 			},
+			nil,
 			[]ACIEndpoint{
 				ACIEndpoint{
 					ACI: "https://storage.example.com/example.com/myapp-1.0.0-linux-amd64.aci",
@@ -549,7 +700,19 @@ func TestDiscoverEndpoints(t *testing.T) {
 			InsecureTLS | InsecureHTTP,
 		}
 		for _, insecure := range insecureList {
-			eps, _, err := DiscoverACIEndpoints(tt.app, hostHeaders, insecure)
+			// Expand App labels with tags info labels
+			app, err := tt.app.MergeTag(tt.tags)
+			if err != nil && !tt.expectMergeTagSuccess {
+				continue
+			}
+			if err == nil && !tt.expectMergeTagSuccess {
+				t.Fatalf("#%d MergeTag should have failed but didn't", i)
+			}
+			if err != nil {
+				t.Fatalf("#%d MergeTag failed: %v", i, err)
+			}
+
+			eps, _, err := DiscoverACIEndpoints(*app, hostHeaders, insecure)
 			if err != nil && !tt.expectDiscoveryACIEndpointsSuccess {
 				continue
 			}
@@ -559,7 +722,8 @@ func TestDiscoverEndpoints(t *testing.T) {
 			if err != nil {
 				t.Fatalf("#%d DiscoverACIEndpoints failed: %v", i, err)
 			}
-			publicKeys, _, err := DiscoverPublicKeys(tt.app, hostHeaders, insecure)
+
+			publicKeys, _, err := DiscoverPublicKeys(*app, hostHeaders, insecure)
 			if err != nil && !tt.expectDiscoveryPublicKeysSuccess {
 				continue
 			}

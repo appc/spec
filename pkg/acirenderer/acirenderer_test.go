@@ -1990,10 +1990,10 @@ func Test3Deps(t *testing.T) {
 	}
 }
 
-// Given an image app name and optional labels, get the best matching image
+// Given an image app name, optional tag and optional labels, get the best matching image
 // available in the store, build its dependency list and render it inside dir
-func RenderACI(name types.ACIdentifier, labels types.Labels, ap ACIRegistry) (map[string]*fileInfo, error) {
-	renderedACI, err := GetRenderedACI(name, labels, ap)
+func RenderACI(name types.ACIdentifier, tag string, labels types.Labels, ap ACIRegistry) (map[string]*fileInfo, error) {
+	renderedACI, err := GetRenderedACI(name, tag, labels, ap)
 	if err != nil {
 		return nil, err
 	}
@@ -2054,7 +2054,7 @@ func renderImage(renderedACI RenderedACI, ap ACIProvider) (map[string]*fileInfo,
 }
 
 func checkRenderACI(app types.ACIdentifier, expectedFiles []*fileInfo, ds *TestStore) error {
-	files, err := RenderACI(app, nil, ds)
+	files, err := RenderACI(app, "", nil, ds)
 	if err != nil {
 		return err
 	}

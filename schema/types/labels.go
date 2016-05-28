@@ -35,6 +35,8 @@ type Label struct {
 	Value string       `json:"value"`
 }
 
+type LabelsMap map[ACIdentifier]string
+
 // IsValidOsArch checks if a OS-architecture combination is valid given a map
 // of valid OS-architectures
 func IsValidOSArch(labels map[ACIdentifier]string, validOSArch map[string][]string) error {
@@ -131,4 +133,12 @@ func LabelsFromMap(labelsMap map[ACIdentifier]string) (Labels, error) {
 		return nil, err
 	}
 	return labels, nil
+}
+
+func (lm LabelsMap) Copy() LabelsMap {
+	nlm := make(LabelsMap, len(lm))
+	for k, v := range lm {
+		nlm[k] = v
+	}
+	return nlm
 }

@@ -32,8 +32,24 @@ func CreateDepListFromImageID(imageID types.Hash, ap ACIRegistry) (Images, error
 
 // CreateDepListFromNameLabels returns the flat dependency tree of the image
 // with the provided app name and optional labels.
-func CreateDepListFromNameLabels(name types.ACIdentifier, labels types.Labels, ap ACIRegistry) (Images, error) {
-	key, err := ap.GetACI(name, labels)
+func CreateDepListFromNameTagLabels(name types.ACIdentifier, tag string, labels types.Labels, ap ACIRegistry) (Images, error) {
+	// Merge image tags labels
+	imageTags, err := ap.GetImageTags(name)
+	if err != nil {
+		return nil, err
+	}
+
+	newlabelsmap, err := imageTags.MergeTag(labels.ToMap(), tag)
+	if err != nil {
+		return nil, err
+	}
+
+	newlabels, err := types.LabelsFromMap(newlabelsmap)
+	if err != nil {
+		return nil, err
+	}
+
+	key, err := ap.GetACI(name, newlabels)
 	if err != nil {
 		return nil, err
 	}
@@ -66,7 +82,23 @@ func createDepList(key string, ap ACIRegistry) (Images, error) {
 				}
 			} else {
 				var err error
-				depKey, err = ap.GetACI(d.ImageName, d.Labels)
+				// Merge image tags labels
+				imageTags, err := ap.GetImageTags(d.ImageName)
+				if err != nil {
+					return nil, err
+				}
+
+				newlabelsmap, err := imageTags.MergeTag(d.Labels.ToMap(), d.Tag)
+				if err != nil {
+					return nil, err
+				}
+
+				newlabels, err := types.LabelsFromMap(newlabelsmap)
+				if err != nil {
+					return nil, err
+				}
+
+				depKey, err = ap.GetACI(d.ImageName, newlabels)
 				if err != nil {
 					return nil, err
 				}

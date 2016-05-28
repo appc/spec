@@ -32,6 +32,16 @@ func TestNewAppFromString(t *testing.T) {
 			"example.com/reduce-worker:1.0.0",
 
 			&App{
+				Name:   "example.com/reduce-worker",
+				Tag:    "1.0.0",
+				Labels: map[types.ACIdentifier]string{},
+			},
+			false,
+		},
+		{
+			"example.com/reduce-worker,version=1.0.0",
+
+			&App{
 				Name: "example.com/reduce-worker",
 				Labels: map[types.ACIdentifier]string{
 					"version": "1.0.0",
@@ -39,6 +49,7 @@ func TestNewAppFromString(t *testing.T) {
 			},
 			false,
 		},
+
 		{
 			"example.com/reduce-worker,channel=alpha,label=value",
 
@@ -57,8 +68,8 @@ func TestNewAppFromString(t *testing.T) {
 
 			&App{
 				Name: "example.com/app",
+				Tag:  "1.2.3",
 				Labels: map[types.ACIdentifier]string{
-					"version": "1.2.3",
 					"special": "!*'();@&+$/?#[]",
 					"channel": "beta",
 				},
@@ -101,13 +112,6 @@ func TestNewAppFromString(t *testing.T) {
 		// two colons in string
 		{
 			"example.com/app:3.2.1,channel=beta:1.2.3",
-
-			nil,
-			true,
-		},
-		// two version labels, one implicit, one explicit
-		{
-			"example.com/app:3.2.1,version=1.2.3",
 
 			nil,
 			true,
@@ -182,6 +186,15 @@ func TestAppCopy(t *testing.T) {
 			},
 			"example.com/reduce-worker",
 		},
+		{
+			&App{
+				Name:   "example.com/reduce-worker",
+				Tag:    "1.0.0",
+				Labels: map[types.ACIdentifier]string{},
+			},
+			"example.com/reduce-worker",
+		},
+
 		{
 			&App{
 				Name: "example.com/reduce-worker",

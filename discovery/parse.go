@@ -19,16 +19,18 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/appc/spec/schema"
 	"github.com/appc/spec/schema/common"
 	"github.com/appc/spec/schema/types"
 )
 
 type App struct {
 	Name   types.ACIdentifier
+	Tag    string
 	Labels map[types.ACIdentifier]string
 }
 
-func NewApp(name string, labels map[types.ACIdentifier]string) (*App, error) {
+func NewApp(name string, tag string, labels map[types.ACIdentifier]string) (*App, error) {
 	if labels == nil {
 		labels = make(map[types.ACIdentifier]string, 0)
 	}
@@ -38,11 +40,13 @@ func NewApp(name string, labels map[types.ACIdentifier]string) (*App, error) {
 	}
 	return &App{
 		Name:   *acn,
+		Tag:    tag,
 		Labels: labels,
 	}, nil
 }
 
-// NewAppFromString takes a command line app parameter and returns a map of labels.
+// NewAppFromString takes a command line app parameter and returns an App
+// struct containing the app name, tag and a map of labels.
 //
 // Example app parameters:
 // 	example.com/reduce-worker:1.0.0
@@ -55,6 +59,7 @@ func NewApp(name string, labels map[types.ACIdentifier]string) (*App, error) {
 func NewAppFromString(app string) (*App, error) {
 	var (
 		name   string
+		tag    string
 		labels map[types.ACIdentifier]string
 	)
 
@@ -75,13 +80,17 @@ func NewAppFromString(app string) (*App, error) {
 			name = val[0]
 			continue
 		}
+		if key == "tag" {
+			tag = val[0]
+			continue
+		}
 		labelName, err := types.NewACIdentifier(key)
 		if err != nil {
 			return nil, err
 		}
 		labels[*labelName] = val[0]
 	}
-	a, err := NewApp(name, labels)
+	a, err := NewApp(name, tag, labels)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +102,7 @@ func prepareAppString(app string) (string, error) {
 		return "", err
 	}
 
-	app = "name=" + strings.Replace(app, ":", ",version=", 1)
+	app = "name=" + strings.Replace(app, ":", ",tag=", 1)
 	return common.MakeQueryString(app)
 }
 
@@ -112,6 +121,7 @@ func checkColon(app string) error {
 func (a *App) Copy() *App {
 	ac := &App{
 		Name:   a.Name,
+		Tag:    a.Tag,
 		Labels: make(map[types.ACIdentifier]string, 0),
 	}
 	for k, v := range a.Labels {
@@ -123,8 +133,25 @@ func (a *App) Copy() *App {
 // String returns the URL-like image name
 func (a *App) String() string {
 	img := a.Name.String()
+	if a.Tag != "" {
+		img += ":" + a.Tag
+	}
 	for n, v := range a.Labels {
 		img += fmt.Sprintf(",%s=%s", n, v)
 	}
 	return img
+}
+
+// MergeTag will resolve image tags labels from App.Tag and return a new App
+// with the Labels merged and the Tag unsetted.
+func (a *App) MergeTag(tags *schema.ImageTags) (*App, error) {
+	newlabels, err := tags.MergeTag(a.Labels, a.Tag)
+	if err != nil {
+		return nil, err
+	}
+	newapp := a.Copy()
+	// Unset newapp.Tag
+	newapp.Tag = ""
+	newapp.Labels = newlabels
+	return newapp, nil
 }
