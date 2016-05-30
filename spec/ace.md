@@ -131,7 +131,68 @@ An executor MAY implement a "strict mode" where an image cannot run unless all i
 ### Linux Isolators
 
 These isolators are specific to the Linux kernel and are impossible to represent as a 1-to-1 mapping on other kernels.
-The first example is "capabilities" but this will be expanded to include things such as SELinux, SMACK or AppArmor.
+This set includes Linux-specific isolators, which may relies on kernel technologies like seccomp, SELinux, SMACK or AppArmor.
+
+#### os/linux/seccomp-remove-set
+
+* Scope: app
+
+**Parameters:**
+
+* **set** case-sensitive list of syscall names that will be blacklisted (ie. blocked); values starting with `@` MUST be handled as scoped special values (see notes below). All syscalls specified in this set MUST be blocked. This set MAY be augmented by an implementation-specific default blacklist set (see notes below). Syscalls not specified in the union of these two sets MUST NOT be blocked.
+* **errno** all-uppercase name of a single [errno code](http://man7.org/linux/man-pages/man3/errno.3.html) that will be returned by blocked system calls, instead of terminating. If missing or empty, by default blocked syscalls MUST result in app termination via `SIGSYS` signal.
+
+**Notes:**
+ 1. The `os/linux/seccomp-remove-set` isolator cannot be used in conjunction with the `os/linux/seccomp-retain-set` isolator.
+ 2. When an app does not have any seccomp isolator (neither `os/linux/seccomp-remove-set` nor `os/linux/seccomp-retain-set` are specified), implementations MAY apply their own set of blocked syscalls.
+ 3. The implementation-specific default blacklist SHOULD be a security-focused set of syscalls typically not required by apps. For example, implementations may require the `reboot(2)` syscall to be always blocked. This set MAY be empty.
+ 4. Values starting with `@` identify special wildcards and are scoped by the `/` separator. The `@appc/` scope is reserved for usage in this specification, implementations MAY provide additional wildcards in their own namespace (eg. `@implementation/wildcard`). The following special values are currently defined:
+  * `@appc/all` represents the set of all available syscalls.
+
+
+**Example:**
+```json
+"name": "os/linux/seccomp-remove-set",
+"value": {
+  "errno": "ENOTSUP",
+  "set": [
+    "chown",
+    "chmod"
+  ]
+}
+```
+
+In the example above, the process will not be allowed to invoke `chown(2)` and `chmod(2)` (and any other syscall in the implementation-specific blacklist). When invoked, such syscalls will immediately return a `ENOTSUP` error code. All other syscalls will behave as usual.
+
+#### os/linux/seccomp-retain-set
+
+* Scope: app
+
+**Parameters:**
+
+* **set** case-sensitive list of syscall names that will be whitelisted (ie. not blocked). All syscalls specified in this set MUST NOT be blocked. This set MAY be augmented by an implementation-specific default whitelist set (see notes below). Syscalls not specified in the union of these two sets MUST be blocked.
+* **errno** all-uppercase name of a single [errno code](http://man7.org/linux/man-pages/man3/errno.3.html) that will be returned by blocked system calls, instead of terminating. If missing or empty string, by default blocked syscalls MUST result in app termination via `SIGSYS` signal.
+
+**Notes:**
+ 1. The `os/linux/seccomp-retain-set` isolator cannot be used in conjunction with the `os/linux/seccomp-remove-set` isolator.
+ 2. When an app does not have any seccomp isolator (neither `os/linux/seccomp-remove-set` nor `os/linux/seccomp-retain-set` are specified), implementations MAY apply their own set of blocked syscalls.
+ 3. The implementation-specific default whitelist MUST be the minimum set of syscalls required for app life-cycle. For example, implementations may require the `exit(2)` syscall to be always allowed for clean app termination. This set MAY be empty.
+ 4. Values starting with `@` identify special wildcards and are scoped by the `/` separator. The `@appc/` top-level scope is reserved for usage in this specification. Implementations MAY provide additional wildcards in their own namespace (eg. `@implementation/wildcard`). The following special values are currently defined:
+  * `@appc/all` represents the set of all available syscalls.
+
+**Example:**
+```json
+"name": "os/linux/seccomp-retain-set",
+"value": {
+  "errno": "",
+  "set": [
+    "chown",
+    "chmod"
+  ]
+}
+```
+
+In the example above, the process will be only allowed to invoke `chown(2)` and `chmod(2)` (and any other syscall in the implementation-specific whitelist). All other syscalls will result in app termination via `SIGSYS` signal.
 
 #### os/linux/capabilities-remove-set
 

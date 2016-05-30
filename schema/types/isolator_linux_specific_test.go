@@ -94,3 +94,113 @@ func TestNewLinuxCapabilitiesRevokeSet(t *testing.T) {
 	}
 
 }
+
+func TestNewLinuxSeccompRemoveSet(t *testing.T) {
+	tests := []struct {
+		set   []string
+		errno string
+
+		wset   []LinuxSeccompEntry
+		werrno LinuxSeccompErrno
+		werr   bool
+	}{
+		{
+			[]string{},
+			"-EPERM",
+			nil,
+			"",
+			true,
+		},
+		{
+			[]string{"@all"},
+			"EACCESS",
+			[]LinuxSeccompEntry{"@all"},
+			LinuxSeccompErrno("EACCESS"),
+			false,
+		},
+		{
+			[]string{"chmod", "chown"},
+			"",
+			[]LinuxSeccompEntry{"chmod", "chown"},
+			LinuxSeccompErrno(""),
+			false,
+		},
+		{
+			[]string{},
+			"",
+			[]LinuxSeccompEntry{},
+			LinuxSeccompErrno(""),
+			false,
+		},
+	}
+	for i, tt := range tests {
+		c, err := NewLinuxSeccompRemoveSet(tt.errno, tt.set...)
+		if tt.werr {
+			if err == nil {
+				t.Errorf("#%d: did not get expected error", i)
+			}
+			continue
+		}
+		if gset := c.Set(); !reflect.DeepEqual(gset, tt.wset) {
+			t.Errorf("#%d: got set %#v, expected set %#v", i, gset, tt.wset)
+		}
+		if gerrno := c.Errno(); !reflect.DeepEqual(gerrno, tt.werrno) {
+			t.Errorf("#%d: got errno %#v, expected errno %#v", i, gerrno, tt.werrno)
+		}
+	}
+}
+
+func TestNewLinuxSeccompRetainSet(t *testing.T) {
+	tests := []struct {
+		set   []string
+		errno string
+
+		wset   []LinuxSeccompEntry
+		werrno LinuxSeccompErrno
+		werr   bool
+	}{
+		{
+			[]string{},
+			"eaccess",
+			nil,
+			"",
+			true,
+		},
+		{
+			[]string{"chmod"},
+			"EACCESS",
+			[]LinuxSeccompEntry{"chmod"},
+			LinuxSeccompErrno("EACCESS"),
+			false,
+		},
+		{
+			[]string{"chmod", "chown"},
+			"",
+			[]LinuxSeccompEntry{"chmod", "chown"},
+			LinuxSeccompErrno(""),
+			false,
+		},
+		{
+			[]string{},
+			"",
+			[]LinuxSeccompEntry{},
+			LinuxSeccompErrno(""),
+			false,
+		},
+	}
+	for i, tt := range tests {
+		c, err := NewLinuxSeccompRetainSet(tt.errno, tt.set...)
+		if tt.werr {
+			if err == nil {
+				t.Errorf("#%d: did not get expected error", i)
+			}
+			continue
+		}
+		if gset := c.Set(); !reflect.DeepEqual(gset, tt.wset) {
+			t.Errorf("#%d: got set %#v, expected set %#v", i, gset, tt.wset)
+		}
+		if gerrno := c.Errno(); !reflect.DeepEqual(gerrno, tt.werrno) {
+			t.Errorf("#%d: got errno %#v, expected errno %#v", i, gerrno, tt.werrno)
+		}
+	}
+}
