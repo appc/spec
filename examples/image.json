@@ -60,6 +60,10 @@
             {
                 "name": "os/linux/no-new-privileges",
                 "value": true
+            },
+            {
+                "name": "os/linux/seccomp-remove-set",
+                "value": {"errno": "EACCESS", "set": ["clock_settime", "clock_adjtime", "reboot"]}
             }
         ],
         "mountPoints": [

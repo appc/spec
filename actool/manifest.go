@@ -51,6 +51,8 @@ var (
 	patchMounts            string
 	patchPorts             string
 	patchIsolators         string
+	patchSeccompMode       string
+	patchSeccompSet        string
 
 	catPrettyPrint bool
 
@@ -69,6 +71,8 @@ var (
 		  [--ports=query,protocol=tcp,port=8080[:query2,...]]
 		  [--supplementary-groups=gid1,gid2,...]
 		  [--isolators=resource/cpu,request=50m,limit=100m[:resource/memory,...]]
+		  [--seccomp-mode=remove|retain[,errno=EPERM]]
+		  [--seccomp-set=syscall1,syscall2,...]]
 		  [--replace]
 		  INPUT_ACI_FILE
 		  [OUTPUT_ACI_FILE]`,
@@ -99,6 +103,8 @@ func init() {
 	cmdPatchManifest.Flags.StringVar(&patchMounts, "mounts", "", "Replace mount points")
 	cmdPatchManifest.Flags.StringVar(&patchPorts, "ports", "", "Replace ports")
 	cmdPatchManifest.Flags.StringVar(&patchIsolators, "isolators", "", "Replace isolators")
+	cmdPatchManifest.Flags.StringVar(&patchSeccompMode, "seccomp-mode", "", "Enable and configure seccomp isolator")
+	cmdPatchManifest.Flags.StringVar(&patchSeccompSet, "seccomp-set", "", "Set of syscalls for seccomp isolator enforcing")
 
 	cmdCatManifest.Flags.BoolVar(&catPrettyPrint, "pretty-print", false, "Print with better style")
 }
@@ -211,7 +217,11 @@ func patchManifest(im *schema.ImageManifest) error {
 		if err != nil {
 			return fmt.Errorf("cannot parse capability %q: %v", patchCaps, err)
 		}
-		app.Isolators = append(app.Isolators, caps.AsIsolator())
+		isolator, err = caps.AsIsolator()
+		if err == nil {
+			return err
+		}
+		app.Isolators = append(app.Isolators, *isolator)
 	}
 	if patchRevokeCaps != "" {
 		isolator := app.Isolators.GetByName(types.LinuxCapabilitiesRevokeSetName)
@@ -225,7 +235,11 @@ func patchManifest(im *schema.ImageManifest) error {
 		if err != nil {
 			return fmt.Errorf("cannot parse capability %q: %v", patchRevokeCaps, err)
 		}
-		app.Isolators = append(app.Isolators, caps.AsIsolator())
+		isolator, err = caps.AsIsolator()
+		if err == nil {
+			return err
+		}
+		app.Isolators = append(app.Isolators, *isolator)
 	}
 
 	if patchMounts != "" {
@@ -250,6 +264,23 @@ func patchManifest(im *schema.ImageManifest) error {
 		}
 	}
 
+	if patchSeccompMode != "" {
+		retainIsolator := app.Isolators.GetByName(types.LinuxSeccompRetainSetName)
+		removeIsolator := app.Isolators.GetByName(types.LinuxSeccompRemoveSetName)
+		if removeIsolator != nil || retainIsolator != nil {
+			return fmt.Errorf("a seccomp isolator already exists")
+		}
+		seccomp, err := parseSeccompArgs(patchSeccompMode, patchSeccompSet)
+		if err != nil {
+			return err
+		}
+		seccompIsolator, err := seccomp.AsIsolator()
+		if err != nil {
+			return err
+		}
+		app.Isolators = append(app.Isolators, *seccompIsolator)
+	}
+
 	if patchIsolators != "" {
 		isolators := strings.Split(patchIsolators, ":")
 		for _, is := range isolators {
@@ -260,14 +291,18 @@ func patchManifest(im *schema.ImageManifest) error {
 
 			_, ok := types.ResourceIsolatorNames[name]
 
-			if name == types.LinuxNoNewPrivilegesName {
+			switch name {
+			case types.LinuxNoNewPrivilegesName:
 				ok = true
 				kv := strings.Split(is, ",")
 				if len(kv) != 2 {
 					return fmt.Errorf("isolator %s: invalid format", name)
 				}
-
 				isolatorStr = fmt.Sprintf(`{ "name": "%s", "value": %s }`, name, kv[1])
+			case types.LinuxSeccompRemoveSetName:
+				fallthrough
+			case types.LinuxSeccompRetainSetName:
+				ok = false
 			}
 
 			if !ok {
@@ -282,6 +317,45 @@ func patchManifest(im *schema.ImageManifest) error {
 		}
 	}
 	return nil
+}
+
+// parseSeccompArgs parses seccomp mode and set CLI flags, preparing an
+// appropriate seccomp isolator.
+func parseSeccompArgs(patchSeccompMode string, patchSeccompSet string) (types.AsIsolator, error) {
+	// Parse mode flag and additional keyed arguments.
+	var errno, mode string
+	args := strings.Split(patchSeccompMode, ",")
+	for _, a := range args {
+		kv := strings.Split(a, "=")
+		switch len(kv) {
+		case 1:
+			// mode, either "remove" or "retain"
+			mode = kv[0]
+		case 2:
+			// k=v argument, only "errno" allowed for now
+			if kv[0] == "errno" {
+				errno = kv[1]
+			}
+		default:
+			return nil, fmt.Errorf("cannot parse seccomp-mode argument: %s", a)
+		}
+	}
+
+	// Instantiate an Isolator with the content specified by the --seccomp-set parameter.
+	var err error
+	var seccomp types.AsIsolator
+	switch mode {
+	case "remove":
+		seccomp, err = types.NewLinuxSeccompRemoveSet(errno, strings.Split(patchSeccompSet, ",")...)
+	case "retain":
+		seccomp, err = types.NewLinuxSeccompRetainSet(errno, strings.Split(patchSeccompSet, ",")...)
+	default:
+		err = fmt.Errorf("Unknown seccomp mode %s", mode)
+	}
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse seccomp isolator: %s", err)
+	}
+	return seccomp, nil
 }
 
 // extractManifest iterates over the tar reader and locate the manifest. Once
