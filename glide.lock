@@ -1,0 +1,31 @@
+hash: 272f875960af6af2a372ccc62e3155654d203f78cc83d5489f613500fc956ac2
+updated: 2016-07-06T16:35:25.445306953+02:00
+imports:
+- name: github.com/coreos/go-semver
+  version: 294930c1e79c64e7dbe360054274fdad492c8cf5
+  subpackages:
+  - semver
+- name: github.com/gogo/protobuf
+  version: 4168943e65a2802828518e95310aeeed6d84c4e5
+  subpackages:
+  - proto
+- name: github.com/spf13/pflag
+  version: 94e98a55fb412fcbcfc302555cb990f5e1590627
+- name: go4.org
+  version: 03efcb870d84809319ea509714dd6d19a1498483
+  subpackages:
+  - errorutil
+- name: golang.org/x/net
+  version: ccfcd82c7124abd517842acbacc3b8c1e390c73d
+  subpackages:
+  - html
+  - html/atom
+- name: gopkg.in/inf.v0
+  version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
+- name: k8s.io/kubernetes
+  version: a639d02cbff6f21e89eb639c7b7e5ad268bd4c29
+  subpackages:
+  - pkg/api/resource
+  - pkg/conversion
+  - third_party/forked/reflect
+devImports: []
