@@ -11,7 +11,7 @@ fi
 
 export GOBIN=${PWD}/bin
 export GOPATH=${PWD}/gopath
-#export GOPATH=${PWD}/Godeps/_workspace:${PWD}/gopath
+export GO15VENDOREXPERIMENT=1
 
 eval $(go env)
 export GOOS GOARCH
