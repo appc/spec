@@ -549,7 +549,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			InsecureTLS | InsecureHTTP,
 		}
 		for _, insecure := range insecureList {
-			eps, _, err := DiscoverACIEndpoints(tt.app, hostHeaders, insecure)
+			eps, _, err := DiscoverACIEndpoints(tt.app, hostHeaders, insecure, 0)
 			if err != nil && !tt.expectDiscoveryACIEndpointsSuccess {
 				continue
 			}
@@ -559,7 +559,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			if err != nil {
 				t.Fatalf("#%d DiscoverACIEndpoints failed: %v", i, err)
 			}
-			publicKeys, _, err := DiscoverPublicKeys(tt.app, hostHeaders, insecure)
+			publicKeys, _, err := DiscoverPublicKeys(tt.app, hostHeaders, insecure, 0)
 			if err != nil && !tt.expectDiscoveryPublicKeysSuccess {
 				continue
 			}

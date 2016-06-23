@@ -194,7 +194,7 @@ func TestHTTPSOrHTTP(t *testing.T) {
 		hostHeaders := map[string]http.Header{
 			tt.name: tt.authHeader,
 		}
-		urlStr, body, err := httpsOrHTTP(tt.name, hostHeaders, tt.insecure)
+		urlStr, body, err := httpsOrHTTP(tt.name, hostHeaders, tt.insecure, 0)
 		if tt.expectSuccess {
 			if err != nil {
 				t.Fatalf("#%d httpsOrHTTP failed: %v", i, err)
