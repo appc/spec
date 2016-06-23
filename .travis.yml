@@ -8,9 +8,8 @@ matrix:
       env: GO15VENDOREXPERIMENT=1
     - go: 1.6.2
 
-# Stop Travis mucking about with godeps:
-# https://docs.travis-ci.com/user/languages/go#godep-support
+# Nothing to install, it's part of vendoring.
 install: true
 
 script:
- - ./test
+ - ./test.sh
