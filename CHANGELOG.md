@@ -1,3 +1,11 @@
+### v0.8.5
+
+This is a minor release of the spec, containing one new backwards-compatible feature, and several tooling improvements:
+- Added seccomp support, via the `os/linux/seccomp-remove-set` and `os/linux/seccomp-retain-set` isolator types. This includes `actool patch-manifest` support (#521)
+- Moved to using `vendor/` directory with Godeps (#618)
+- Added a port parameter to the discovery code, allowing users to perform discovery on arbitrary ports (#629)
+- Changed schema code to fail more gracefully (return error instead of panic) if users inadvertently create a bad Isolator value (#633)
+
 ### v0.8.4
 
 This is a minor release of the spec; the only changes over 0.8.3 are that some of the Godeps are updated to use tagged releases.
