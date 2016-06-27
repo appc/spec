@@ -23,7 +23,12 @@ import (
 var (
 	isolatorMap map[ACIdentifier]IsolatorValueConstructor
 
+	// ErrIncompatibleIsolator is returned whenever an Isolators set contains
+	// conflicting IsolatorValue instances
 	ErrIncompatibleIsolator = errors.New("isolators set contains incompatible types")
+	// ErrInvalidIsolator is returned upon validation failures due to improper
+	// or partially constructed Isolator instances (eg. from incomplete direct construction)
+	ErrInvalidIsolator = errors.New("invalid isolator")
 )
 
 func init() {
@@ -49,15 +54,19 @@ type Isolators []Isolator
 func (isolators Isolators) assertValid() error {
 	typesMap := make(map[ACIdentifier]bool)
 	for _, i := range isolators {
-		if err := i.Value().AssertValid(); err != nil {
+		v := i.Value()
+		if v == nil {
+			return ErrInvalidIsolator
+		}
+		if err := v.AssertValid(); err != nil {
 			return err
 		}
 		if _, ok := typesMap[i.Name]; ok {
-			if !i.Value().multipleAllowed() {
+			if !v.multipleAllowed() {
 				return fmt.Errorf(`isolators set contains too many instances of type %s"`, i.Name)
 			}
 		}
-		for _, c := range i.Value().Conflicts() {
+		for _, c := range v.Conflicts() {
 			if _, found := typesMap[c]; found {
 				return ErrIncompatibleIsolator
 			}
