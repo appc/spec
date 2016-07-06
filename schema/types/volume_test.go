@@ -127,6 +127,32 @@ func TestVolumeToFromString(t *testing.T) {
 				GID:      ip(1000),
 			},
 		},
+		{
+			"foobar,kind=host,source=/tmp,recursive=false",
+			Volume{
+				Name:      "foobar",
+				Kind:      "host",
+				Source:    "/tmp",
+				ReadOnly:  nil,
+				Mode:      nil,
+				UID:       nil,
+				GID:       nil,
+				Recursive: bp(false),
+			},
+		},
+		{
+			"foobar,kind=host,source=/tmp,recursive=true",
+			Volume{
+				Name:      "foobar",
+				Kind:      "host",
+				Source:    "/tmp",
+				ReadOnly:  nil,
+				Mode:      nil,
+				UID:       nil,
+				GID:       nil,
+				Recursive: bp(true),
+			},
+		},
 	}
 	for i, tt := range tests {
 		v, err := VolumeFromString(tt.s)
@@ -153,6 +179,7 @@ func TestVolumeFromStringBad(t *testing.T) {
 		"foobar,kind=host,mode=0755",
 		"foobar,kind=host,mode=0600,readOnly=true,gid=0",
 		"foobar,kind=empty,source=/tmp",
+		"foobar,kind=host,source=/tmp,recursive=MAYBE",
 	}
 	for i, in := range tests {
 		l, err := VolumeFromString(in)
