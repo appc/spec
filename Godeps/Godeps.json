@@ -1,7 +1,7 @@
 {
 	"ImportPath": "github.com/appc/spec",
 	"GoVersion": "go1.6",
-	"GodepVersion": "v60",
+	"GodepVersion": "v64",
 	"Packages": [
 		"./..."
 	],
@@ -38,18 +38,18 @@
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/api/resource",
-			"Comment": "v1.3.0-alpha.4",
-			"Rev": "9990f843cd62caa90445cf76b07d63ba7b5c86fd"
+			"Comment": "v1.3.0",
+			"Rev": "283137936a498aed572ee22af6774b6fb6e9fd94"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/pkg/conversion",
-			"Comment": "v1.3.0-alpha.4",
-			"Rev": "9990f843cd62caa90445cf76b07d63ba7b5c86fd"
+			"Comment": "v1.3.0",
+			"Rev": "283137936a498aed572ee22af6774b6fb6e9fd94"
 		},
 		{
 			"ImportPath": "k8s.io/kubernetes/third_party/forked/reflect",
-			"Comment": "v1.3.0-alpha.4",
-			"Rev": "9990f843cd62caa90445cf76b07d63ba7b5c86fd"
+			"Comment": "v1.3.0",
+			"Rev": "283137936a498aed572ee22af6774b6fb6e9fd94"
 		}
 	]
 }
