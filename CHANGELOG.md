@@ -1,3 +1,9 @@
+### v0.8.6
+
+This is a minor release of the spec with one new feature and some updated dependencies:
+- Added optional _recursive_ field to volumes in the spec (#630)
+- Update vendored Kubernetes dependencies (#635)
+
 ### v0.8.5
 
 This is a minor release of the spec, containing one new backwards-compatible feature, and several tooling improvements:
