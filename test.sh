@@ -14,7 +14,7 @@ set -e
 # Invoke ./cover for HTML output
 COVER=${COVER:-"-cover"}
 
-source ./build
+source ./build.sh
 
 TESTABLE_AND_FORMATTABLE="aci discovery pkg/acirenderer pkg/tarheader schema schema/lastditch schema/types"
 FORMATTABLE="$TESTABLE_AND_FORMATTABLE ace actool"
