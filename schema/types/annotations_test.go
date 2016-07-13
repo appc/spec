@@ -79,6 +79,12 @@ func TestAnnotationsAssertValid(t *testing.T) {
 			},
 			false,
 		},
+		{
+			[]Annotation{
+				makeAnno("appc.io/executor/supports-systemd-notify", "false"),
+			},
+			false,
+		},
 		// empty is OK
 		{
 			[]Annotation{},

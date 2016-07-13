@@ -128,6 +128,10 @@
         {
             "name": "homepage",
             "value": "https://example.com"
+        },
+        {
+            "name": "appc.io/executor/supports-systemd-notify",
+            "value": "false"
         }
     ]
 }

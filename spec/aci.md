@@ -211,6 +211,10 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
         {
             "name": "homepage",
             "value": "https://example.com"
+        },
+        {
+            "name": "appc.io/executor/supports-systemd-notify",
+            "value": false
         }
     ]
 }
@@ -250,6 +254,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
     * **authors** contact details of the people or organization responsible for the image (freeform string)
     * **homepage** URL to find more information on the image (string, must be a URL with scheme HTTP or HTTPS)
     * **documentation** URL to get documentation on the image (string, must be a URL with scheme HTTP or HTTPS)
+    * **appc.io/executor/supports-systemd-notify** (boolean, optional, defaults to "false" if unset) if set to true, the application SHOULD use the sd\_notify mechanism to signal when it is ready. Also it SHOULD be able to detect if the executor had not set up the sd\_notify mechanism and skip the notification without error ([sd_notify()](https://www.freedesktop.org/software/systemd/man/sd_notify.html) from libsystemd does that automatically).
 
 #### Dependency Matching
 
