@@ -62,6 +62,26 @@ func TestLabels(t *testing.T) {
 			"",
 		},
 		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "ppc64le"}]`,
+			"",
+		},
+		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "ppc64l"}]`,
+			`bad arch "ppc64l" for linux`,
+		},
+		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "ppc64"}]`,
+			"",
+		},
+		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "ppc64b"}]`,
+			`bad arch "ppc64b" for linux`,
+		},
+		{
+			`[{"name": "os", "value": "linux"}, {"name": "arch", "value": "ppc64be"}]`,
+			`bad arch "ppc64be" for linux`,
+		},
+		{
 			`[{"name": "os", "value": "freebsd"}, {"name": "arch", "value": "amd64"}]`,
 			"",
 		},
