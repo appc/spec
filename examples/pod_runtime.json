@@ -98,6 +98,12 @@
         {
             "name": "resource/memory",
             "value": {"limit": "4G"}
+        },
+        {
+            "name": "os/unix/sysctl",
+            "value": {
+                "net.ipv4.tcp_fin_timeout": "6"
+            }
         }
     ],
     "annotations": [

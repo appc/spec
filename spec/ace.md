@@ -383,6 +383,36 @@ Small quantities can be represented directly as decimals (e.g., 0.3), or using m
 
 **NOTE**: Network limits MUST NOT apply to localhost communication between apps in a pod.
 
+### Unix Isolators
+
+These isolators take care of configuring several settings that are typically available in UNIX-like environments.
+This set includes isolators to tweak some standard POSIX features as well as other technologies that have been ported across multiple kernel families.
+
+#### os/unix/sysctl
+
+Sysctl parameters allow an application to configure kernel level options for its environment.
+A number of these values are namespace-aware as well, which makes them a natural fit for for an ACE to configure.
+
+* Scope: pod
+
+**Parameters:**
+
+* dictionary of `sysctl(8)` key-value entries to set kernel runtime parameters.
+
+```json
+"name": "os/unix/sysctl",
+"value": {
+    "net.ipv4.tcp_mtu_probing": "1",
+    "net.ipv4.tcp_keepalive_time": "300",
+    "net.ipv4.tcp_keepalive_probes": "5",
+    "net.ipv4.tcp_keepalive_intvl": "15"
+}
+```
+**Notes**:
+ 1. Only a single `os/unix/sysctl` isolator can be specified per-pod.
+ 2. Implementations SHOULD validate keys before applying sysctl parameters.
+    For example, a Linux implementation may want to only allow entries related to a specific namespaced subtree like `net.*`.
+    In such case, implementations MUST either ignore forbidden parameters or refuse to run the pod alltogether.
 
 ## App Container Metadata Service
 
