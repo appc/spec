@@ -16,7 +16,7 @@ mkdir "${ver}"
 mkdir "release-${ver}"
 
 git checkout "${1}"
-	./build
+	./build.sh
 	cp -r bin/actool SPEC.md spec/ "${ver}/"
 	tar czvf "${ver}.tar.gz" "${ver}"
 	echo "Wrote release tarball ${ver}.tar.gz"
