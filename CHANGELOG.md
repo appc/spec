@@ -1,3 +1,18 @@
+### v0.8.7
+
+This is a minor but significant release of the spec with several new features, one notable bugfix, and some changes to the tooling codebase.
+
+Changes to the spec since the previous release:
+- Added an optional image manifest annotation, `appc.io/executor/supports-systemd-notify`, to allow apps to express whether they support notifications using `sd_notify()`. This may be used to signal that services within a pod are ready (#626)
+- Added several new architectures to the validated whitelist: ppc64, ppc64le, s390x (#639, #651)
+- Added a new `os/unix/sysctl` isolator class to the spec, and associated schema code (#647)
+
+Tooling and code changes:
+- Added the ability to override capability isolators to `actool patch-manifest`. This changes the behaviour of the `--capability` and `--revoke-capability` flags (#638)
+- Fixed a bug in the ACE validator where it was not correctly merging annotations it was checking (#649)
+- Increased default timeout for connections in the discovery code (#644)
+- Moved from using godeps to using glide to manage dependencies and vendoring. This included updating the go-semver dependency and a new build/test script. Dependency changes are now managed with `scripts/glide-update` (#632)
+
 ### v0.8.6
 
 This is a minor release of the spec with one new feature and some updated dependencies:
