@@ -152,7 +152,8 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
             "name": "ftp",
             "hostPort": 2121
         }
-    ]
+    ],
+    "restartPolicy": "onFailure"
 }
 ```
 
@@ -186,3 +187,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 * **ports** (list of objects, optional) list of ports that SHOULD be exposed on the host.
     * **name** (string, required, restricted to the [AC Name](#ac-name-type) formatting) name of the port to be exposed on the host. This field is a key referencing by name ports specified in the Image Manifest(s) of the app(s) within this Pod Manifest; consequently, port names MUST be unique among apps within a pod.
     * **hostPort** (integer, required) port number on the host that will be mapped to the application port.
+* **restartPolicy** (string, optional) a string that specifies the restart policy that will be applied to all apps in the pod, if left empty, then the ACE can decide the default behavior. The ACE SHOULD also implement the exponential back-off delay when restarting the apps. Currently, the valid values for the restart policy include:
+    * **always** - the app will always restart when it exits, regardless of its exit status.
+    * **onFailure** - the app will only restart when it exits unsuccessfully, i.e., its exit status is non-zero.
+    * **never** - the app will never restart when it exits, regardless of its exit status.
