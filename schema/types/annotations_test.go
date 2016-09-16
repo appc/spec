@@ -19,17 +19,6 @@ import (
 	"testing"
 )
 
-func makeAnno(n, v string) Annotation {
-	name, err := NewACIdentifier(n)
-	if err != nil {
-		panic(err)
-	}
-	return Annotation{
-		Name:  *name,
-		Value: v,
-	}
-}
-
 func TestAnnotationsAssertValid(t *testing.T) {
 	tests := []struct {
 		in   []Annotation
@@ -38,50 +27,50 @@ func TestAnnotationsAssertValid(t *testing.T) {
 		// duplicate names should fail
 		{
 			[]Annotation{
-				makeAnno("foo", "bar"),
-				makeAnno("foo", "baz"),
+				Annotation{"foo", "bar"},
+				Annotation{"foo", "baz"},
 			},
 			true,
 		},
 		// bad created should fail
 		{
 			[]Annotation{
-				makeAnno("created", "garbage"),
+				Annotation{"created", "garbage"},
 			},
 			true,
 		},
 		// bad homepage should fail
 		{
 			[]Annotation{
-				makeAnno("homepage", "not-A$@#URL"),
+				Annotation{"homepage", "not-A$@#URL"},
 			},
 			true,
 		},
 		// bad documentation should fail
 		{
 			[]Annotation{
-				makeAnno("documentation", "ftp://isnotallowed.com"),
+				Annotation{"documentation", "ftp://isnotallowed.com"},
 			},
 			true,
 		},
 		// good cases
 		{
 			[]Annotation{
-				makeAnno("created", "2004-05-14T23:11:14+00:00"),
-				makeAnno("documentation", "http://example.com/docs"),
+				Annotation{"created", "2004-05-14T23:11:14+00:00"},
+				Annotation{"documentation", "http://example.com/docs"},
 			},
 			false,
 		},
 		{
 			[]Annotation{
-				makeAnno("foo", "bar"),
-				makeAnno("homepage", "https://homepage.com"),
+				Annotation{"foo", "bar"},
+				Annotation{"homepage", "https://homepage.com"},
 			},
 			false,
 		},
 		{
 			[]Annotation{
-				makeAnno("appc.io/executor/supports-systemd-notify", "false"),
+				Annotation{"appc.io/executor/supports-systemd-notify", "false"},
 			},
 			false,
 		},
@@ -108,24 +97,24 @@ func TestAnnotationsMarshal(t *testing.T) {
 	}{
 		{
 			[]Annotation{
-				makeAnno("foo", "bar"),
-				makeAnno("foo", "baz"),
-				makeAnno("website", "http://example.com/anno"),
+				Annotation{"foo", "bar"},
+				Annotation{"foo", "baz"},
+				Annotation{"website", "http://example.com/anno"},
 			},
 			nil,
 			true,
 		},
 		{
 			[]Annotation{
-				makeAnno("a", "b"),
+				Annotation{"a", "b"},
 			},
 			[]byte(`[{"name":"a","value":"b"}]`),
 			false,
 		},
 		{
 			[]Annotation{
-				makeAnno("foo", "bar"),
-				makeAnno("website", "http://example.com/anno"),
+				Annotation{"foo", "bar"},
+				Annotation{"website", "http://example.com/anno"},
 			},
 			[]byte(`[{"name":"foo","value":"bar"},{"name":"website","value":"http://example.com/anno"}]`),
 			false,
@@ -162,7 +151,7 @@ func TestAnnotationsUnmarshal(t *testing.T) {
 		{
 			`[{"name":"a","value":"b"}]`,
 			&Annotations{
-				makeAnno("a", "b"),
+				Annotation{"a", "b"},
 			},
 			false,
 		},
@@ -193,8 +182,8 @@ func TestAnnotationsGet(t *testing.T) {
 		{"wuuf", "", false},
 	} {
 		a := Annotations{
-			makeAnno("foo", "bar"),
-			makeAnno("website", "http://example.com/anno"),
+			Annotation{"foo", "bar"},
+			Annotation{"website", "http://example.com/anno"},
 		}
 		gval, gok := a.Get(tt.in)
 		if gval != tt.wval {
@@ -211,7 +200,7 @@ func TestAnnotationsSet(t *testing.T) {
 
 	a.Set("foo", "bar")
 	w := Annotations{
-		Annotation{ACIdentifier("foo"), "bar"},
+		Annotation{"foo", "bar"},
 	}
 	if !reflect.DeepEqual(w, a) {
 		t.Fatalf("want %v, got %v", w, a)
@@ -219,8 +208,8 @@ func TestAnnotationsSet(t *testing.T) {
 
 	a.Set("dog", "woof")
 	w = Annotations{
-		Annotation{ACIdentifier("foo"), "bar"},
-		Annotation{ACIdentifier("dog"), "woof"},
+		Annotation{"foo", "bar"},
+		Annotation{"dog", "woof"},
 	}
 	if !reflect.DeepEqual(w, a) {
 		t.Fatalf("want %v, got %v", w, a)
@@ -229,9 +218,9 @@ func TestAnnotationsSet(t *testing.T) {
 	a.Set("foo", "baz")
 	a.Set("example.com/foo_bar", "quux")
 	w = Annotations{
-		Annotation{ACIdentifier("foo"), "baz"},
-		Annotation{ACIdentifier("dog"), "woof"},
-		Annotation{ACIdentifier("example.com/foo_bar"), "quux"},
+		Annotation{"foo", "baz"},
+		Annotation{"dog", "woof"},
+		Annotation{"example.com/foo_bar", "quux"},
 	}
 	if !reflect.DeepEqual(w, a) {
 		t.Fatalf("want %v, got %v", w, a)
