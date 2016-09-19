@@ -23,10 +23,14 @@ import (
 	"github.com/appc/spec/schema/common"
 )
 
+// MountPoint is the application-side manifestation of a Volume.
+// The Volume is optional. If missing, the pod-level Volume of the
+// same name shall be used
 type MountPoint struct {
-	Name     ACName `json:"name"`
-	Path     string `json:"path"`
-	ReadOnly bool   `json:"readOnly,omitempty"`
+	Name     ACName  `json:"name"`
+	Path     string  `json:"path"`
+	ReadOnly bool    `json:"readOnly,omitempty"`
+	Volume   *Volume `json:"volume,omitempty"`
 }
 
 func (mount MountPoint) assertValid() error {
