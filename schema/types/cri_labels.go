@@ -14,18 +14,5 @@
 
 package types
 
-import "fmt"
-
-type CRILabels map[ACIdentifier]string
-
-func (l CRILabels) assertValid() error {
-	for k, _ := range l {
-		if err := k.assertValid(); err != nil {
-			return err
-		}
-		if len(k) > 63 {
-			return fmt.Errorf(`label %q too long`, k)
-		}
-	}
-	return nil
-}
+// CRILabels are arbitrary key-value pairs
+type CRILabels map[string]string

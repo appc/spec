@@ -212,7 +212,7 @@ func TestAppUnmarshal(t *testing.T) {
 			false,
 		},
 		{
-			`{"Exec":["/a"],"User":"0","Group":"0","CRIAnnotations":{"weird!":"normal?"},"CRILabels":{"one":"two"}}`,
+			`{"Exec":["/a"],"User":"0","Group":"0","CRIAnnotations":{"weird!":"normal?"},"CRILabels":{"one!":"two?"}}`,
 			&App{
 				Exec: Exec{
 					"/a",
@@ -224,15 +224,10 @@ func TestAppUnmarshal(t *testing.T) {
 					"weird!": "normal?",
 				},
 				CRILabels: CRILabels{
-					"one": "two",
+					"one!": "two?",
 				},
 			},
 			false,
-		},
-		{
-			`{"Exec":["/a"],"User":"0","Group":"0","CRIAnnotations":{"weird!":"normal?"},"CRILabels":{"!one":"two"}}`,
-			&App{},
-			true,
 		},
 	}
 	for i, tt := range tests {
