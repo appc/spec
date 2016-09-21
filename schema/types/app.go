@@ -91,8 +91,5 @@ func (a *App) assertValid() error {
 	if err := a.Isolators.assertValid(); err != nil {
 		return err
 	}
-	if err := a.CRILabels.assertValid(); err != nil {
-		return err
-	}
 	return nil
 }
