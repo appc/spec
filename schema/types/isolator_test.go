@@ -27,6 +27,34 @@ func TestIsolatorUnmarshal(t *testing.T) {
 	}{
 		{
 			`{
+				"name": "os/linux/oom-score-adj",
+				"value": 250
+			}`,
+			false,
+		},
+		{
+			`{
+				"name": "os/linux/oom-score-adj",
+				"value": -250
+			}`,
+			false,
+		},
+		{
+			`{
+				"name": "os/linux/oom-score-adj",
+				"value": -2500
+			}`,
+			true,
+		},
+		{
+			`{
+				"name": "os/linux/oom-score-adj",
+				"value": "pants"
+			}`,
+			true,
+		},
+		{
+			`{
 				"name": "os/linux/no-new-privileges",
 				"value": true
 			}`,
