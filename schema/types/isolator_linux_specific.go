@@ -17,6 +17,7 @@ package types
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"unicode"
 )
 
@@ -26,6 +27,7 @@ const (
 	LinuxNoNewPrivilegesName       = "os/linux/no-new-privileges"
 	LinuxSeccompRemoveSetName      = "os/linux/seccomp-remove-set"
 	LinuxSeccompRetainSetName      = "os/linux/seccomp-retain-set"
+	LinuxOOMScoreAdjName           = "os/linux/oom-score-adj"
 )
 
 var LinuxIsolatorNames = make(map[ACIdentifier]struct{})
@@ -35,6 +37,7 @@ func init() {
 		LinuxCapabilitiesRevokeSetName: func() IsolatorValue { return &LinuxCapabilitiesRevokeSet{} },
 		LinuxCapabilitiesRetainSetName: func() IsolatorValue { return &LinuxCapabilitiesRetainSet{} },
 		LinuxNoNewPrivilegesName:       func() IsolatorValue { v := LinuxNoNewPrivileges(false); return &v },
+		LinuxOOMScoreAdjName:           func() IsolatorValue { v := LinuxOOMScoreAdj(0); return &v },
 		LinuxSeccompRemoveSetName:      func() IsolatorValue { return &LinuxSeccompRemoveSet{} },
 		LinuxSeccompRetainSetName:      func() IsolatorValue { return &LinuxSeccompRetainSet{} },
 	} {
@@ -320,4 +323,45 @@ func (l LinuxSeccompRemoveSet) AsIsolator() (*Isolator, error) {
 		ValueRaw: &rm,
 		value:    &l,
 	}, nil
+}
+
+// LinuxOOMScoreAdj is equivalent to /proc/[pid]/oom_score_adj
+type LinuxOOMScoreAdj int // -1000 to 1000
+func (l LinuxOOMScoreAdj) AssertValid() error {
+	if l < -1000 || l > 1000 {
+		return fmt.Errorf("%s must be between -1000 and 1000, got %d", LinuxOOMScoreAdjName, l)
+	}
+	return nil
+}
+
+func (l LinuxOOMScoreAdj) multipleAllowed() bool {
+	return false
+}
+
+func (l LinuxOOMScoreAdj) Conflicts() []ACIdentifier {
+	return nil
+}
+
+func (l *LinuxOOMScoreAdj) UnmarshalJSON(b []byte) error {
+	var v int
+	err := json.Unmarshal(b, &v)
+	if err != nil {
+		return err
+	}
+
+	*l = LinuxOOMScoreAdj(v)
+	return nil
+}
+
+func (l LinuxOOMScoreAdj) AsIsolator() Isolator {
+	b, err := json.Marshal(l)
+	if err != nil {
+		panic(err)
+	}
+	rm := json.RawMessage(b)
+	return Isolator{
+		Name:     LinuxOOMScoreAdjName,
+		ValueRaw: &rm,
+		value:    &l,
+	}
 }
