@@ -327,6 +327,16 @@ func (l LinuxSeccompRemoveSet) AsIsolator() (*Isolator, error) {
 
 // LinuxOOMScoreAdj is equivalent to /proc/[pid]/oom_score_adj
 type LinuxOOMScoreAdj int // -1000 to 1000
+
+func NewLinuxOOMScoreAdj(val int) (*LinuxOOMScoreAdj, error) {
+	l := LinuxOOMScoreAdj(val)
+	if err := l.AssertValid(); err != nil {
+		return nil, err
+	}
+
+	return &l, nil
+}
+
 func (l LinuxOOMScoreAdj) AssertValid() error {
 	if l < -1000 || l > 1000 {
 		return fmt.Errorf("%s must be between -1000 and 1000, got %d", LinuxOOMScoreAdjName, l)
