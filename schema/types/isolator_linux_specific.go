@@ -28,6 +28,7 @@ const (
 	LinuxSeccompRemoveSetName      = "os/linux/seccomp-remove-set"
 	LinuxSeccompRetainSetName      = "os/linux/seccomp-retain-set"
 	LinuxOOMScoreAdjName           = "os/linux/oom-score-adj"
+	LinuxCPUSharesName             = "os/linux/cpu-shares"
 )
 
 var LinuxIsolatorNames = make(map[ACIdentifier]struct{})
@@ -38,6 +39,7 @@ func init() {
 		LinuxCapabilitiesRetainSetName: func() IsolatorValue { return &LinuxCapabilitiesRetainSet{} },
 		LinuxNoNewPrivilegesName:       func() IsolatorValue { v := LinuxNoNewPrivileges(false); return &v },
 		LinuxOOMScoreAdjName:           func() IsolatorValue { v := LinuxOOMScoreAdj(0); return &v },
+		LinuxCPUSharesName:             func() IsolatorValue { v := LinuxCPUShares(1024); return &v },
 		LinuxSeccompRemoveSetName:      func() IsolatorValue { return &LinuxSeccompRemoveSet{} },
 		LinuxSeccompRetainSetName:      func() IsolatorValue { return &LinuxSeccompRetainSet{} },
 	} {
@@ -323,6 +325,59 @@ func (l LinuxSeccompRemoveSet) AsIsolator() (*Isolator, error) {
 		ValueRaw: &rm,
 		value:    &l,
 	}, nil
+}
+
+// LinuxCPUShares assigns the CPU time share weight to the processes executed.
+// See https://www.freedesktop.org/software/systemd/man/systemd.resource-control.html#CPUShares=weight,
+// https://www.kernel.org/doc/Documentation/scheduler/sched-design-CFS.txt
+type LinuxCPUShares int
+
+func NewLinuxCPUShares(val int) (*LinuxCPUShares, error) {
+	l := LinuxCPUShares(val)
+	if err := l.AssertValid(); err != nil {
+		return nil, err
+	}
+
+	return &l, nil
+}
+
+func (l LinuxCPUShares) AssertValid() error {
+	if l < 2 || l > 262144 {
+		return fmt.Errorf("%s must be between 2 and 262144, got %d", LinuxCPUSharesName, l)
+	}
+	return nil
+}
+
+func (l LinuxCPUShares) multipleAllowed() bool {
+	return false
+}
+
+func (l LinuxCPUShares) Conflicts() []ACIdentifier {
+	return nil
+}
+
+func (l *LinuxCPUShares) UnmarshalJSON(b []byte) error {
+	var v int
+	err := json.Unmarshal(b, &v)
+	if err != nil {
+		return err
+	}
+
+	*l = LinuxCPUShares(v)
+	return nil
+}
+
+func (l LinuxCPUShares) AsIsolator() Isolator {
+	b, err := json.Marshal(l)
+	if err != nil {
+		panic(err)
+	}
+	rm := json.RawMessage(b)
+	return Isolator{
+		Name:     LinuxCPUSharesName,
+		ValueRaw: &rm,
+		value:    &l,
+	}
 }
 
 // LinuxOOMScoreAdj is equivalent to /proc/[pid]/oom_score_adj
