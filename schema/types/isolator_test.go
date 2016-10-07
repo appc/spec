@@ -27,6 +27,41 @@ func TestIsolatorUnmarshal(t *testing.T) {
 	}{
 		{
 			`{
+				"name": "os/linux/cpu-shares",
+				"value": 2048
+			}`,
+			false,
+		},
+		{
+			`{
+				"name": "os/linux/cpu-shares",
+				"value": 1
+			}`,
+			true,
+		},
+		{
+			`{
+				"name": "os/linux/cpu-shares",
+				"value": "pants"
+			}`,
+			true,
+		},
+		{
+			`{
+				"name": "os/linux/cpu-shares",
+				"value": "262145"
+			}`,
+			true,
+		},
+		{
+			`{
+				"name": "os/linux/cpu-shares",
+				"value": "-1"
+			}`,
+			true,
+		},
+		{
+			`{
 				"name": "os/linux/oom-score-adj",
 				"value": 250
 			}`,
