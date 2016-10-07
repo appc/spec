@@ -137,9 +137,12 @@ func (al AppList) Get(name types.ACName) *RuntimeApp {
 
 // Mount describes the mapping between a volume and the path it is mounted
 // inside of an app's filesystem.
+// The AppVolume is optional. If missing, the pod-level Volume of the
+// same name shall be used.
 type Mount struct {
-	Volume types.ACName `json:"volume"`
-	Path   string       `json:"path"`
+	Volume    types.ACName  `json:"volume"`
+	Path      string        `json:"path"`
+	AppVolume *types.Volume `json:"appVolume,omitempty"`
 }
 
 func (r Mount) assertValid() error {
