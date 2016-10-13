@@ -212,7 +212,7 @@ func TestAppUnmarshal(t *testing.T) {
 			false,
 		},
 		{
-			`{"Exec":["/a"],"User":"0","Group":"0","CRIAnnotations":{"weird!":"normal?"},"CRILabels":{"one!":"two?"}}`,
+			`{"Exec":["/a"],"User":"0","Group":"0","UserAnnotations":{"weird!":"normal?"},"UserLabels":{"one!":"two?"}}`,
 			&App{
 				Exec: Exec{
 					"/a",
@@ -220,10 +220,10 @@ func TestAppUnmarshal(t *testing.T) {
 				User:        "0",
 				Group:       "0",
 				Environment: make(Environment, 0),
-				CRIAnnotations: CRIAnnotations{
+				UserAnnotations: UserAnnotations{
 					"weird!": "normal?",
 				},
-				CRILabels: CRILabels{
+				UserLabels: UserLabels{
 					"one!": "two?",
 				},
 			},
