@@ -1,4 +1,4 @@
-// Copyright 2015 The appc Authors
+// Copyright 2016 The appc Authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -14,5 +14,5 @@
 
 package types
 
-// CRILabels are arbitrary key-value pairs
-type CRILabels map[string]string
+// UserAnnotations are arbitrary key-value pairs, to be supplied and interpreted by the user
+type UserAnnotations map[string]string
