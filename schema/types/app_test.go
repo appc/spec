@@ -211,6 +211,24 @@ func TestAppUnmarshal(t *testing.T) {
 			},
 			false,
 		},
+		{
+			`{"Exec":["/a"],"User":"0","Group":"0","UserAnnotations":{"weird!":"normal?"},"UserLabels":{"one!":"two?"}}`,
+			&App{
+				Exec: Exec{
+					"/a",
+				},
+				User:        "0",
+				Group:       "0",
+				Environment: make(Environment, 0),
+				UserAnnotations: UserAnnotations{
+					"weird!": "normal?",
+				},
+				UserLabels: UserLabels{
+					"one!": "two?",
+				},
+			},
+			false,
+		},
 	}
 	for i, tt := range tests {
 		a := &App{}
