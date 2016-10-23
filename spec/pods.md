@@ -189,5 +189,5 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
     * **hostPort** (integer, required) port number on the host that will be mapped to the application port.
     * **hostIP** (string, optional) an IPv4 address to forward from. If omitted, all IPs will be used. Must be in dotted-quad notation, e.g. "203.0.113.23"
     * **podPort** (object, optional) port object of the same structure as in an image manifest (see the "ports" field in the [Image Manifest Schema](aci.md#image-manifest-schema)). If supplied, this overrides any matching ports specified by the images.
-* **userAnnotations** (object, optional) map of arbitrary key-value data for end-user use. Values must be strings. Unlike Annotations, UserAnnotations use arbitrary strings for keys and MUST NOT affect runtime behavior.
+* **userAnnotations** (object, optional) map of arbitrary key-value data for end-user use. All values in the object MUST be strings. Unlike annotations, user annotations allow arbitrary strings for keys, and MUST NOT affect ACE runtime behavior.
 * **userLabels** (object, optional) map of arbitrary key-value data for end-user use. Values must be strings. User labels MUST NOT affect runtime behavior.
