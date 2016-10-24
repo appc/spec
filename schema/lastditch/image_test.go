@@ -77,7 +77,7 @@ func TestBogusImageManifest(t *testing.T) {
 	bogus := []string{`
 		{
 		    "acKind": "Bogus",
-		    "acVersion": "0.8.7",
+		    "acVersion": "0.8.8",
 		}
 		`, `
 		<html>
@@ -101,7 +101,7 @@ func imgJ(name, labels, extra string) string {
 		{
 		    %s
 		    "acKind": "ImageManifest",
-		    "acVersion": "0.8.7",
+		    "acVersion": "0.8.8",
 		    "name": "%s",
 		    "labels": %s
 		}`, extra, name, labels)
@@ -110,7 +110,7 @@ func imgJ(name, labels, extra string) string {
 // imgI returns an image manifest instance with given name and labels
 func imgI(name string, labels Labels) ImageManifest {
 	return ImageManifest{
-		ACVersion: "0.8.7",
+		ACVersion: "0.8.8",
 		ACKind:    "ImageManifest",
 		Name:      name,
 		Labels:    labels,

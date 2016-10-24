@@ -1,3 +1,16 @@
+### v0.8.8
+
+This is a minor release of the spec which includes some new small features intended to simplify implementation of the Kubernetes CRI (Container Runtime Interface)
+
+Spec additions:
+- Two new isolators: 'os/linux/oom-score-adj' and 'os/linux/cpu-shares' (#658, #661)
+- UserAnnotations and UserLabels for both Pods and Apps: key-vaue pairs exclusively for end-user use (#663)
+- The ability to specify a complete ExposedPort+PodPort and Volume+Mount, instead of matching by name (#656)
+
+Bugfixes:
+- Fixed a `go vet` failure in discovery/http.go
+
+
 ### v0.8.7
 
 This is a minor but significant release of the spec with several new features, one notable bugfix, and some changes to the tooling codebase.
