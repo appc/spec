@@ -200,6 +200,38 @@ In the example above, the process will not be allowed to invoke `clock_adjtime(2
 
 In the example above, the process will be only allowed to invoke syscalls specified in the custom network-related set (and any other syscall in the implementation-specific whitelist). All other syscalls will result in app termination via `SIGSYS` signal.
 
+#### os/linux/selinux-context
+
+* Scope: app/pod
+
+**Parameters:**
+
+* **user** case-sensitive string containing the user portion of the SELinux security context to be used to label the current pod or application.
+* **role** case-sensitive string containing the role portion of the SELinux security context to be used to label the current pod or application.
+* **type** case-sensitive string containing the type/domain portion of the SELinux security context to be used to label the current pod or application.
+* **level** case-sensitive string containing the level portion of the SELinux security context to be used to label the current pod or application.
+
+**Notes:**
+ 1. Only a single `os/linux/selinux-context` isolator can be specified per-pod.
+ 2. Only a single `os/linux/selinux-context` isolator can be specified per-app.
+ 3. If a SELinux security context is specified at pod level, it applies to all processes involved in running the pod.
+ 4. If specified both at pod and app level, app values override pod ones.
+ 5. Implementations MAY ignore this isolator if the host does not support SELinux labeling.
+
+**Example:**
+
+```json
+"name": "os/linux/selinux-context",
+"value": {
+  "user": "system_u",
+  "role": "system_r",
+  "type": "dhcpc_t",
+  "level": "s0",
+}
+```
+
+In the example above, the SELinux security context `system_u:system_r:dhcpc_t:s0` will be applied to a pod or to a single application, depending on where this isolator is specified.
+
 #### os/linux/capabilities-remove-set
 
 * Scope: app

@@ -57,6 +57,76 @@ func TestNewLinuxCapabilitiesRetainSet(t *testing.T) {
 
 }
 
+func TestNewLinuxSELinuxContext(t *testing.T) {
+	tests := []struct {
+		inUser  string
+		inRole  string
+		inType  string
+		inLevel string
+
+		wuser  LinuxSELinuxUser
+		wrole  LinuxSELinuxRole
+		wtype  LinuxSELinuxType
+		wlevel LinuxSELinuxLevel
+		werr   bool
+	}{
+		{
+			"unconfined_u", "object_r", "user_home_t", "s0",
+			LinuxSELinuxUser("unconfined_u"),
+			LinuxSELinuxRole("object_r"),
+			LinuxSELinuxType("user_home_t"),
+			LinuxSELinuxLevel("s0"),
+			false,
+		},
+		{
+			"unconfined_u", "object_r", "user_home_t", "s0-s0:c0",
+			LinuxSELinuxUser("unconfined_u"),
+			LinuxSELinuxRole("object_r"),
+			LinuxSELinuxType("user_home_t"),
+			LinuxSELinuxLevel("s0-s0:c0"),
+			false,
+		},
+		{
+			"", "object_r", "user_home_t", "s0",
+			"",
+			"",
+			"",
+			"",
+			true,
+		},
+		{
+			"unconfined_u:unconfined_t", "object_r", "user_home_t", "s0",
+			"",
+			"",
+			"",
+			"",
+			true,
+		},
+	}
+	for i, tt := range tests {
+		c, err := NewLinuxSELinuxContext(tt.inUser, tt.inRole, tt.inType, tt.inLevel)
+		if tt.werr {
+			if err == nil {
+				t.Errorf("#%d: did not get expected error", i)
+			}
+			continue
+		}
+		if guser := c.User(); !reflect.DeepEqual(guser, tt.wuser) {
+			t.Errorf("#%d: got user %#v, want user %#v", i, guser, tt.wuser)
+		}
+		if grole := c.Role(); !reflect.DeepEqual(grole, tt.wrole) {
+			t.Errorf("#%d: got role %#v, want role %#v", i, grole, tt.wrole)
+		}
+		if gtype := c.Type(); !reflect.DeepEqual(gtype, tt.wtype) {
+			t.Errorf("#%d: got type %#v, want type %#v", i, gtype, tt.wtype)
+		}
+		if glevel := c.Level(); !reflect.DeepEqual(glevel, tt.wlevel) {
+			t.Errorf("#%d: got level %#v, want level %#v", i, glevel, tt.wlevel)
+		}
+	}
+
+}
+
 func TestNewLinuxCapabilitiesRevokeSet(t *testing.T) {
 	tests := []struct {
 		in []string

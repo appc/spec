@@ -256,6 +256,34 @@ func TestIsolatorUnmarshal(t *testing.T) {
 			}`,
 			true,
 		},
+		{
+			`{
+				"name": "os/linux/selinux-context",
+				"value": {"user" : "user_u", "role": "role_r", "type": "type_r", "level": "s0-s0"}
+			}`,
+			false,
+		},
+		{
+			`{
+				"name": "os/linux/selinux-context",
+				"value": {"user" : "user_u", "role": "role_r", "type": "type_r", "level": "s0-s0:c0"}
+			}`,
+			false,
+		},
+		{
+			`{
+				"name": "os/linux/selinux-context",
+				"value": {"user" : "user_u", "role": "role_r:type_t", "type": "type_r", "level": "s0-s0"}
+			}`,
+			true,
+		},
+		{
+			`{
+				"name": "os/linux/selinux-context",
+				"value": {"user" : "user_u", "role": "", "type": "type_r", "level": "s0-s0"}
+			}`,
+			true,
+		},
 	}
 
 	for i, tt := range tests {
