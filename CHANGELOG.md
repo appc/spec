@@ -1,3 +1,9 @@
+### v0.8.9
+This is a minor release of the spec which includes a new isolator and a utility function to translate between appc and golang architectures.
+
+- the `os/linux/selinux-context` isolator, which allows apps and pods to specify the SELinux context for their process (#673)
+- `schema.ToAppcOSArch()` and `ToGoOSArch()`, functions that translate OS and architecture names. (#668)
+
 ### v0.8.8
 
 This is a minor release of the spec which includes some new small features intended to simplify implementation of the Kubernetes CRI (Container Runtime Interface)
