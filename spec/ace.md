@@ -474,11 +474,11 @@ Information about the pod that this app is executing in.
 
 Retrievable at `$AC_METADATA_URL/acMetadata/v1/pod`
 
-| Entry       | Description |
-|-------------|-------------|
-|annotations | Top level annotations from Pod Manifest. Response body should conform to the sub-schema of the annotations property from the Pod specification (e.g. ```[ { "name": "ip-address", "value": "10.1.2.3" } ]```). |
-|manifest     | Fully-reified Pod Manifest JSON. |
-|uuid         | Pod UUID. The metadata service must return the `Content-Type` of `text/plain; charset=us-ascii` and the body of the response must be the pod UUID in canonical form. |
+| Entry       | Method | Description |
+|-------------|--------|-------------|
+|annotations  | GET    | Top level annotations from Pod Manifest. Response body should conform to the sub-schema of the annotations property from the Pod specification (e.g. ```[ { "name": "ip-address", "value": "10.1.2.3" } ]```). |
+|manifest     | GET    | Fully-reified Pod Manifest JSON. |
+|uuid         | GET    | Pod UUID. The metadata service must return the `Content-Type` of `text/plain; charset=us-ascii` and the body of the response must be the pod UUID in canonical form. |
 
 ### App Metadata
 
@@ -487,11 +487,11 @@ This is necessary to query for the correct endpoint metadata.
 
 Retrievable at `$AC_METADATA_URL/acMetadata/v1/apps/$AC_APP_NAME/`
 
-| Entry         | Description |
-|---------------|-------------|
-|annotations   | Annotations from Image Manifest merged with app annotations from Pod Manifest. Response body should conform to the sub-schema of the annotations property from the ACE and Pod specifications (e.g. ```[ { "name": "ip-address", "value": "10.1.2.3" } ]```). |
-|image/manifest | Original Image Manifest of the app. |
-|image/id       | Image ID (digest) this app is contained in. The metadata service must return the `Content-Type` of `text/plain; charset=us-ascii` and the body of the response must be the image ID as described in the ACI specification.|
+| Entry         | Method | Description |
+|---------------|--------|-------------|
+|annotations    | GET    | Annotations from Image Manifest merged with app annotations from Pod Manifest. Response body should conform to the sub-schema of the annotations property from the ACE and Pod specifications (e.g. ```[ { "name": "ip-address", "value": "10.1.2.3" } ]```). |
+|image/manifest | GET    | Original Image Manifest of the app. |
+|image/id       | GET    | Image ID (digest) this app is contained in. The metadata service must return the `Content-Type` of `text/plain; charset=us-ascii` and the body of the response must be the image ID as described in the ACI specification.|
 
 ### Identity Endpoint
 
@@ -500,7 +500,7 @@ This gives a cryptographically verifiable identity to the pod based on its uniqu
 
 Accessible at `$AC_METADATA_URL/acMetadata/v1/pod/hmac`
 
-| Entry | Description |
-|-------|-------------|
-|sign   | Client applications must POST a form with content=&lt;object to sign&gt;. The response must specify a `Content-Type` header of `text/plain; charset=us-ascii` and the body must be a base64 encoded hmac-sha512 signature based on an HMAC key maintained by the Metadata Service. |
-|verify | Verify a signature from another pod. POST a form with content=&lt;object that was signed&gt;, uuid=&lt;uuid of the pod that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
+| Entry | Method | Description |
+|-------|--------|-------------|
+|sign   | POST   | Client applications must POST a form with content=&lt;object to sign&gt;. The response must specify a `Content-Type` header of `text/plain; charset=us-ascii` and the body must be a base64 encoded hmac-sha512 signature based on an HMAC key maintained by the Metadata Service. |
+|verify | POST   | Verify a signature from another pod. POST a form with content=&lt;object that was signed&gt;, uuid=&lt;uuid of the pod that generated the signature&gt;, signature=&lt;base64 encoded signature&gt;. Returns 200 OK if the signature passes and 403 Forbidden if the signature check fails. |
