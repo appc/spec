@@ -6,8 +6,9 @@ Accordingly, as of late 2016, appc is no longer being actively developed, other 
 
 It is highly encouraged that parties interested in container specifications join the OCI community.
 
-* The App Container Image format (ACI) maps more or less directly to the [OCI Image Format Specification](https://github.com/opencontainers/image-spec)
+* The App Container Image format (ACI) maps more or less directly to the [OCI Image Format Specification](https://github.com/opencontainers/image-spec), with the exception of signing and dependencies.
 * The App Container Executor (ACE) specification is related conceptually to the [OCI Runtime Specification](https://github.com/opencontainers/runtime-spec), with the notable distinctions that the latter does not support pods and generally operates at a lower level of specification.
+* App Container Image Discovery does not yet have an equivalent specification in the OCI project (although it has been [discussed](https://groups.google.com/a/opencontainers.org/forum/#!msg/dev/OqnUp4jOacs/ziEwxasyFQAJ) and [proposed](https://groups.google.com/a/opencontainers.org/forum/#!msg/tob/oaEza4cu25M/gBLeHm5NFAAJ))
 
 For more information, see the [OCI FAQ](https://www.opencontainers.org/) and a more recent [CoreOS blog post announcing the OCI Image Format](https://coreos.com/blog/oci-image-specification.html).
 
