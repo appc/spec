@@ -1,3 +1,18 @@
+#<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING" width="25" height="25"> Disclaimer <img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING" width="25" height="25">
+
+With the formation of the [Open Container Initiative (OCI)](https://www.opencontainers.org/), the industry has come together in a single location to define specifications around applications containers.
+OCI is intended to incorporate the best elements of existing container efforts like appc, and several of the appc maintainers are participating in OCI projects as maintainers and on the Technical Oversight Board (TOB).
+Accordingly, as of late 2016, appc is no longer being actively developed, other than minor tweaks to support existing implementations.
+
+It is highly encouraged that parties interested in container specifications join the OCI community.
+
+* The App Container Image format (ACI) maps more or less directly to the [OCI Image Format Specification](https://github.com/opencontainers/image-spec), with the exception of signing and dependencies.
+* The App Container Executor (ACE) specification is related conceptually to the [OCI Runtime Specification](https://github.com/opencontainers/runtime-spec), with the notable distinctions that the latter does not support pods and generally operates at a lower level of specification.
+* App Container Image Discovery does not yet have an equivalent specification in the OCI project (although it has been [discussed](https://groups.google.com/a/opencontainers.org/forum/#!msg/dev/OqnUp4jOacs/ziEwxasyFQAJ) and [proposed](https://groups.google.com/a/opencontainers.org/forum/#!msg/tob/oaEza4cu25M/gBLeHm5NFAAJ))
+
+For more information, see the [OCI FAQ](https://www.opencontainers.org/) and a more recent [CoreOS blog post announcing the OCI Image Format](https://coreos.com/blog/oci-image-specification.html).
+
+
 # App Container
 
 [![Build Status](https://travis-ci.org/appc/spec.png?branch=master)](https://travis-ci.org/appc/spec)
