@@ -1,4 +1,4 @@
-#<img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING" width="25" height="25"> Disclaimer <img src="http://kubernetes.io/kubernetes/img/warning.png" alt="WARNING" width="25" height="25">
+#<img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Achtung.svg/2000px-Achtung.svg.png" alt="WARNING" width="25" height="25"> Disclaimer <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Achtung.svg/2000px-Achtung.svg.png" alt="WARNING" width="25" height="25">
 
 With the formation of the [Open Container Initiative (OCI)](https://www.opencontainers.org/), the industry has come together in a single location to define specifications around applications containers.
 OCI is intended to incorporate the best elements of existing container efforts like appc, and several of the appc maintainers are participating in OCI projects as maintainers and on the Technical Oversight Board (TOB).
