@@ -66,8 +66,8 @@ Public discovery implementations SHOULD always provide at least one HTTPS URL te
 In our example above, using the HTTPS URL template, the client would attempt to retrieve the following URLs:
 
 ```
-Signature: 	https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci.asc
-ACI: 		https://storage.example.com/linux/amd64/reduce-worker-1.0.0.aci
+Signature: 	https://storage.example.com/linux/amd64/example.com/reduce-worker-1.0.0.aci.asc
+ACI: 		https://storage.example.com/linux/amd64/example.com/reduce-worker-1.0.0.aci
 Keys: 		https://example.com/pubkeys.gpg
 ```
 
