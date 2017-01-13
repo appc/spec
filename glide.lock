@@ -1,6 +1,9 @@
 hash: c8c998224f4cc27a742806398b8e81dec16a89ce83a8ec68a2e6e8e4692e8fe7
 updated: 2016-10-26T02:06:24.373221607-07:00
+updated: 2017-01-13T13:01:21.384619363-05:00
 imports:
+- name: github.com/abh/errorutil
+  version: f9bd360d00b902548fbb80837aef90dca2c8285e
 - name: github.com/coreos/go-semver
   version: 294930c1e79c64e7dbe360054274fdad492c8cf5
   subpackages:
@@ -11,10 +14,6 @@ imports:
   - proto
 - name: github.com/spf13/pflag
   version: 94e98a55fb412fcbcfc302555cb990f5e1590627
-- name: go4.org
-  version: 03efcb870d84809319ea509714dd6d19a1498483
-  subpackages:
-  - errorutil
 - name: golang.org/x/net
   version: ccfcd82c7124abd517842acbacc3b8c1e390c73d
   subpackages:

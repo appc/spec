@@ -1,4 +1,4 @@
-package: "github.com/appc/spec"
+package: github.com/appc/spec
 import:
 - package: github.com/coreos/go-semver
   version: ~0.1.0
@@ -10,10 +10,6 @@ import:
   - proto
 - package: github.com/spf13/pflag
   version: 94e98a55fb412fcbcfc302555cb990f5e1590627
-- package: go4.org
-  version: 03efcb870d84809319ea509714dd6d19a1498483
-  subpackages:
-  - errorutil
 - package: golang.org/x/net
   version: ccfcd82c7124abd517842acbacc3b8c1e390c73d
   subpackages:
@@ -25,3 +21,4 @@ import:
   version: ~1.4.0
   subpackages:
   - pkg/api/resource
+- package: github.com/abh/errorutil
