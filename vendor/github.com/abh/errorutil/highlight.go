@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // Package errorutil helps make better error messages.
-package errorutil // import "go4.org/errorutil"
+package errorutil
 
 import (
 	"bufio"
