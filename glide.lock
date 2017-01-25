@@ -1,5 +1,5 @@
-hash: c8c998224f4cc27a742806398b8e81dec16a89ce83a8ec68a2e6e8e4692e8fe7
-updated: 2016-10-26T02:06:24.373221607-07:00
+hash: 8b25ad4ed6df28ab1f97f21f0744ff4fd42cba97cecad3443b4f1d039ca4f6cf
+updated: 2017-01-25T15:30:44.303100067-08:00
 imports:
 - name: github.com/coreos/go-semver
   version: 294930c1e79c64e7dbe360054274fdad492c8cf5
@@ -22,8 +22,4 @@ imports:
   - html/atom
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
-- name: k8s.io/kubernetes
-  version: 1bed5bb1a72be482ea507da3057b689d5a3034f1
-  subpackages:
-  - pkg/api/resource
 testImports: []
