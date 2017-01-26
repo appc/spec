@@ -18,7 +18,7 @@ import (
 	"reflect"
 	"testing"
 
-	"k8s.io/kubernetes/pkg/api/resource"
+	"github.com/appc/spec/schema/types/resource"
 )
 
 func mustQuantity(s string) *resource.Quantity {

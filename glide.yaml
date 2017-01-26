@@ -1,4 +1,4 @@
-package: "github.com/appc/spec"
+package: github.com/appc/spec
 import:
 - package: github.com/coreos/go-semver
   version: ~0.1.0
@@ -21,7 +21,3 @@ import:
   - html/atom
 - package: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
-- package: k8s.io/kubernetes
-  version: ~1.4.0
-  subpackages:
-  - pkg/api/resource
