@@ -1,3 +1,10 @@
+### v0.8.10
+This is a minor release of the spec which resolves some small issues.
+
+- A circular dependency is resolved by duplicating k8s.io/kubernetes/pkg/api/resource in-tree (#684)
+- The ACE validator no longer expects the variables removed in #273 (#674)
+- Some documentation updates (#676, #677, #680)
+
 ### v0.8.9
 This is a minor release of the spec which includes a new isolator and a utility function to translate between appc and golang architectures.
 

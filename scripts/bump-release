@@ -8,7 +8,7 @@
 #
 # YMMV, no disclaimer or warranty, etc.
 
-if ! [[ "$1" =~ ^v[[:digit:]]+.[[:digit:]]+.[[:digit:]]$ ]]; then 
+if ! [[ "$1" =~ ^v[[:digit:]]+.[[:digit:]]+.[[:digit:]]+$ ]]; then 
 	echo "Usage: scripts/bump-release <VERSION>"
 	echo "   where VERSION must be vX.Y.Z"
 	exit 255

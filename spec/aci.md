@@ -78,7 +78,7 @@ JSON Schema for the Image Manifest (app image manifest, ACI manifest), conformin
 ```json
 {
     "acKind": "ImageManifest",
-    "acVersion": "0.8.9",
+    "acVersion": "0.8.10",
     "name": "example.com/reduce-worker",
     "labels": [
         {
