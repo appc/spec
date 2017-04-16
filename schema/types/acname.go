@@ -143,3 +143,29 @@ func SanitizeACName(s string) (string, error) {
 
 	return s, nil
 }
+
+// EscapedString produces an escaped string form of the name n safe for use as a posix filesystem name
+//
+// This is a helper function and its algorithm is not part of the spec.
+func (n *ACName) EscapedString() string {
+	return escape(n.String())
+}
+
+// EscapedNewACName
+// EscapedNewACName generates a new ACName from a string escaped using EscapedString().
+// If the unescaped string is not a valid ACName, nil and an error are returned.
+//
+// This is a helper function and its algorithm is not part of the spec.
+func EscapedNewACName(s string) (*ACName, error) {
+	return NewACName(unescape(s))
+}
+
+// The only thing unsafe in an ACName for use in a posix filesystem name is the forward slash,
+// simply substitute it with a posix-safe, shell-and-systemd-benign, and ACName-prohibited _.
+func escape(s string) string {
+	return strings.Replace(s, `/`, `_`, -1)
+}
+
+func unescape(s string) string {
+	return strings.Replace(s, `_`, `/`, -1)
+}
