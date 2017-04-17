@@ -25,7 +25,7 @@ The specification consists of several key sections; the goal is that each can be
 
 1. The **[App Container Image](spec/aci.md)** defines: how files are assembled together into a single image, verified on download and placed onto disk to be run.
 
-2. **[App Container Image Discovery](spec/discovery.md)** defines: how to take a name like `example.com/reduce-worker` and translate that into a downloadable image.
+2. The **[App Container Image Discovery](spec/discovery.md)** defines: how to take a name like `example.com/reduce-worker` and translate that into a downloadable image.
 
 3. The **[App Container Pod](spec/pods.md)** (or "Pod") defines: how one or more App Container Images are grouped into a deployable, executable unit.
 
