@@ -59,6 +59,17 @@ curl $(echo "$urltmpl" | sed -e "s/{name}/$name/" -e "s/{version}/$version/" -e 
 
 where _name_, _version_, _os_, and _arch_ are set to their respective values for the image, and _ext_ is either `aci` or `aci.asc` for retrieving an App Container Image or signature respectively.
 
+The client MUST accept only templates that can be fully substituted and that satisfy all the required labels.
+
+For example given these meta tags:
+```html
+<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-{version}.{ext}">
+<meta name="ac-discovery" content="example.com https://storage.example.com/{os}/{arch}/{name}-latest.{ext}">
+```
+
+If the client requires the labels _name_, _version_, _os_, _arch_ only the first template will be rendered since the second doesn't satisfy the _version_ label.
+If the client requires the labels _name_, _os_, _arch_ only the second template will be rendered since in the first template '{version}' cannot be substituted.
+
 Note that multiple `ac-discovery` tags MAY be returned for a given prefix-match (for example, with different scheme names representing different transport mechanisms).
 In this case, the client implementation MAY choose which to use at its own discretion.
 Public discovery implementations SHOULD always provide at least one HTTPS URL template.

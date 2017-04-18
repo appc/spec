@@ -111,6 +111,9 @@ func renderTemplate(tpl string, kvs ...string) (string, bool) {
 	for i := 0; i < len(kvs); i += 2 {
 		k := kvs[i]
 		v := kvs[i+1]
+		if k != "{name}" && !strings.Contains(tpl, k) {
+			return tpl, false
+		}
 		tpl = strings.Replace(tpl, k, v, -1)
 	}
 	return tpl, !templateExpression.MatchString(tpl)
@@ -118,9 +121,11 @@ func renderTemplate(tpl string, kvs ...string) (string, bool) {
 
 func createTemplateVars(app App) []string {
 	tplVars := []string{"{name}", app.Name.String()}
-	// If a label is called "name", it will be ignored as it appears after
-	// in the slice
+	// Ignore labels called "name"
 	for n, v := range app.Labels {
+		if n == "name" {
+			continue
+		}
 		tplVars = append(tplVars, fmt.Sprintf("{%s}", n), v)
 	}
 	return tplVars
@@ -151,13 +156,14 @@ func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecur
 
 		switch m.name {
 		case "ac-discovery":
-			// Ignore not handled variables as {ext} isn't already rendered.
-			uri, _ := renderTemplate(m.uri, tplVars...)
-			asc, ok := renderTemplate(uri, "{ext}", "aci.asc")
+			// Ignore not handled variables as only {ext} has been rendered
+			aci, _ := renderTemplate(m.uri, "{ext}", "aci")
+			asc, _ := renderTemplate(m.uri, "{ext}", "aci.asc")
+			aci, ok := renderTemplate(aci, tplVars...)
 			if !ok {
 				continue
 			}
-			aci, ok := renderTemplate(uri, "{ext}", "aci")
+			asc, ok = renderTemplate(asc, tplVars...)
 			if !ok {
 				continue
 			}
