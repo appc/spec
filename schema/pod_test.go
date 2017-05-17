@@ -71,3 +71,43 @@ func TestAppList(t *testing.T) {
 		t.Errorf("want err, got nil")
 	}
 }
+
+func TestPodManifestUniqueVolumeNames(t *testing.T) {
+	pm := BlankPodManifest()
+	volA, err := types.VolumeFromString("simple,kind=empty")
+	if err != nil {
+		t.Errorf("expected nil error, got %q", err)
+	}
+	volB, err := types.VolumeFromString("simple,kind=host,source=/tmp")
+	if err != nil {
+		t.Errorf("expected nil error, got %q", err)
+	}
+	pm.Volumes = append(pm.Volumes, *volA, *volB)
+	if _, err := pm.MarshalJSON(); err == nil {
+		t.Errorf("expected duplicate volume name error, got nil")
+	}
+
+	pmj := `
+{
+        "acVersion": "0.8.10",
+        "acKind": "PodManifest",
+        "apps": [
+        ],
+        "volumes": [
+                {
+                        "name": "simplename",
+                        "kind": "empty"
+                },
+                {
+                        "name": "simplename",
+                        "kind": "host",
+                        "source": "/tmp"
+                }
+        ]
+}
+`
+	err = pm.UnmarshalJSON([]byte(pmj))
+	if err == nil {
+		t.Errorf("expected duplicate volume name error, got nil")
+	}
+}
