@@ -28,6 +28,14 @@ var (
 	ErrRequestNonEmpty = errors.New("request not supported by this resource, must be empty")
 
 	ResourceIsolatorNames = make(map[ACIdentifier]struct{})
+
+	// ResourceMaxMilliValue is used to check if a given `Quantity` may safely
+	// have its MilliValue() method called.
+	// For example:
+	//     if myResource.Limit().Value() > ResourceMaxMilliValue {
+	//		     // Unsafe to use myResource.Limit().MilliValue()
+	//     }
+	ResourceMaxMilliValue = resource.MaxMilliValue
 )
 
 const (
