@@ -16,6 +16,8 @@ package types
 
 import (
 	"encoding/json"
+	"errors"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -218,6 +220,70 @@ func TestLabels(t *testing.T) {
 				t.Errorf("#%d: got flavor %q, expected flavor %q", i, flavor, tt.goArchFlavor)
 
 			}
+		}
+	}
+}
+
+func TestLabelsFromMap(t *testing.T) {
+	tests := []struct {
+		in          map[ACIdentifier]string
+		expectedOut Labels
+		expectedErr error
+	}{
+		{
+			in: map[ACIdentifier]string{
+				"foo": "bar",
+				"bar": "baz",
+				"baz": "foo",
+			},
+			expectedOut: []Label{
+				Label{
+					Name:  "bar",
+					Value: "baz",
+				},
+				Label{
+					Name:  "baz",
+					Value: "foo",
+				},
+				Label{
+					Name:  "foo",
+					Value: "bar",
+				},
+			},
+		},
+		{
+			in: map[ACIdentifier]string{
+				"foo": "",
+			},
+			expectedOut: []Label{
+				Label{
+					Name:  "foo",
+					Value: "",
+				},
+			},
+		},
+		{
+			in: map[ACIdentifier]string{
+				"name": "foo",
+			},
+			expectedErr: errors.New(`invalid label name: "name"`),
+		},
+	}
+
+	for i, test := range tests {
+		out, err := LabelsFromMap(test.in)
+		if err != nil {
+			if err.Error() != test.expectedErr.Error() {
+				t.Errorf("case %d: expected %v = %v", i, err, test.expectedErr)
+			}
+			continue
+		}
+		if test.expectedErr != nil {
+			t.Errorf("case %d: expected error %v, but got none", i, test.expectedErr)
+			continue
+		}
+		if !reflect.DeepEqual(test.expectedOut, out) {
+			t.Errorf("case %d: expected %v = %v", i, out, test.expectedOut)
 		}
 	}
 }
