@@ -45,10 +45,10 @@ func TestEnvironmentAssertValid(t *testing.T) {
 			},
 			true,
 		},
-		// name with non [A-Za-z0-9_] should fail
+		// name with non [A-Za-z0-9_.-] should fail
 		{
 			Environment{
-				EnvironmentVariable{"VERBOSE-DEBUG", "true"},
+				EnvironmentVariable{"VERBOSE|DEBUG", "true"},
 			},
 			true,
 		},
@@ -62,6 +62,18 @@ func TestEnvironmentAssertValid(t *testing.T) {
 		{
 			Environment{
 				EnvironmentVariable{"_0_DEBUG_0_", "true"},
+			},
+			false,
+		},
+		{
+			Environment{
+				EnvironmentVariable{"DEBUG.0", "true"},
+			},
+			false,
+		},
+		{
+			Environment{
+				EnvironmentVariable{"DEBUG-0", "true"},
 			},
 			false,
 		},
