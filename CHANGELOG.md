@@ -1,3 +1,11 @@
+### v0.8.11
+This is a minor release of the spec which resolves some small issues:
+
+- The distinction between ACI_ARCH and GOOS was clarified (#688)
+- LabelsFromMap is now consistently ordered (#689)
+- Environment variables can contain more characters (#691)
+- A bug in parsing errno was fixed (#692)
+
 ### v0.8.10
 This is a minor release of the spec which resolves some small issues.
 

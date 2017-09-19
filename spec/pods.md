@@ -28,7 +28,7 @@ JSON Schema for the Pod Manifest, conforming to [RFC4627](https://tools.ietf.org
 
 ```json
 {
-    "acVersion": "0.8.10",
+    "acVersion": "0.8.11",
     "acKind": "PodManifest",
     "apps": [
         {

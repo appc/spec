@@ -1,6 +1,6 @@
 {
     "acKind": "PodManifest",
-    "acVersion": "0.8.10",
+    "acVersion": "0.8.11",
     "apps": [
         {
             "name": "reduce-worker",

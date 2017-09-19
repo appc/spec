@@ -109,7 +109,7 @@ func TestBogusPodManifest(t *testing.T) {
 		`
 			{
 			    "acKind": "Bogus",
-			    "acVersion": "0.8.10",
+			    "acVersion": "0.8.11",
 			}
 			`,
 		`
@@ -134,7 +134,7 @@ func podJ(apps, extra string) string {
 		{
 		    %s
 		    "acKind": "PodManifest",
-		    "acVersion": "0.8.10",
+		    "acVersion": "0.8.11",
 		    "apps": %s
 		}`, extra, apps)
 }
@@ -142,7 +142,7 @@ func podJ(apps, extra string) string {
 // podI returns a pod manifest instance with given apps
 func podI(apps AppList) PodManifest {
 	return PodManifest{
-		ACVersion: "0.8.10",
+		ACVersion: "0.8.11",
 		ACKind:    "PodManifest",
 		Apps:      apps,
 	}
