@@ -284,6 +284,20 @@ func TestIsolatorUnmarshal(t *testing.T) {
 			}`,
 			true,
 		},
+		{
+			`{
+				"name": "os/linux/apparmor-profile",
+				"value": {"profile": "rkt-default"}
+			}`,
+			false,
+		},
+		{
+			`{
+				"name": "os/linux/apparmor-profile",
+				"value": {"profile": ""}
+			}`,
+			true,
+		},
 	}
 
 	for i, tt := range tests {

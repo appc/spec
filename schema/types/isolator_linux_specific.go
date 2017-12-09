@@ -31,6 +31,7 @@ const (
 	LinuxOOMScoreAdjName           = "os/linux/oom-score-adj"
 	LinuxCPUSharesName             = "os/linux/cpu-shares"
 	LinuxSELinuxContextName        = "os/linux/selinux-context"
+	LinuxAppArmorProfileName       = "os/linux/apparmor-profile"
 )
 
 var LinuxIsolatorNames = make(map[ACIdentifier]struct{})
@@ -45,6 +46,7 @@ func init() {
 		LinuxSeccompRemoveSetName:      func() IsolatorValue { return &LinuxSeccompRemoveSet{} },
 		LinuxSeccompRetainSetName:      func() IsolatorValue { return &LinuxSeccompRetainSet{} },
 		LinuxSELinuxContextName:        func() IsolatorValue { return &LinuxSELinuxContext{} },
+		LinuxAppArmorProfileName:       func() IsolatorValue { return &LinuxAppArmorProfile{} },
 	} {
 		AddIsolatorName(name, LinuxIsolatorNames)
 		AddIsolatorValueConstructor(name, con)
@@ -527,6 +529,70 @@ func (l LinuxSELinuxContext) AsIsolator() (*Isolator, error) {
 	rm := json.RawMessage(b)
 	return &Isolator{
 		Name:     LinuxSELinuxContextName,
+		ValueRaw: &rm,
+		value:    &l,
+	}, nil
+}
+
+type LinuxAppArmorProfileProfile string
+
+type linuxAppArmorValue struct {
+	Profile LinuxAppArmorProfileProfile `json:"profile"`
+}
+
+type LinuxAppArmorProfile struct {
+	val linuxAppArmorValue
+}
+
+func (l LinuxAppArmorProfile) AssertValid() error {
+	if l.val.Profile == "" {
+		return fmt.Errorf("invalid profile value %q", l.val.Profile)
+	}
+	return nil
+}
+
+func (l *LinuxAppArmorProfile) UnmarshalJSON(b []byte) error {
+	var v linuxAppArmorValue
+	err := json.Unmarshal(b, &v)
+	if err != nil {
+		return err
+	}
+	l.val = v
+	return nil
+}
+
+func (l LinuxAppArmorProfile) Profile() LinuxAppArmorProfileProfile {
+	return l.val.Profile
+}
+
+func (l LinuxAppArmorProfile) multipleAllowed() bool {
+	return false
+}
+
+func (l LinuxAppArmorProfile) Conflicts() []ACIdentifier {
+	return nil
+}
+
+func NewLinuxAppArmorProfile(apparmorProfile string) (*LinuxAppArmorProfile, error) {
+	l := LinuxAppArmorProfile{
+		linuxAppArmorValue{
+			LinuxAppArmorProfileProfile(apparmorProfile),
+		},
+	}
+	if err := l.AssertValid(); err != nil {
+		return nil, err
+	}
+	return &l, nil
+}
+
+func (l LinuxAppArmorProfile) AsIsolator() (*Isolator, error) {
+	b, err := json.Marshal(l.val)
+	if err != nil {
+		return nil, err
+	}
+	rm := json.RawMessage(b)
+	return &Isolator{
+		Name:     LinuxAppArmorProfileName,
 		ValueRaw: &rm,
 		value:    &l,
 	}, nil
