@@ -127,6 +127,39 @@ func TestNewLinuxSELinuxContext(t *testing.T) {
 
 }
 
+func TestNewLinuxAppArmorContext(t *testing.T) {
+	tests := []struct {
+		inProfile string
+
+		wprofile LinuxAppArmorProfileProfile
+		werr     bool
+	}{
+		{
+			"rkt-default",
+			LinuxAppArmorProfileProfile("rkt-default"),
+			false,
+		},
+		{
+			"",
+			LinuxAppArmorProfileProfile(""),
+			true,
+		},
+	}
+	for i, tt := range tests {
+		c, err := NewLinuxAppArmorProfile(tt.inProfile)
+		if tt.werr {
+			if err == nil {
+				t.Errorf("#%d: did not get expected error", i)
+			}
+			continue
+		}
+		if gprofile := c.Profile(); !reflect.DeepEqual(gprofile, tt.wprofile) {
+			t.Errorf("#%d: got profile %#v, want profile %#v", i, gprofile, tt.wprofile)
+		}
+	}
+
+}
+
 func TestNewLinuxCapabilitiesRevokeSet(t *testing.T) {
 	tests := []struct {
 		in []string

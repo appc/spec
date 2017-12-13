@@ -232,6 +232,33 @@ In the example above, the process will be only allowed to invoke syscalls specif
 
 In the example above, the SELinux security context `system_u:system_r:dhcpc_t:s0` will be applied to a pod or to a single application, depending on where this isolator is specified.
 
+#### os/linux/apparmor-profile
+
+* Scope: app/pod
+
+**Parameters:**
+
+* **profile** case-sensitive string containing the name of the (already loaded) AppArmor profile to apply to the current pod or application.
+
+**Notes:**
+ 1. Only a single `os/linux/apparmor-profile` isolator can be specified per-pod.
+ 2. Only a single `os/linux/apparmor-profile` isolator can be specified per-app.
+ 3. If a AppArmor security context is specified at pod level, it applies to all processes involved in running the pod.
+ 4. If specified both at pod and app level, app values override pod ones.
+ 5. Implementations MAY ignore this isolator if the host does not support AppArmor labeling.
+ 6. However, implementations MUST refuse to run the pod or application if the provided AppArmor profile is not available on the host.
+
+**Example:**
+
+```json
+"name": "os/linux/apparmor-profile",
+"value": {
+	"profile": "rkt-default"
+}
+```
+
+In the example above, the AppArmor profile `rkt-default` will be applied to a pod or to a single application, depending on where this isolator is specified.
+
 #### os/linux/capabilities-remove-set
 
 * Scope: app
