@@ -35,7 +35,7 @@ type RuntimeApp struct {
 }
 
 type RuntimeImage struct {
-	Name   string `json:"name"`
+	Name   string `json:"name,omitempty"`
 	ID     string `json:"id"`
 	Labels Labels `json:"labels,omitempty"`
 }
