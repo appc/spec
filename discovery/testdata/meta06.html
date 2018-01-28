@@ -3,9 +3,19 @@
 <html>
 <head>
 	<title>My app</title>
+	<!-- ACIs with specific version -->
 	<meta name="ac-discovery" content="example.com https://storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
-	<meta name="ac-discovery" content="example.com https://storage.example.com/{name}-{version}.{ext}">
-	<meta name="ac-discovery" content="example.com hdfs://storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
+	<meta name="ac-discovery" content="example.com https://mirror.storage.example.com/{name}-{version}-{os}-{arch}.{ext}">
+	<!-- noarch ACIs -->
+	<meta name="ac-discovery" content="example.com https://storage.example.com/{name}-{version}-noarch.{ext}">
+	<meta name="ac-discovery" content="example.com https://mirror.storage.example.com/{name}-{version}-noarch.{ext}">
+	<!-- Latest ACIs -->
+	<meta name="ac-discovery" content="example.com https://storage.example.com/{name}-latest-{os}-{arch}.{ext}">
+	<meta name="ac-discovery" content="example.com https://mirror.storage.example.com/{name}-latest-{os}-{arch}.{ext}">
+	<!-- Latest noarch ACIs -->
+	<meta name="ac-discovery" content="example.com https://storage.example.com/{name}-latest-noarch.{ext}">
+	<meta name="ac-discovery" content="example.com https://mirror.storage.example.com/{name}-latest-noarch.{ext}">
+
 	<meta name="ac-discovery-pubkeys" content="example.com https://example.com/pubkeys.gpg">
 </head>
 
