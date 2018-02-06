@@ -107,20 +107,26 @@ func extractACMeta(r io.Reader) []acMeta {
 	}
 }
 
-func renderTemplate(tpl string, kvs ...string) (string, bool) {
+func renderTemplate(tpl string, kvs ...string) (string, int, bool) {
+	count := 0
 	for i := 0; i < len(kvs); i += 2 {
 		k := kvs[i]
 		v := kvs[i+1]
+		if k != "{name}" && strings.Contains(tpl, k) {
+			count++
+		}
 		tpl = strings.Replace(tpl, k, v, -1)
 	}
-	return tpl, !templateExpression.MatchString(tpl)
+	return tpl, count, !templateExpression.MatchString(tpl)
 }
 
 func createTemplateVars(app App) []string {
 	tplVars := []string{"{name}", app.Name.String()}
-	// If a label is called "name", it will be ignored as it appears after
-	// in the slice
+	// Ignore labels called "name"
 	for n, v := range app.Labels {
+		if n == "name" {
+			continue
+		}
 		tplVars = append(tplVars, fmt.Sprintf("{%s}", n), v)
 	}
 	return tplVars
@@ -144,6 +150,7 @@ func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecur
 
 	dd := &discoveryData{}
 
+	bestCount := 0
 	for _, m := range meta {
 		if !strings.HasPrefix(app.Name.String(), m.prefix) {
 			continue
@@ -152,16 +159,22 @@ func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecur
 		switch m.name {
 		case "ac-discovery":
 			// Ignore not handled variables as {ext} isn't already rendered.
-			uri, _ := renderTemplate(m.uri, tplVars...)
-			asc, ok := renderTemplate(uri, "{ext}", "aci.asc")
+			uri, count, _ := renderTemplate(m.uri, tplVars...)
+			asc, _, ok := renderTemplate(uri, "{ext}", "aci.asc")
 			if !ok {
 				continue
 			}
-			aci, ok := renderTemplate(uri, "{ext}", "aci")
+			aci, _, ok := renderTemplate(uri, "{ext}", "aci")
 			if !ok {
 				continue
 			}
-			dd.ACIEndpoints = append(dd.ACIEndpoints, ACIEndpoint{ACI: aci, ASC: asc})
+
+			if count > bestCount {
+				dd.ACIEndpoints = ACIEndpoints{ACIEndpoint{ACI: aci, ASC: asc}}
+				bestCount = count
+			} else if count == bestCount {
+				dd.ACIEndpoints = append(dd.ACIEndpoints, ACIEndpoint{ACI: aci, ASC: asc})
+			}
 
 		case "ac-discovery-pubkeys":
 			dd.PublicKeys = append(dd.PublicKeys, m.uri)
