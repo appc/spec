@@ -47,3 +47,10 @@ type ACNameError string
 func (e ACNameError) Error() string {
 	return string(e)
 }
+
+// An ACStringError is returned when a bad value is used for an ACString
+type ACStringError string
+
+func (e ACStringError) Error() string {
+	return string(e)
+}

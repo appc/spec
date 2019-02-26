@@ -121,7 +121,7 @@ func createTemplateVars(app App) []string {
 	// If a label is called "name", it will be ignored as it appears after
 	// in the slice
 	for n, v := range app.Labels {
-		tplVars = append(tplVars, fmt.Sprintf("{%s}", n), v)
+		tplVars = append(tplVars, fmt.Sprintf("{%s}", n), v.String())
 	}
 	return tplVars
 }

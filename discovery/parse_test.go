@@ -33,7 +33,7 @@ func TestNewAppFromString(t *testing.T) {
 
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 				},
 			},
@@ -44,7 +44,7 @@ func TestNewAppFromString(t *testing.T) {
 
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"channel": "alpha",
 					"label":   "value",
 				},
@@ -57,7 +57,7 @@ func TestNewAppFromString(t *testing.T) {
 
 			&App{
 				Name: "example.com/app",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.2.3",
 					"special": "!*'();@&+$/?#[]",
 					"channel": "beta",
@@ -133,14 +133,14 @@ func TestAppString(t *testing.T) {
 		{
 			&App{
 				Name:   "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{},
+				Labels: map[types.ACIdentifier]types.ACString{},
 			},
 			"example.com/reduce-worker",
 		},
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 				},
 			},
@@ -149,7 +149,7 @@ func TestAppString(t *testing.T) {
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"channel": "alpha",
 					"label":   "value",
 				},
@@ -178,14 +178,14 @@ func TestAppCopy(t *testing.T) {
 		{
 			&App{
 				Name:   "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{},
+				Labels: map[types.ACIdentifier]types.ACString{},
 			},
 			"example.com/reduce-worker",
 		},
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 				},
 			},
@@ -194,7 +194,7 @@ func TestAppCopy(t *testing.T) {
 		{
 			&App{
 				Name: "example.com/reduce-worker",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"channel": "alpha",
 					"label":   "value",
 				},

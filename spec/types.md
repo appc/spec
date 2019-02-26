@@ -34,6 +34,13 @@ Examples:
 The AC Name Type is used as the primary key for a number of fields in the schemas below.
 The schema validator will ensure that the keys conform to these constraints.
 
+### AC String Type
+
+An AC String Type is restricted to all unicode printable characters. Such characters include letters, marks, numbers, punctuation, symbols, and the ASCII space character, from unicode categories L, M, N, P, S and the ASCII space character. The string must be UTF-8 encoded.
+An AC String Type must be 255 characters or less.
+
+The AC String Type is used as the value for a number of fields in the schemas below.
+The schema validator will ensure that the values conform to these constraints.
 
 ### AC Kind Type
 

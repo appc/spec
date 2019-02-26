@@ -36,7 +36,7 @@ func (l labelsSlice) Less(i, j int) bool { return l[i].Name < l[j].Name }
 
 type Label struct {
 	Name  ACIdentifier `json:"name"`
-	Value string       `json:"value"`
+	Value ACString     `json:"value"`
 }
 
 // {appc,go}ArchTuple are internal helper types used to translate arch tuple between go and appc
@@ -52,9 +52,9 @@ type goArchTuple struct {
 
 // IsValidOsArch checks if a OS-architecture combination is valid given a map
 // of valid OS-architectures
-func IsValidOSArch(labels map[ACIdentifier]string, validOSArch map[string][]string) error {
+func IsValidOSArch(labels map[ACIdentifier]ACString, validOSArch map[string][]string) error {
 	if os, ok := labels["os"]; ok {
-		if validArchs, ok := validOSArch[os]; !ok {
+		if validArchs, ok := validOSArch[string(os)]; !ok {
 			// Not a whitelisted OS. TODO: how to warn rather than fail?
 			validOses := make([]string, 0, len(validOSArch))
 			for validOs := range validOSArch {
@@ -68,7 +68,7 @@ func IsValidOSArch(labels map[ACIdentifier]string, validOSArch map[string][]stri
 			if arch, ok := labels["arch"]; ok {
 				found := false
 				for _, validArch := range validArchs {
-					if arch == validArch {
+					if string(arch) == validArch {
 						found = true
 						break
 					}
@@ -83,7 +83,7 @@ func IsValidOSArch(labels map[ACIdentifier]string, validOSArch map[string][]stri
 }
 
 func (l Labels) assertValid() error {
-	seen := map[ACIdentifier]string{}
+	seen := map[ACIdentifier]ACString{}
 	for _, lbl := range l {
 		if lbl.Name == "name" {
 			return fmt.Errorf(`invalid label name: "name"`)
@@ -118,7 +118,7 @@ func (l *Labels) UnmarshalJSON(data []byte) error {
 }
 
 // Get retrieves the value of the label by the given name from Labels, if it exists
-func (l Labels) Get(name string) (val string, ok bool) {
+func (l Labels) Get(name string) (val ACString, ok bool) {
 	for _, lbl := range l {
 		if lbl.Name.String() == name {
 			return lbl.Value, true
@@ -127,17 +127,17 @@ func (l Labels) Get(name string) (val string, ok bool) {
 	return "", false
 }
 
-// ToMap creates a map[ACIdentifier]string.
-func (l Labels) ToMap() map[ACIdentifier]string {
-	labelsMap := make(map[ACIdentifier]string)
+// ToMap creates a map[ACIdentifier]ACString.
+func (l Labels) ToMap() map[ACIdentifier]ACString {
+	labelsMap := make(map[ACIdentifier]ACString)
 	for _, lbl := range l {
 		labelsMap[lbl.Name] = lbl.Value
 	}
 	return labelsMap
 }
 
-// LabelsFromMap creates Labels from a map[ACIdentifier]string
-func LabelsFromMap(labelsMap map[ACIdentifier]string) (Labels, error) {
+// LabelsFromMap creates Labels from a map[ACIdentifier]ACString
+func LabelsFromMap(labelsMap map[ACIdentifier]ACString) (Labels, error) {
 	labels := Labels{}
 	for n, v := range labelsMap {
 		labels = append(labels, Label{Name: n, Value: v})

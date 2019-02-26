@@ -113,7 +113,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -146,7 +146,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp/foobar",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -180,7 +180,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			false,
 			App{
 				Name: "example.com/myapp/foobar/bazzer",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -214,7 +214,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -252,7 +252,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -284,7 +284,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			false,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -316,7 +316,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -351,7 +351,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -389,7 +389,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 				},
 			},
@@ -419,7 +419,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name:   "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{},
+				Labels: map[types.ACIdentifier]types.ACString{},
 			},
 			[]ACIEndpoint{
 				ACIEndpoint{
@@ -446,7 +446,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"name":    "labelcalledname",
 					"version": "1.0.0",
 				},
@@ -476,7 +476,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
@@ -516,7 +516,7 @@ func TestDiscoverEndpoints(t *testing.T) {
 			true,
 			App{
 				Name: "example.com/myapp",
-				Labels: map[types.ACIdentifier]string{
+				Labels: map[types.ACIdentifier]types.ACString{
 					"version": "1.0.0",
 					"os":      "linux",
 					"arch":    "amd64",
