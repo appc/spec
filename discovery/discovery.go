@@ -148,6 +148,10 @@ func doDiscover(pre string, hostHeaders map[string]http.Header, app App, insecur
 		if !strings.HasPrefix(app.Name.String(), m.prefix) {
 			continue
 		}
+		if len(app.Name.String()) > len(m.prefix) &&
+			app.Name.String()[len(m.prefix)] != '/' {
+			continue
+		}
 
 		switch m.name {
 		case "ac-discovery":
