@@ -79,7 +79,11 @@ func NewAppFromString(app string) (*App, error) {
 		if err != nil {
 			return nil, err
 		}
-		labels[*labelName] = val[0]
+		labelValue, err := url.QueryUnescape(val[0])
+		if err != nil {
+			return nil, err
+		}
+		labels[*labelName] = labelValue
 	}
 	a, err := NewApp(name, labels)
 	if err != nil {
