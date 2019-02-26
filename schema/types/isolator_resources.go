@@ -153,6 +153,12 @@ func (r ResourceCPU) AsIsolator() Isolator {
 }
 
 func NewResourceCPUIsolator(request, limit string) (*ResourceCPU, error) {
+	if request == "" {
+		request = limit
+	} else if limit == "" {
+		limit = request
+	}
+
 	req, err := resource.ParseQuantity(request)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing request: %v", err)
@@ -207,6 +213,12 @@ func (r ResourceMemory) AsIsolator() Isolator {
 }
 
 func NewResourceMemoryIsolator(request, limit string) (*ResourceMemory, error) {
+	if request == "" {
+		request = limit
+	} else if limit == "" {
+		limit = request
+	}
+
 	req, err := resource.ParseQuantity(request)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing request: %v", err)

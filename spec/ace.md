@@ -347,6 +347,7 @@ If **request** is omitted, it defaults to the value of **limit**.
 
 - **limit** is the maximum amount of a resource available to the app/pod.
 If the app/pod consumes a resource in excess of its limit, it must be terminated or throttled to no more than the limit.
+If **limit** is ommitted, it defaults to the value of **request**.
 
 Limit and request quantities must always be represented internally (i.e. for encoding and any processing) as an integer value (i.e. NOT floating point) in a resource type's natural base units (e.g., bytes, not megabytes or gigabytes).
 For convenience, when specified by users quantities may either be unsuffixed, have metric suffices (E, P, T, G, M, K) or binary (power-of-two) suffices (Ei, Pi, Ti, Gi, Mi, Ki).

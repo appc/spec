@@ -48,6 +48,44 @@ func TestResourceMemoryIsolator(t *testing.T) {
 			},
 			false,
 		},
+		// only empty request is valid.
+		{
+			"100M",
+			"",
+
+			&ResourceMemory{
+				ResourceBase{
+					resourceValue{
+						Request: mustQuantity("100M"),
+						Limit:   mustQuantity("100M"),
+					},
+				},
+			},
+			false,
+		},
+		// only empty limit is valid.
+		{
+			"",
+			"200M",
+
+			&ResourceMemory{
+				ResourceBase{
+					resourceValue{
+						Request: mustQuantity("200M"),
+						Limit:   mustQuantity("200M"),
+					},
+				},
+			},
+			false,
+		},
+		// both empty limit is invalid.
+		{
+			"",
+			"",
+
+			nil,
+			true,
+		},
 	}
 	for i, tt := range tests {
 		gres, err := NewResourceMemoryIsolator(tt.inreq, tt.inlim)
@@ -68,13 +106,43 @@ func TestResourceCPUIsolator(t *testing.T) {
 		wres *ResourceCPU
 		werr bool
 	}{
-		// empty is not valid
+		// both empty is not valid
+		{
+			"",
+			"",
+
+			nil,
+			true,
+		},
+		// only empty request is valid.
+		{
+			"1",
+			"",
+
+			&ResourceCPU{
+				ResourceBase{
+					resourceValue{
+						Request: mustQuantity("1"),
+						Limit:   mustQuantity("1"),
+					},
+				},
+			},
+			false,
+		},
+		// only empty limit is valid.
 		{
 			"",
 			"2",
 
-			nil,
-			true,
+			&ResourceCPU{
+				ResourceBase{
+					resourceValue{
+						Request: mustQuantity("2"),
+						Limit:   mustQuantity("2"),
+					},
+				},
+			},
+			false,
 		},
 		// garbage value
 		{
