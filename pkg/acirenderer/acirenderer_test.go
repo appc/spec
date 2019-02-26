@@ -223,6 +223,301 @@ func TestGetUpperPWLM(t *testing.T) {
 	}
 }
 
+// Test dependency recursion.
+// This tests A --- A
+// If not checked it will cause an infinite recursion.
+func TestRecursiveDep1(t *testing.T) {
+	dir, err := ioutil.TempDir("", tstprefix)
+	if err != nil {
+		t.Fatalf("error creating tempdir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+	ds := NewTestStore()
+
+	// A
+	imj := `
+		{
+		    "acKind": "ImageManifest",
+		    "acVersion": "0.1.1",
+		    "name": "example.com/test01"
+		}
+	`
+
+	// Make A depend on itself
+	imj, err = addDependencies(imj,
+		types.Dependency{
+			ImageName: "example.com/test01",
+		},
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	entries := []*testTarEntry{
+		{
+			contents: imj,
+			header: &tar.Header{
+				Name: "manifest",
+				Size: int64(len(imj)),
+			},
+		},
+		// An empty dir
+		{
+			header: &tar.Header{
+				Name:     "rootfs/a",
+				Typeflag: tar.TypeDir,
+			},
+		},
+	}
+
+	key1, err := newTestACI(entries, dir, ds)
+
+	expectedFiles := []*fileInfo{
+		&fileInfo{path: "manifest", typeflag: tar.TypeReg},
+		&fileInfo{path: "rootfs/a", typeflag: tar.TypeDir},
+	}
+
+	err = checkRenderACI("example.com/test01", expectedFiles, ds)
+	if err == nil {
+		t.Fatalf("expected recursion error")
+	} else {
+		expectedErr := fmt.Errorf("recursion error, image with key %s already referenced by a parent image", key1)
+		if err.Error() != expectedErr.Error() {
+			t.Fatalf("expected error: %v, got: %v", expectedErr, err)
+		}
+	}
+}
+
+// Test dependency recursion.
+// This tests A --- B --- A
+// If not checked it will cause an infinite recursion.
+func TestRecursiveDep2(t *testing.T) {
+	dir, err := ioutil.TempDir("", tstprefix)
+	if err != nil {
+		t.Fatalf("error creating tempdir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+	ds := NewTestStore()
+
+	// B
+	imj := `
+		{
+		    "acKind": "ImageManifest",
+		    "acVersion": "0.1.1",
+		    "name": "example.com/test01"
+		}
+	`
+
+	// Make B depend on A
+	imj, err = addDependencies(imj,
+		types.Dependency{
+			ImageName: "example.com/test02",
+		},
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	entries := []*testTarEntry{
+		{
+			contents: imj,
+			header: &tar.Header{
+				Name: "manifest",
+				Size: int64(len(imj)),
+			},
+		},
+		// An empty dir
+		{
+			header: &tar.Header{
+				Name:     "rootfs/a",
+				Typeflag: tar.TypeDir,
+			},
+		},
+	}
+
+	key1, err := newTestACI(entries, dir, ds)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// A
+	imj = `
+		{
+		    "acKind": "ImageManifest",
+		    "acVersion": "0.1.1",
+		    "name": "example.com/test02"
+		}
+	`
+
+	k1, _ := types.NewHash(key1)
+	imj, err = addDependencies(imj,
+		types.Dependency{
+			ImageName: "example.com/test01",
+			ImageID:   k1},
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	entries = []*testTarEntry{
+		{
+			contents: imj,
+			header: &tar.Header{
+				Name: "manifest",
+				Size: int64(len(imj)),
+			},
+		},
+	}
+
+	key2, err := newTestACI(entries, dir, ds)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expectedFiles := []*fileInfo{
+		&fileInfo{path: "manifest", typeflag: tar.TypeReg},
+		&fileInfo{path: "rootfs/a", typeflag: tar.TypeDir},
+	}
+
+	err = checkRenderACI("example.com/test02", expectedFiles, ds)
+	if err == nil {
+		t.Fatalf("expected recursion error")
+	} else {
+		expectedErr := fmt.Errorf("recursion error, image with key %s already referenced by a parent image", key2)
+		if err.Error() != expectedErr.Error() {
+			t.Fatalf("expected error: %v, got: %v", expectedErr, err)
+		}
+	}
+}
+
+// Having an image referenced inside different branches is not a recursion problem
+// This tests this dep tree:
+// A --- B --- C
+//   \-- C
+func TestNonRecursiveDep(t *testing.T) {
+	dir, err := ioutil.TempDir("", tstprefix)
+	if err != nil {
+		t.Fatalf("error creating tempdir: %v", err)
+	}
+	defer os.RemoveAll(dir)
+	ds := NewTestStore()
+
+	// C
+	imj := `
+		{
+		    "acKind": "ImageManifest",
+		    "acVersion": "0.1.1",
+		    "name": "example.com/test01"
+		}
+	`
+
+	entries := []*testTarEntry{
+		{
+			contents: imj,
+			header: &tar.Header{
+				Name: "manifest",
+				Size: int64(len(imj)),
+			},
+		},
+		// An empty dir
+		{
+			header: &tar.Header{
+				Name:     "rootfs/a",
+				Typeflag: tar.TypeDir,
+			},
+		},
+	}
+
+	key1, err := newTestACI(entries, dir, ds)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// B
+	imj = `
+		{
+		    "acKind": "ImageManifest",
+		    "acVersion": "0.1.1",
+		    "name": "example.com/test02"
+		}
+	`
+
+	k1, _ := types.NewHash(key1)
+	imj, err = addDependencies(imj,
+		// C
+		types.Dependency{
+			ImageName: "example.com/test01",
+			ImageID:   k1},
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	entries = []*testTarEntry{
+		{
+			contents: imj,
+			header: &tar.Header{
+				Name: "manifest",
+				Size: int64(len(imj)),
+			},
+		},
+	}
+
+	key2, err := newTestACI(entries, dir, ds)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	// A
+	imj = `
+		{
+		    "acKind": "ImageManifest",
+		    "acVersion": "0.1.1",
+		    "name": "example.com/test03"
+		}
+	`
+
+	k2, _ := types.NewHash(key2)
+	imj, err = addDependencies(imj,
+		// B
+		types.Dependency{
+			ImageName: "example.com/test02",
+			ImageID:   k2},
+		// C
+		types.Dependency{
+			ImageName: "example.com/test01",
+			ImageID:   k1},
+	)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	entries = []*testTarEntry{
+		{
+			contents: imj,
+			header: &tar.Header{
+				Name: "manifest",
+				Size: int64(len(imj)),
+			},
+		},
+	}
+
+	_, err = newTestACI(entries, dir, ds)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+
+	expectedFiles := []*fileInfo{
+		&fileInfo{path: "manifest", typeflag: tar.TypeReg},
+		&fileInfo{path: "rootfs/a", typeflag: tar.TypeDir},
+	}
+
+	err = checkRenderACI("example.com/test03", expectedFiles, ds)
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
+
 // Test an image with 1 dep. The parent provides a dir not provided by the image.
 func TestDirFromParent(t *testing.T) {
 	dir, err := ioutil.TempDir("", tstprefix)
